@@ -291,7 +291,7 @@
     * Specifies the type of positioning method used for an element
 * **right**
     * Specifies the right position of a positioned element
-* **top
+* **top**
     * Specifies the top position of a positioned element
 * **visibility**
     * Specifies whether or not an element is visible
