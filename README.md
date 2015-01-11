@@ -1,5 +1,12 @@
 # DOMinatrix Preliminary Specification Sheet
 
+**All objects have the following specification:**
+
+* The first value in sequential pairs must always be the object type
+* The second value in sequential pairs will be the object value given an object is expected to have an explicit value (such as a text box) and that the value is not a function or a table that contains an object type declaration. This allows for formatted text to be written in a table so long as the first value of that table is not "taxtbox", "button", et cetera
+* All sequential pairs thereafter will be assumed to be child objects and any pair that is not formatted correctly will be discarded
+
+
 ## Global
 
 * **style**
