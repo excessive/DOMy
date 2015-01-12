@@ -64,8 +64,10 @@
 
 ***Virtual Input Events™ is a processing layer for events that can take in raw input from love or from any other source (e.g. network). VIE can be toggled in part or in full to allow full customization of if and when the GUI should be accepting input, and from where (e.g. only enable mouse events if some flag is set).***
 
-**Capture:** Event propogates forward through document hierarchy from least significant object to most. 
-**Bubble:** Event propogates back through document hierarchy from most significant object to least. 
+**Capture:** Event propogates forward through document hierarchy from least significant object to most.
+
+**Bubble:** Event propogates back through document hierarchy from most significant object to least.
+
 **Catch:** Object takes over event and stops propogation from going further.
 
 ### Mouse Events
