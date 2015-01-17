@@ -73,6 +73,9 @@
 ### Mouse Events
 
 * **on_mouse_enter**
+    * Mouse cursor begins hovering over object
+    * No propogation
+* **on_mouse_over**
     * Mouse cursor is hovering over object
     * No propogation
 * **on_mouse_leave**
