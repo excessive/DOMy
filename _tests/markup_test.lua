@@ -1,27 +1,42 @@
+local function softcompare(a,b) return tonumber(a) == tonumber(b) end
 local dom = require "DOMinatrix"
 local gui = dom.new()
-gui:import_markup("DOMinatrix/_tests/markup.lua")
 
--- Print all elements
----------------------
---[[
-false	1
-two		2
-false	3
-false	4
-five	5
-five>1	>1
-false	>>1
-false	>>2
-false	>>3
-false	>2
-false	6
-false	seven
-false	8
-false	9
-false	10
---]]
-for _, element in ipairs(gui.elements) do
-	print(element.id, element.value)
-end
+print("BEGIN MARKUP TEST")
+
+-- Parse Markup
+gui:import_markup("DOMinatrix/_tests/markup.lua")
+assert(gui.elements[1].id     == false,         string.format("false expected, got %s",  gui.elements[1].id))
+assert(softcompare(gui.elements[1].value, 1),   string.format("1 expected, got %s",      gui.elements[1].value))
+assert(gui.elements[2].id     == "two",         string.format("two expected, got %s",    gui.elements[2].id))
+assert(softcompare(gui.elements[2].value, 2),   string.format("2 expected, got %s",      gui.elements[2].value))
+assert(gui.elements[3].id     == false,         string.format("false expected, got %s",  gui.elements[3].id))
+assert(softcompare(gui.elements[3].value, 3),   string.format("3 expected, got %s",      gui.elements[3].value))
+assert(gui.elements[4].id     == false,         string.format("false expected, got %s",  gui.elements[4].id))
+assert(softcompare(gui.elements[4].value, 4),   string.format("4 expected, got %s",      gui.elements[4].value))
+assert(gui.elements[5].id     == "five",        string.format("five expected, got %s",   gui.elements[5].id))
+assert(softcompare(gui.elements[5].value, 5),   string.format("5 expected, got %s",      gui.elements[5].value))
+assert(gui.elements[6].id     == "five>1",      string.format("five>1 expected, got %s", gui.elements[6].id))
+assert(gui.elements[6].value  == ">1",          string.format(">1 expected, got %s",     gui.elements[6].value))
+assert(gui.elements[7].id     == false,         string.format("false expected, got %s",  gui.elements[7].id))
+assert(gui.elements[7].value  == ">>1",         string.format(">>1 expected, got %s",    gui.elements[7].value))
+assert(gui.elements[8].id     == false,         string.format("false expected, got %s",  gui.elements[8].id))
+assert(gui.elements[8].value  == ">>2",         string.format(">>2 expected, got %s",    gui.elements[8].value))
+assert(gui.elements[9].id     == false,         string.format("false expected, got %s",  gui.elements[9].id))
+assert(gui.elements[9].value  == ">>3",         string.format(">>3 expected, got %s",    gui.elements[9].value))
+assert(gui.elements[10].id    == false,         string.format("false expected, got %s",  gui.elements[10].id))
+assert(gui.elements[10].value == ">2",          string.format(">2 expected, got %s",     gui.elements[10].value))
+assert(gui.elements[11].id    == false,         string.format("false expected, got %s",  gui.elements[11].id))
+assert(softcompare(gui.elements[11].value, 6),  string.format("6 expected, got %s",      gui.elements[11].value))
+assert(gui.elements[12].id    == false,         string.format("false expected, got %s",  gui.elements[12].id))
+assert(gui.elements[12].value == "seven",       string.format("seven expected, got %s",  gui.elements[12].value))
+assert(gui.elements[13].id    == false,         string.format("false expected, got %s",  gui.elements[13].id))
+assert(softcompare(gui.elements[13].value, 8),  string.format("8 expected, got %s",      gui.elements[13].value))
+assert(gui.elements[14].id    == false,         string.format("false expected, got %s",  gui.elements[14].id))
+assert(softcompare(gui.elements[14].value, 9),  string.format("9 expected, got %s",      gui.elements[14].value))
+assert(gui.elements[15].id    == false,         string.format("false expected, got %s",  gui.elements[15].id))
+assert(softcompare(gui.elements[15].value, 10), string.format("10 expected, got %s",     gui.elements[15].value))
+print("Passed: Parsed Markup")
+
+print("END MARKUP TEST")
 print()

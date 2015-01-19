@@ -1,228 +1,139 @@
+local function softcompare(a,b) return tonumber(a) == tonumber(b) end
 local dom = require "DOMinatrix"
 local gui = dom.new()
 gui:import_markup("DOMinatrix/_tests/markup.lua")
 
+print("BEGIN ELEMENT TEST")
+
 local e = gui:get_element_by_id("five")
 
 -- Element Has Children
------------------------
---[[
-true
---]]
-print(e:has_children())
-print()
+assert(e:has_children() == true, string.format("true expected, got %s", e:has_children()))
+print("Passed: Has Children")
 
 -- Prepend Child to Element
----------------------------
---[[
-Prepended
---]]
 local o = gui:new_element("element")
 o.value = "Prepended"
 o.id    = "prepend"
 e:prepend_child(o)
-print(e.children[1].value)
-print()
+assert(e.children[1].value == "Prepended", string.format("Prepended expected, got %s", e.children[1].value))
+print("Passed: Prepend Child")
 
 -- Append Child to Element
---------------------------
---[[
-Appended
---]]
 local o = gui:new_element({ "element", value="Appended", id="append" })
 e:append_child(o)
-print(e.children[#e.children].value)
-print()
+assert(e.children[#e.children].value == "Appended", string.format("Appended expected, got %s", e.children[#e.children].value))
+print("Passed: Append Child")
 
 -- Add Child to Element
------------------------
---[[
-Added
---]]
 local o = gui:new_element("element")
 o.value = "Added"
 e:add_child(o, 2)
-print(e.children[2].value)
-print()
+assert(e.children[2].value == "Added", string.format("Added expected, got %s", e.children[2].value))
+print("Passed: Add Child")
 
 -- Remove Child from Element
---------
---[[
-Added
->2
---]]
 local o = gui:get_element_by_id("prepend")
 e:remove_child(o)
 e:remove_child(#e.children)
-print(e.children[1].value)
-print(e.children[#e.children].value)
-print()
+assert(e.children[1].value           == "Added", string.format("Added expected, got %s", e.children[1].value))
+assert(e.children[#e.children].value == ">2",    string.format(">2 expected, got %s",    e.children[#e.children].value))
+print("Passed: Remove Child")
 
 -- Replace One Element with Another
------------------------------------
---[[
-Replaced
->2
---]]
 local o = gui:new_element({ "element", "Replaced", id="replace" })
 e:replace_child(1, o)
-print(e.children[1].value)
-print(e.children[#e.children].value)
-print()
+assert(e.children[1].value           == "Replaced", string.format("Replaced expected, got %s", e.children[1].value))
+assert(e.children[#e.children].value == ">2",       string.format(">2 expected, got %s",       e.children[#e.children].value))
+print("Passed: Replace Child")
 
 -- Insert Element Before Another
---------------------------------
---[[
-Before
->1
---]]
 local o = gui:new_element({ "element", "Before", id="before" })
 o:insert_before(e.children[2])
-print(e.children[2].value)
-print(e.children[3].value)
-print()
+assert(e.children[2].value == "Before", string.format("Before expected, got %s", e.children[2].value))
+assert(e.children[3].value == ">1",     string.format(">1 expected, got %s",     e.children[3].value))
+print("Passed: Insert Before")
 
 -- Insert Element After Another
--------------------------------
---[[
->1
-After
---]]
 local o = gui:new_element({ "element", "After", id="after" })
 o:insert_after(e.children[3])
-print(e.children[3].value)
-print(e.children[4].value)
-print()
+assert(e.children[3].value == ">1",    string.format(">1 expected, got %s",    e.children[3].value))
+assert(e.children[4].value == "After", string.format("After expected, got %s", e.children[4].value))
+print("Passed: Insert After")
 
 -- Attach an Element Hierarchy to Another
------------------------------------------
---[[
-2
->1
->>1
->>1
->>2
->>3
->>3
->>3
-2
---]]
 local o = gui:get_element_by_id("five>1")
 local t = gui:get_element_by_id("two")
 t:attach(o)
-print(t.value)
-print(t.parent.value)
-print(o.children[1].value)
-print(o.children[2].previous_sibling.value)
-print(o.children[2].value)
-print(o.children[2].next_sibling.value)
-print(o.children[3].value)
-print(o.children[#o.children].previous_sibling.value)
-print(o.children[#o.children].value)
-print()
+assert(softcompare(t.value, 2),                                 string.format("2 expected, got %s",   t.value))
+assert(t.parent.value                                 == ">1",  string.format(">1 expected, got %s",  t.parent.value))
+assert(o.children[1].value                            == ">>1", string.format(">>1 expected, got %s", o.children[1].value))
+assert(o.children[2].previous_sibling.value           == ">>1", string.format(">>1 expected, got %s", o.children[2].previous_sibling.value))
+assert(o.children[2].value                            == ">>2", string.format(">>2 expected, got %s", o.children[2].value))
+assert(o.children[2].next_sibling.value               == ">>3", string.format(">>3 expected, got %s", o.children[2].next_sibling.value))
+assert(o.children[3].value                            == ">>3", string.format(">>3 expected, got %s", o.children[3].value))
+assert(o.children[#o.children].previous_sibling.value == ">>3", string.format(">>3 expected, got %s", o.children[#o.children].previous_sibling.value))
+assert(softcompare(o.children[#o.children].value, 2),           string.format(" expected, got %s",    o.children[#o.children].value))
+print("Passed: Attach Child")
 
 -- Detatch and Element Hierarchy from Another
----------------------------------------------
---[[
-2
-false
->>1
->>1
->>2
->>3
->>3
->>2
->>3
---]]
 local o = gui:get_element_by_id("five>1")
 local t = gui:get_element_by_id("two")
 t:detach(o)
-print(t.value)
-print(t.parent)
-print(o.children[1].value)
-print(o.children[2].previous_sibling.value)
-print(o.children[2].value)
-print(o.children[2].next_sibling.value)
-print(o.children[3].value)
-print(o.children[#o.children].previous_sibling.value)
-print(o.children[#o.children].value)
-print()
+assert(softcompare(t.value, 2),                                 string.format("2 expected, got %s",     t.value))
+assert(t.parent                                       == false, string.format("false expected, got %s", t.parent))
+assert(o.children[1].value                            == ">>1", string.format(">>1 expected, got %s",   o.children[1].value))
+assert(o.children[2].previous_sibling.value           == ">>1", string.format(">>1 expected, got %s",   o.children[2].previous_sibling.value))
+assert(o.children[2].value                            == ">>2", string.format(">>2 expected, got %s",   o.children[2].value))
+assert(o.children[2].next_sibling.value               == ">>3", string.format(">>3 expected, got %s",   o.children[2].next_sibling.value))
+assert(o.children[3].value                            == ">>3", string.format(">>3 expected, got %s",   o.children[3].value))
+assert(o.children[#o.children].previous_sibling.value == ">>2", string.format(">>2 expected, got %s",   o.children[#o.children].previous_sibling.value))
+assert(o.children[#o.children].value                  == ">>3", string.format(">>3 expected, got %s",   o.children[#o.children].value))
+print("Passed: Detach Child")
 
 -- Destroy an Element
----------------------
---[[
-false
-0
---]]
 local o = gui:get_element_by_id("five>1")
 o:destroy()
-print(o.parent)
-print(#o.children)
-print()
+assert(o.parent    == false, string.format("false expected, got %s", o.parent))
+assert(#o.children == 0, string.format("0 expected, got %s",         #o.children))
+print("Passed: Destroy Element")
 
---[=[
+-- Clone Element
+-- local o = e:clone_element()
+-- assert(A BUNCH OF THINGS)
+print("CLONE ELEMENT NOT YET IMPLEMENTED")
 
---
---------
---[[
-
---]]
-e:clone_element()
-
---]=]
 
 -- Check Properties
--------------------
---[[
-true
-true
-false
-true
---]]
-print(e:has_property("width"))
-print(e:has_property("height"))
-print(e:has_property("kek"))
-print(e:has_property("visible"))
-print()
+assert(e:has_property("width")   == true,  string.format("true expected, got %s",  e:has_property("width")))
+assert(e:has_property("height")  == true,  string.format("true expected, got %s",  e:has_property("height")))
+assert(e:has_property("kek")     == false, string.format("false expected, got %s", e:has_property("kek")))
+assert(e:has_property("visible") == true,  string.format("true expected, got %s",  e:has_property("visible")))
+print("Passed: Check Properties")
 
 -- Get Propery Values
----------------------
---[[
-0
-0
-nil
-true
---]]
-print(e:get_property("width"))
-print(e:get_property("height"))
-print(e:get_property("kek"))
-print(e:get_property("visible"))
-print()
+assert(e:get_property("width")   == 0,    string.format("0 expected, got %s",    e:get_property("width")))
+assert(e:get_property("height")  == 0,    string.format("0 expected, got %s",    e:get_property("height")))
+assert(e:get_property("kek")     == nil,  string.format("nil expected, got %s",  e:get_property("kek")))
+assert(e:get_property("visible") == true, string.format("true expected, got %s", e:get_property("visible")))
+print("Passed: Get Property Values")
 
 -- Set Property Values
-----------------------
---[[
-150
-100
-top
-false
---]]
 e:set_property("width",   150)
 e:set_property("height",  100)
 e:set_property("kek",     "top")
 e:set_property("visible", false)
-print(e:get_property("width"))
-print(e:get_property("height"))
-print(e:get_property("kek"))
-print(e:get_property("visible"))
-print()
+assert(e:get_property("width")   == 150,   string.format("150 expected, got %s",   e:get_property("width")))
+assert(e:get_property("height")  == 100,   string.format("100 expected, got %s",   e:get_property("height")))
+assert(e:get_property("kek")     == "top", string.format("top expected, got %s",   e:get_property("kek")))
+assert(e:get_property("visible") == false, string.format("false expected, got %s", e:get_property("visible")))
+print("Passed: Set Property Values")
 
 -- Remove Propery Values
-------------------------
---[[
-nil
---]]
 e:remove_property("kek")
-print(e:get_property("kek"))
+assert(e:get_property("kek") == nil, string.format("nil expected, got %s", e:get_property("kek")))
+print("Passed: Remove Property Values")
+
+print("END ELEMENT TEST")
 print()
 
