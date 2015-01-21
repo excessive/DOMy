@@ -11,10 +11,6 @@ function Element:init(element, parent)
 	self.class            = element.class or {}
 	self.parent           = parent        or false
 	self.children         = {}
-	self.first_child      = false
-	self.last_child       = false
-	self.next_sibling     = false
-	self.previous_sibling = false
 	self.scroll_size      = cpml.vec2(0, 0) -- dp scrollable
 	self.scroll_position  = cpml.vec2(0, 0) -- % scrolled
 	self.properties       = {
@@ -87,33 +83,16 @@ function Element:init(element, parent)
 	self.on_gamepad_axis      = function(self, axis) end
 end
 
-function Element:_calc_family()
-	-- Recalculate children
-	self.first_child = self.children[1]              or false
-	self.last_child  = self.children[#self.children] or false
-
-	-- Recalculate closest siblings
-	for k, child in ipairs(self.children) do
-		if k > 1 then
-			child.previous_sibling = self.children[k-1]
-		else
-			child.previous_sibling = false
-		end
-
-		if k < #self.children then
-			child.next_sibling     = self.children[k+1]
-		else
-			child.next_sibling     = false
-		end
-	end
-end
-
 function Element:_get_position()
-	for k, child in ipairs(self.parent.children) do
-		if child == self then
-			return k
+	if self.parent then
+		for k, child in ipairs(self.parent.children) do
+			if child == self then
+				return k
+			end
 		end
 	end
+
+	return false
 end
 
 function Element:has_children()
@@ -151,9 +130,6 @@ function Element:add_child(element, position)
 	else
 		table.insert(self.children, element)
 	end
-
-	-- Recalculate family
-	self:_calc_family()
 
 	return self
 end
@@ -217,8 +193,8 @@ function Element:insert_after(element)
 
 	-- If element has a sibling after it, simply call insert_before() on that sibling!
 	-- Otherwise just append to element's parent
-	if element.next_sibling then
-		self:insert_before(element.next_sibling)
+	if element:next_sibling() then
+		self:insert_before(element:next_sibling())
 	else
 		element.parent:append_child(self)
 	end
@@ -236,7 +212,6 @@ function Element:detach()
 	end
 
 	table.remove(self.parent.children, self:_get_position())
-	self.parent:_calc_family()
 	self.parent = false
 
 	return self
@@ -252,10 +227,7 @@ function Element:destroy()
 	-- Recalculate parent's family
 	if self.parent then
 		table.remove(self.parent.children, self:_get_position())
-		self.parent:_calc_family()
-		self.parent           = false
-		self.previous_sibling = false
-		self.next_sibling     = false
+		self.parent = false
 	end
 
 	-- Goodbye, cruel world.
@@ -288,6 +260,50 @@ end
 function Element:scroll_into_view()
 	-- If parent is scrollable, scroll it so that self is visible
 	-- Self should be wholy visible or if too large, the top should match parent's top
+end
+
+function Element:first_child()
+	if #self.children > 0 then
+		return self.children[1]
+	end
+
+	return false
+end
+
+function Element:last_child()
+	if #self.children > 0 then
+		return self.children[#self.children]
+	end
+
+	return false
+end
+
+function Element:previous_sibling()
+	local position = self:_get_position()
+
+	if position then
+		local prev = position - 1
+
+		if prev > 0 then
+			return self.parent.children[prev]
+		end
+	end
+
+	return false
+end
+
+function Element:next_sibling()
+	local position = self:_get_position()
+
+	if position then
+		local nxt = position + 1
+
+		if nxt <= #self.parent.children then
+			return self.parent.children[nxt]
+		end
+	end
+
+	return false
 end
 
 return Element
