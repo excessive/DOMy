@@ -136,15 +136,35 @@ function GUI:get_element_by_id(id)
 	return false
 end
 
-function GUI:get_elements_by_type(elements, type)
+function GUI:get_elements_by_type(type, elements)
+	elements = elements or self.elements
+
+	local filter = {}
+
+	for _, element in ipairs(elements) do
+		if element.type == type then
+			table.insert(filter, element)
+		end
+	end
+
+	return filter
 end
 
-function GUI:get_elements_by_class(elements, class, ...)
-	if type(class) == "table" then
+function GUI:get_elements_by_class(class, elements)
+	elements = elements or self.elements
 
-	else
+	local filter = {}
 
+	for _, element in ipairs(elements) do
+		for _, eclass in ipairs(element.class) do
+			if eclass == class then
+				table.insert(filter, element)
+				break
+			end
+		end
 	end
+
+	return filter
 end
 
 function GUI:get_elements_by_query(query) -- CSS-stype selectors such as ".header > p"

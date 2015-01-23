@@ -12,7 +12,6 @@ function Element:init(element, parent, gui)
 	self.id               = element.id      or false
 	self.scroll_size      = cpml.vec2(0, 0) -- dp scrollable
 	self.scroll_position  = cpml.vec2(0, 0) -- % scrolled
-	self.class            = element.class   or {}
 	self.children         = {}
 	self.properties       = {
 		width          = 0,
@@ -39,6 +38,12 @@ function Element:init(element, parent, gui)
 		self.value = element.value
 	elseif type(element[2]) ~= "table" then
 		self.value = element[2]
+	end
+
+	if type(element.class) ~= "table" then
+		self.class = { element.class }
+	else
+		self.class = element.class
 	end
 
 	self.on_focus             = function(self, focus) end

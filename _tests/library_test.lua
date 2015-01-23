@@ -8,10 +8,22 @@ print("BEGIN LIBRARY TEST")
 
 -- ID Selector
 local e = gui:get_element_by_id("five")
-assert(softcompare(e.value, 5),       output("5",  e.value))
+assert(softcompare(e.value, 5),       output(5,  e.value))
 assert(e:first_child().value == ">1", output(">1", e:first_child().value))
 assert(e:last_child().value  == ">2", output(">2", e:last_child().value))
 print("Passed: ID Selector")
+
+-- Type Selector
+local filter = gui:get_elements_by_type("element")
+assert(#filter == #gui.elements, output(#gui.elements, #filter))
+print("Passed: Type Selector")
+
+-- Class Selector
+local root = gui:get_elements_by_class("root")
+local sub  = gui:get_elements_by_class("sub", root)
+assert(#root == 3, output(3, #root))
+assert(#sub  == 1, output(1, #sub))
+print("Passed: Class Selector")
 
 -- Insert Element
 local o = gui:new_element("element", e, 2)

@@ -110,7 +110,6 @@ assert(o.children[1].value == e.children[1].value, output(e.children[1].value, o
 assert(o.properties.width  == 500,                 output("500",               o.properties.width))
 print("Passed: Clone Element")
 
-
 -- Check Properties
 assert(e:has_property("width")   == true,  output("true",  e:has_property("width")))
 assert(e:has_property("height")  == true,  output("true",  e:has_property("height")))
