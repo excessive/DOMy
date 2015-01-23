@@ -3,16 +3,17 @@ local Class   = require(path.."thirdparty.hump.class")
 local cpml    = require(path.."thirdparty.cpml")
 local Element = Class {}
 
-function Element:init(element, parent)
+function Element:init(element, parent, gui)
+	self.gui              = gui
 	self.focus            = false
 	self.type             = element[1]
 	self.value            = ""
-	self.id               = element.id    or false
-	self.class            = element.class or {}
-	self.parent           = parent        or false
-	self.children         = {}
+	self.parent           = parent          or false
+	self.id               = element.id      or false
 	self.scroll_size      = cpml.vec2(0, 0) -- dp scrollable
 	self.scroll_position  = cpml.vec2(0, 0) -- % scrolled
+	self.class            = element.class   or {}
+	self.children         = {}
 	self.properties       = {
 		width          = 0,
 		height         = 0,
@@ -32,15 +33,7 @@ function Element:init(element, parent)
 		padding        = { 0, 0, 0, 0 },
 
 		box_shadow     = false,
-
-		tab_index      = 1,
-		z_index        = 1,
 	}
-
-	if parent then
-		self.properties.tab_index = parent.properties.tab_index + 1
-		self.properties.z_index   = parent.properties.z_index   + 1
-	end
 
 	if element.value then
 		self.value = element.value
@@ -93,6 +86,22 @@ function Element:_get_position()
 	end
 
 	return false
+end
+
+function Element:has_property(property)
+	return self.properties[property] ~= nil
+end
+
+function Element:get_property(property)
+	return self.properties[property]
+end
+
+function Element:set_property(property, value)
+	self.properties[property] = value
+end
+
+function Element:remove_property(property)
+	self.properties[property] = nil
 end
 
 function Element:has_children()
@@ -224,7 +233,6 @@ function Element:destroy()
 	end
 
 	-- Remove self from parent
-	-- Recalculate parent's family
 	if self.parent then
 		table.remove(self.parent.children, self:_get_position())
 		self.parent = false
@@ -237,29 +245,77 @@ function Element:destroy()
 	-- Goodbye.
 end
 
-function Element:clone_element()
-	-- This will need some thought?
-end
+function Element:clone(deep, parent)
+	local clone = self.gui:new_element(self.type)
+	clone.value = self.value
 
-function Element:has_property(property)
-	return self.properties[property] ~= nil
-end
+	-- Clone classes
+	for _, class in ipairs(self.class) do
+		table.insert(clone.class, class)
+	end
 
-function Element:get_property(property)
-	return self.properties[property]
-end
+	-- Clone properties
+	for k, property in pairs(self.properties) do
+		-- Some properties such as margin and padding are tables
+		if type(property) == "table" then
+			clone.properties[k] = {}
 
-function Element:set_property(property, value)
-	self.properties[property] = value
-end
+			for i, p in pairs(property) do
+				clone.properties[k][i] = p
+			end
+		else
+			clone.properties[k] = property
+		end
+	end
 
-function Element:remove_property(property)
-	self.properties[property] = nil
-end
+	-- Clone callbacks
+	clone.on_focus             = self.on_focus
 
-function Element:scroll_into_view()
-	-- If parent is scrollable, scroll it so that self is visible
-	-- Self should be wholy visible or if too large, the top should match parent's top
+	clone.on_mouse_enter       = self.on_mouse_enter
+	clone.on_mouse_over        = self.on_mouse_over
+	clone.on_mouse_leave       = self.on_mouse_leave
+	clone.on_mouse_pressed     = self.on_mouse_pressed
+	clone.on_mouse_released    = self.on_mouse_released
+	clone.on_mouse_clicked     = self.on_mouse_clicked
+	clone.on_mouse_down        = self.on_mouse_down
+	clone.on_mouse_scroll      = self.on_mouse_scroll
+
+	clone.on_key_pressed       = self.on_key_pressed
+	clone.on_key_released      = self.on_key_released
+	clone.on_key_down          = self.on_key_down
+	clone.on_text_input        = self.on_text_input
+
+	clone.on_touch_pressed     = self.on_touch_pressed
+	clone.on_touch_released    = self.on_touch_released
+	clone.on_touch_moved       = self.on_touch_moved
+	clone.on_touch_gestured    = self.on_touch_gestured
+
+	clone.on_joystick_added    = self.on_joystick_added
+	clone.on_joystick_removed  = self.on_joystick_removed
+	clone.on_joystick_pressed  = self.on_joystick_pressed
+	clone.on_joystick_released = self.on_joystick_released
+	clone.on_joystick_down     = self.on_joystick_down
+	clone.on_joystick_axis     = self.on_joystick_axis
+	clone.on_joystick_hat      = self.on_joystick_hat
+
+	clone.on_gamepad_pressed   = self.on_gamepad_pressed
+	clone.on_gamepad_released  = self.on_gamepad_released
+	clone.on_gamepad_down      = self.on_gamepad_down
+	clone.on_gamepad_axis      = self.on_gamepad_axis
+
+	-- Deep clone all children
+	if deep then
+		for _, child in ipairs(self.children) do
+			child:clone(deep, clone)
+		end
+	end
+
+	-- Add self to parent
+	if parent then
+		parent:add_child(clone)
+	end
+
+	return clone
 end
 
 function Element:first_child()
@@ -304,6 +360,11 @@ function Element:next_sibling()
 	end
 
 	return false
+end
+
+function Element:scroll_into_view()
+	-- If parent is scrollable, scroll it so that self is visible
+	-- Self should be wholy visible or if too large, the top should match parent's top
 end
 
 return Element

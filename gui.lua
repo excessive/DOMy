@@ -115,7 +115,7 @@ function GUI:new_element(element, parent, position)
 
 	-- Create the element and insert it into the global elements list
 	local object = setmetatable({}, { __index = elements[element[1]] })
-	object:init(element, parent)
+	object:init(element, parent, self)
 	table.insert(self.elements, object)
 
 	-- If the element has a parent, send it along
