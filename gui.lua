@@ -76,12 +76,12 @@ function GUI:draw()
 		local h = ep.height
 
 		-- Content start of element
-		local sw = x + ep.padding[4] + ep.border[4] + ep.margin[4]
-		local sh = y + ep.padding[1] + ep.border[1] + ep.margin[1]
+		local sw = x + ep.padding[4] + ep.border[4]
+		local sh = y + ep.padding[1] + ep.border[1]
 
 		-- Content end of element
-		local ew = x + w - (sw - w) - ep.padding[2] - ep.border[2] - ep.margin[2]
-		local eh = y + h - (sh - h) - ep.padding[3] - ep.border[3] - ep.margin[3]
+		local ew = x + w - (sw - w) - ep.padding[2] - ep.border[2]
+		local eh = y + h - (sh - h) - ep.padding[3] - ep.border[3]
 
 		love.graphics.rectangle("line", x, y, w, h)
 		love.graphics.printf(element.value, sw, sh, ew)
@@ -93,13 +93,13 @@ function GUI:draw()
 			local cp = child.properties
 
 			if cp.display == "inline" then
-				draw_element(child, sw+cw, sh)
+				draw_element(child, ep.margin[4] + sw + cw, sh + ep.margin[1])
 			elseif cp.display == "block" then
-				draw_element(child, sw, sh+ch)
+				draw_element(child, ep.margin[4] + sw, sh + ch + ep.margin[1])
 			end
 
-			cw = cw + child.properties.width
-			ch = ch + child.properties.height
+			cw = cw + child.properties.width  + ep.margin[2] + ep.margin[4]
+			ch = ch + child.properties.height + ep.margin[1] + ep.margin[3]
 		end
 	end
 
@@ -111,13 +111,13 @@ function GUI:draw()
 			local ep = element.properties
 			local d = ep.display
 			if d == "inline" then
-				draw_element(element, rw, 0)
+				draw_element(element, ep.margin[4] + rw, ep.margin[1])
 			elseif d == "block" then
-				draw_element(element, 0, rh)
+				draw_element(element, ep.margin[4], rh + ep.margin[1])
 			end
 
-			rw = rw + ep.width
-			rh = rh + ep.height
+			rw = rw + ep.width  + ep.margin[2] + ep.margin[4]
+			rh = rh + ep.height + ep.margin[1] + ep.margin[3]
 		end
 	end
 end

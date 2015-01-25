@@ -28,11 +28,12 @@ function Element:init(element, parent, gui)
 		overflow       = false,
 		vertical_align = "top",
 
-		padding        = { 10, 5, 10, 5 }, -- TRBL
-		border         = { 10, 5, 10, 5 },
-		margin         = { 10, 5, 10, 5 },
-
 		box_shadow     = false,
+
+		-- TOP, RIGHT, BOTTOM, LEFT
+		padding        = { 5, 5, 5, 5 },
+		border         = { 1, 1, 1, 1 },
+		margin         = { 10, 10, 10, 10 },
 	}
 
 	if element.value then
