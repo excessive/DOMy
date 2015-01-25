@@ -102,7 +102,7 @@ print("Passed: Destroy Element")
 -- Clone Element
 e:set_property("width", 500)
 local o = e:clone(true)
-e:set_property("width", 0)
+e:set_property("width", 100)
 assert(o.value             == e.value,             output(e.value,             o.value))
 assert(#o.children         == #e.children,         output(#e.children,         #o.children))
 assert(o.children[1]       ~= e.children[1],       output(e.children[1],       o.children[1]))
@@ -118,8 +118,8 @@ assert(e:has_property("visible") == true,  output("true",  e:has_property("visib
 print("Passed: Check Properties")
 
 -- Get Propery Values
-assert(e:get_property("width")   == 0,    output("0",    e:get_property("width")))
-assert(e:get_property("height")  == 0,    output("0",    e:get_property("height")))
+assert(e:get_property("width")   == 100,  output("0",    e:get_property("width")))
+assert(e:get_property("height")  == 100,  output("0",    e:get_property("height")))
 assert(e:get_property("kek")     == nil,  output("nil",  e:get_property("kek")))
 assert(e:get_property("visible") == true, output("true", e:get_property("visible")))
 print("Passed: Get Property Values")

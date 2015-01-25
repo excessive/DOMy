@@ -14,8 +14,8 @@ function Element:init(element, parent, gui)
 	self.scroll_position  = cpml.vec2(0, 0) -- % scrolled
 	self.children         = {}
 	self.properties       = {
-		width          = 0,
-		height         = 0,
+		width          = 100,
+		height         = 100,
 		display        = "inline",
 		visible        = true,
 
@@ -28,8 +28,9 @@ function Element:init(element, parent, gui)
 		overflow       = false,
 		vertical_align = "top",
 
-		margin         = { 0, 0, 0, 0 },
-		padding        = { 0, 0, 0, 0 },
+		padding        = { 10, 5, 10, 5 }, -- TRBL
+		border         = { 10, 5, 10, 5 },
+		margin         = { 10, 5, 10, 5 },
 
 		box_shadow     = false,
 	}

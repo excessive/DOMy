@@ -38,7 +38,88 @@ function GUI:update(dt)
 end
 
 function GUI:draw()
+	--!!! ALL OF THIS CODE IS TEMPORARY AND SUBJECT TO CHANGE !!!
 
+	--[[         ~~ BOX MODEL ~~
+
+	{                 WIDTH                 }
+	+---------------------------------------+ ~~~
+	|                MARGIN                 |
+	|   +-------------------------------+   |
+	|   |/////////// BORDER ////////////|   |
+	|   |///+-----------------------+///|   |
+	|   |///|        PADDING        |///|   |  H
+	|   |///|   +---------------+   |///|   |  E
+	|   |///|   |               |   |///|   |  I
+	|   |///|   |    CONTENT    |   |///|   |  G
+	|   |///|   |               |   |///|   |  H
+	|   |///|   +---------------+   |///|   |  T
+	|   |///|        PADDING        |///|   |
+	|   |///+-----------------------+///|   |
+	|   |/////////// BORDER ////////////|   |
+	|   +-------------------------------+   |
+	|                MARGIN                 |
+	+---------------------------------------+ ~~~
+	{                 WIDTH                 }
+
+	--]]
+
+	local function draw_element(element, x, y)
+		local ep = element.properties
+
+		-- TL position of element
+		x = x or 0
+		y = y or 0
+
+		-- Full size of element
+		local w = ep.width
+		local h = ep.height
+
+		-- Content start of element
+		local sw = x + ep.padding[4] + ep.border[4] + ep.margin[4]
+		local sh = y + ep.padding[1] + ep.border[1] + ep.margin[1]
+
+		-- Content end of element
+		local ew = x + w - (sw - w) - ep.padding[2] - ep.border[2] - ep.margin[2]
+		local eh = y + h - (sh - h) - ep.padding[3] - ep.border[3] - ep.margin[3]
+
+		love.graphics.rectangle("line", x, y, w, h)
+		love.graphics.printf(element.value, sw, sh, ew)
+
+		-- Accumulated Child positions
+		local cw = 0
+		local ch = 0
+		for _, child in ipairs(element.children) do
+			local cp = child.properties
+
+			if cp.display == "inline" then
+				draw_element(child, sw+cw, sh)
+			elseif cp.display == "block" then
+				draw_element(child, sw, sh+ch)
+			end
+
+			cw = cw + child.properties.width
+			ch = ch + child.properties.height
+		end
+	end
+
+	-- Accumulated root positions
+	local rw = 0
+	local rh = 0
+	for _, element in ipairs(self.elements) do
+		if not element.parent then
+			local ep = element.properties
+			local d = ep.display
+			if d == "inline" then
+				draw_element(element, rw, 0)
+			elseif d == "block" then
+				draw_element(element, 0, rh)
+			end
+
+			rw = rw + ep.width
+			rh = rh + ep.height
+		end
+	end
 end
 
 function GUI:import_markup(file)
