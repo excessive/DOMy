@@ -4,27 +4,25 @@ DOMinatrix is a DOM-like GUI framework designed for the \*awesome\* LÖVE framew
 
 If you would like to be a part of the development of DOMinatrix, you are welcome to join discussions in the issue tracker, open your own issues, create feature requests, et cetera. We are not currently accepting pull requests until DOMinatrix has some form of visual component.
 
-**WANTED:** If you are a metatable/metamethod master, PLEASE contact me. I am looking for some help with setting up the styles syntax and woudl very much like the assistence of someone in the know.
-
-As of this commit, all bundled tests pass. To verify tests, simply require the test file in main.lua and run it. Check the console output with the expected output listed in each test file.
+All bundled tests pass. To verify tests, simply require the test file in main.lua and run it. Test verification is printed to the console.
 
 
 ## Current Features
 
 * UI instances
 * Markup parser
-* get_element_by_id() selector
+* id, class, and type selectors
 * Base element
 * Element hierarchy
 * Adjusting hierarchy
+* Clone elements
+* Basic drawing to screen
 
 
 ## TODO
 
-* Clone elements
-* Basic drawing to screen
 * Implement dp and sp units
-* Class, type, query selectors
+* Query selectors
 * Finalize style syntax
 * Style parser
 * Callbacks
