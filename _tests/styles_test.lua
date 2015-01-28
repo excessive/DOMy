@@ -1,0 +1,34 @@
+local function softcompare(a,b) return tonumber(a) == tonumber(b) end
+local function output(exp, got) return string.format("'%s' expected, got '%s'", exp, got) end
+local dom = require "DOMinatrix"
+local gui = dom.new()
+gui:import_markup("DOMinatrix/_tests/styles_markup.lua")
+
+print("BEGIN STYLES TEST")
+
+-- Parse styles
+gui:import_styles("DOMinatrix/_tests/styles.lua")
+
+assert(gui.elements[2].properties.width  == 50, output(50, gui.elements[2].properties.width))
+assert(gui.elements[2].properties.height == 50, output(50, gui.elements[2].properties.height))
+print("Passed: Element Styles")
+
+assert(gui.elements[18].properties.width  == 600, output(600, gui.elements[18].properties.width))
+assert(gui.elements[18].properties.height == 600, output(600, gui.elements[18].properties.height))
+print("Passed: ID Styles")
+
+assert(gui.elements[2].properties.text_color[1] == 255, output(255, gui.elements[2].properties.text_color[1]))
+print("Passed: Class Styles")
+
+assert(gui.elements[14].properties.display == "inline", output("inline", gui.elements[14].properties.display))
+print("Passed: Nested Styles")
+
+assert(gui.elements[1].properties.width  == 200, output(200, gui.elements[1].properties.width))
+assert(gui.elements[1].properties.height == 200, output(200, gui.elements[1].properties.height))
+print("Passed: Conflicting Value Assignments")
+
+assert(gui.elements[14].properties.width  == 10, output(10, gui.elements[14].properties.width))
+assert(gui.elements[14].properties.height == 10, output(10, gui.elements[14].properties.height))
+print("Passed: :last Pseudo-Class")
+
+print("END STYLES TEST")
