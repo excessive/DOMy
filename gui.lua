@@ -167,20 +167,73 @@ function GUI:import_markup(file)
 		end
 	end
 
-	local markup = love.filesystem.load(file)
-	assert(markup, string.format("Markup file (%s) not found.", file))
+	local markup
 
-	markup = markup()
-	assert(check_syntax(markup, true), string.format("File (%s) contains invalid markup.", file))
+	if type(file) == "string" then
+		markup = love.filesystem.load(file)
+		assert(markup, string.format("Markup file (%s) not found.", file))
+	else
+		markup = function() return file end
+	end
 
-	create_object(markup, false)
+
+	local ok, err = pcall(markup)
+
+	if ok then
+		assert(check_syntax(err, true), string.format("File (%s) contains invalid markup.", file))
+		create_object(err, false)
+	end
 end
 
 function GUI:import_styles(file)
+	local function parse_stylesheet(style, list, prepend)
+		list = list or {}
 
+		for _, query in ipairs(style) do
+			-- Check all query selectors (no styles)
+			if type(query) ~= "table" then
+				if prepend then
+					query = prepend .. " " .. query
+				end
 
-	local styles = love.filesystem.load(file)
-	assert(styles, string.format("Styles file (%s) not found.", file))
+				local properties = {}
+
+				-- Grab all of the properties (no nests!) from the style
+				for property, value in pairs(style[#style]) do
+					if type(property) ~= "number" then
+						properties[property] = value
+					end
+				end
+
+				local found = false
+
+				-- If we already defined the style, append and overwrite new styles
+				for i in ipairs(list) do
+					if list[i].query == query then
+						found = i
+						break
+					end
+				end
+
+				if not found then
+					table.insert(list, { query=query, properties=properties })
+				else
+					for property, value in pairs(properties) do
+						list[found].properties[property] = value
+					end
+				end
+
+				-- If we have a nested table, do some recursion!
+				for _, property in ipairs(style[#style]) do
+					if type(property) == "table" then
+						parse_stylesheet(property, list, query)
+					end
+				end
+			end
+		end
+
+		return list
+	end
 
 	-- lol
 	local global = {
@@ -254,56 +307,16 @@ function GUI:import_styles(file)
 		end
 	end
 
-	setfenv(styles, env)
+	local styles
 
-	local function parse_stylesheet(style, list, prepend)
-		list = list or {}
-
-		for _, query in ipairs(style) do
-			-- Check all query selectors (no styles)
-			if type(query) ~= "table" then
-				if prepend then
-					query = prepend .. " " .. query
-				end
-
-				local properties = {}
-
-				-- Grab all of the properties (no nests!) from the style
-				for property, value in pairs(style[#style]) do
-					if type(property) ~= "number" then
-						properties[property] = value
-					end
-				end
-
-				local found = false
-
-				-- If we already defined the style, append and overwrite new styles
-				for i in ipairs(list) do
-					if list[i].query == query then
-						found = i
-						break
-					end
-				end
-
-				if not found then
-					table.insert(list, { query=query, properties=properties })
-				else
-					for property, value in pairs(properties) do
-						list[found].properties[property] = value
-					end
-				end
-
-				-- If we have a nested table, do some recursion!
-				for _, property in ipairs(style[#style]) do
-					if type(property) == "table" then
-						parse_stylesheet(property, list, query)
-					end
-				end
-			end
-		end
-
-		return list
+	if type(file) == "string" then
+		styles = love.filesystem.load(file)
+		assert(styles, string.format("Styles file (%s) not found.", file))
+	else
+		styles = function() return file end
 	end
+
+	setfenv(styles, env)
 
 	local ok, err = pcall(styles)
 
@@ -337,15 +350,7 @@ function GUI:import_styles(file)
 		end
 
 		-- Apply Styles
-		for _, style in ipairs(self.styles) do
-			local filter = self:filter_query(style.query)
-
-			for _, element in ipairs(filter) do
-				for property, value in pairs(style.properties) do
-					element.properties[property] = value
-				end
-			end
-		end
+		self:apply_styles()
 	end
 end
 
@@ -425,6 +430,18 @@ function GUI:get_elements_by_query(query) -- CSS-stype selectors such as ".heade
 end
 
 function GUI:set_absolute_location(element)
+end
+
+function GUI:apply_styles()
+	for _, style in ipairs(self.styles) do
+		local filter = self:filter_query(style.query)
+
+		for _, element in ipairs(filter) do
+			for property, value in pairs(style.properties) do
+				element.properties[property] = value
+			end
+		end
+	end
 end
 
 function GUI:filter_query(query)

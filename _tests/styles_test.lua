@@ -72,3 +72,4 @@ assert(gui.elements[15].properties.height == 20, output(20, gui.elements[15].pro
 print("Passed: :last Pseudo-Class")
 
 print("END STYLES TEST")
+print()
