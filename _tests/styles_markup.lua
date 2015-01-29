@@ -16,7 +16,7 @@ return {
         { "element" },
     },
     { "element", value=3, class={ "root", "red" },
-        { "element" },
+        { "element", class="red" },
         { "element" },
         { "element" },
     },

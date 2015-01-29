@@ -17,8 +17,12 @@ return {
         height  = 200,
     }},
 
-    { ".root", {
+    { ".root", ".other", {
         { ".red", {
+            { ".third", {
+                beep = "boop",
+            }},
+
             display = "inline",
         }},
 
@@ -44,5 +48,10 @@ return {
     { ".red:last", {
         width  = 10,
         height = 10,
+    }},
+
+    { ".red:last", {
+        height = 20,
+        kek = "top",
     }},
 }
