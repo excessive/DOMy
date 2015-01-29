@@ -17,14 +17,15 @@ All bundled tests pass. To verify tests, simply require the test file in main.lu
 * Adjusting hierarchy
 * Clone elements
 * Basic drawing to screen
+* Finalize style syntax
+* Style parser
 
 
 ## TODO
 
 * Implement dp and sp units
 * Query selectors
-* Finalize style syntax
-* Style parser
+* Scripting API
 * Callbacks
 * Batch drawing
 * Bring back the dinosaurs
