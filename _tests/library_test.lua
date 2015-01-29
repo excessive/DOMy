@@ -25,6 +25,14 @@ assert(#root == 3, output(3, #root))
 assert(#sub  == 1, output(1, #sub))
 print("Passed: Class Selector")
 
+-- Query Selector
+local filter = gui:get_elements_by_query(".root .sub")
+assert(#filter                          == 3,      output(3,      #filter))
+assert(filter[1].class[1]               == "sub",  output("sub",  filter[1].class[1]))
+assert(filter[1].parent.class[1]        == nil,    output("nil",  filter[1].parent.class[1]))
+assert(filter[1].parent.parent.class[1] == "root", output("root", filter[1].parent.parent.class[1]))
+print("Passed: Query Selector")
+
 -- Insert Element
 local o = gui:new_element("element", e, 2)
 o.value = "Wassup?!"

@@ -321,7 +321,7 @@ function GUI:import_styles(file)
 	local ok, err = pcall(styles)
 
 	if ok then
-		local parsed = {}
+		local parsed
 
 		-- Parse stylesheet
 		for _, style in pairs(err) do
@@ -349,7 +349,6 @@ function GUI:import_styles(file)
 			end
 		end
 
-		-- Apply Styles
 		self:apply_styles()
 	end
 end
@@ -426,7 +425,9 @@ function GUI:get_elements_by_class(class, elements)
 	return filter
 end
 
-function GUI:get_elements_by_query(query) -- CSS-stype selectors such as ".header > p"
+function GUI:get_elements_by_query(query, elements)
+	elements = elements or self.elements
+	return self:filter_query(query, elements)
 end
 
 function GUI:set_absolute_location(element)
@@ -460,11 +461,11 @@ function GUI:filter_query(query)
 
 			-- match every keyword and their preceding but optional symbol
 			for char, keyword in match:gmatch("([#%.:]?)([%w-_]+)") do
-				local category =                -- sort them by their symbol
+				local category =          -- sort them by their symbol
 				char == '#' and 'ids'     or
 				char == '.' and 'classes' or
 				char == ':' and 'pseudos' or
-				'elements'                   -- or lack thereof
+				'elements'                -- or lack thereof
 
 				table.insert(group[category], keyword)
 			end
@@ -475,21 +476,21 @@ function GUI:filter_query(query)
 		return groups
 	end
 
-	local groups = get_groups(query)
-	local filter
+	local groups  = get_groups(query)
+	local section = {}
 
-	for level, group in ipairs(groups) do
+	for k, group in ipairs(groups) do
 		if #group.ids > 0 then
-			filter = { self:get_element_by_id(group.ids[1], filter) }
+			section[k] = { self:get_element_by_id(group.ids[1]) }
 		end
 
 		if #group.elements > 0 then
-			filter = self:get_elements_by_type(group.elements[1], filter)
+			section[k] = self:get_elements_by_type(group.elements[1], section[k])
 		end
 
 		if #group.classes > 0 then
 			for _, class in ipairs(group.classes) do
-				filter = self:get_elements_by_class(class, filter)
+				section[k] = self:get_elements_by_class(class, section[k])
 			end
 		end
 
@@ -532,29 +533,45 @@ function GUI:filter_query(query)
 				--]]
 
 				if pseudo == "last" then
-					filter = { filter[#filter] }
+					section[k] = { section[k][#section[k]] }
 				end
 			end
 		end
+	end
 
-		if level > 1 then
-			local kill = {}
+	-- Search family for a particular element
+	local function check_hierarchy(element, seek)
+		local element = element.parent
 
-			for i, element in ipairs(filter) do
-				local ok = element
+		if element then
+			if element == seek then
+				return true
+			else
+				return check_hierarchy(element, seek)
+			end
+		end
 
-				for j=1, level do
-					ok = ok.parent
+		return false
+	end
 
-					if not ok and j < level then
-						table.insert(kill, i)
-						break
+	local filter = {}
+
+	-- Build a filter based on hierarchy
+	for i=1, #section do
+		local current = #section - i + 1
+		local parent = current - 1
+		local finish  = 1
+
+		-- If there is no descendent selector, just return the group
+		if #section == 1 then
+			return section[1]
+		elseif parent > 0 then
+			for _, element in ipairs(section[current]) do
+				for _, parent in ipairs(section[parent]) do
+					if check_hierarchy(element, parent) then
+						table.insert(filter, element)
 					end
 				end
-			end
-
-			for i=1, #kill do
-				table.remove(filter, kill[#kill - i + 1])
 			end
 		end
 	end
