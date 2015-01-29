@@ -11,7 +11,7 @@ All bundled tests pass. To verify tests, simply require the test file in main.lu
 
 * UI instances
 * Markup parser
-* id, class, and type selectors
+* id, class, type, and query selectors
 * Base element
 * Element hierarchy
 * Adjusting hierarchy
@@ -24,7 +24,6 @@ All bundled tests pass. To verify tests, simply require the test file in main.lu
 ## TODO
 
 * Implement dp and sp units
-* Query selectors
 * Scripting API
 * Callbacks
 * Batch drawing
