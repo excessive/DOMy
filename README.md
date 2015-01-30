@@ -11,31 +11,118 @@ All bundled tests pass. To verify tests, simply require the test file in main.lu
 
 * UI instances
 * Markup parser
-* id, class, type, and query selectors
+* Style parser
+* Script API (preliminary)
 * Base element
 * Element hierarchy
-* Adjusting hierarchy
-* Clone elements
-* Basic drawing to screen
-* Finalize style syntax
-* Style parser
+* Element selectors
+* Drawing to screen (preliminary)
+* Bring back the dinosaurs
 
 
 ## TODO
 
 * Implement dp and sp units
-* Scripting API
+* Script API
 * Callbacks
+* Draw elements properly
 * Batch drawing
-* Bring back the dinosaurs
-* Teach them to fly space ships
-* Conquer the galaxy
+* Teach dinosaurs to fly space ships
+* Conquer galaxy
 
 
 ## Quick Example
 
+### Markup Syntax
+
+The following syntax example shows a very basic three level hierarchy of elements.
+
+The first sequential (1, 2, 3, ...n) key defines the element type, in this case every element is of type "element".
+
+The second sequential key can either be the value of an element, or the first child (if it is a table). Value can also be set with the "value" key. There are also the "id" and "class" keys. You can set a unique identifier to each element, and a non-unique class or group of classes. Both of these can be used for scripting and styling.
+
+All sequential keys after value is determined MUST be valid element tables and will be treated as children of the element they are embedded in. Children can be nested indefinitely.
+
 ```lua
--- No example at this time.
+return {
+	{ "element", value="1" },
+	{ "element", value="2",
+		{ "element", value="2>1", class={ "child" } },
+		{ "element", value="2>2", class={ "child" },
+			{ "element", value="2>2>1", class={ "grandchild" } },
+			{ "element", value="2>2>2", class={ "grandchild" } },
+			{ "element", value="2>2>3", class={ "grandchild" } },
+		},
+		{ "element", value="2>3", class={ "child" } },
+	},
+	{ "element", value="3" },
+	{ "element", value="4", id="four" },
+	{ "element", value="5" },
+	{ "element", value="6" },
+}
+```
+
+
+### Style Syntax
+
+The style syntax takes very heavily from CSS and SCSS. It uses symbols to organize a selector query into different pieces:
+
+* (none): Type
+* (#): ID
+* (.): Class
+* (:): Pseudo-Class
+* ( ): Descendant\*
+
+\*Styles can be nested wherein the nested style is treated as a descendant of all parent selectors.
+
+A style block can have any number of selectors and will terminate when it finds a table. It will then recursively check that table for a nested style block.
+
+The order in which the style blocks are written determines the order in which they are applied.
+
+```lua
+return {
+	-- All elements with the "element" type
+	{ "element", {
+		display = "block",
+	}},
+
+	-- The first (only!) element with the "four" id
+	{ "#four", {
+		text_color = { 255, 0, 0, 255 },
+	}},
+
+	-- All elements with the "child" class
+	{ ".child", {
+		display = "inline",
+	}},
+
+	-- All elements with the "element" type
+	-- All elements with the "child" class
+	{ "element", ".child", {
+		-- All elements with the "grandchild" class that are descended of an element with the "child" class
+		-- All elements with the "grandchild" class that are descended of an element with the "element" type
+		{ ".grandchild", {
+			text_color = { 0, 0, 255, 255 },
+		}},
+
+		padding = { 5, 5, 5, 5 },
+	}},
+
+	-- The very last element with the "grandchild" class that is a descendant of an element with the "child" class
+	{ ".child .grandchild:last", {
+		text_color = { 0, 255, 0, 255 },
+	}},
+
+	-- All elements without a parent
+	{ ":root", {
+		display = "block",
+	}},
+
+	-- The first (only!) element with the "four" id and the "element" type
+	{ "element#four", {
+		display = "block",
+	}},
+}
 ```
 
 

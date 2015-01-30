@@ -4,36 +4,25 @@ local cpml    = require(path.."thirdparty.cpml")
 local Element = Class {}
 
 function Element:init(element, parent, gui)
-	self.gui              = gui
-	self.focus            = false
-	self.type             = element[1]
-	self.value            = ""
-	self.parent           = parent          or false
-	self.id               = element.id      or false
-	self.scroll_size      = cpml.vec2(0, 0) -- dp scrollable
-	self.scroll_position  = cpml.vec2(0, 0) -- % scrolled
-	self.children         = {}
-	self.properties       = {
-		width          = 100,
-		height         = 100,
-		display        = "inline",
-		visible        = true,
-
-		position       = "relative",
-		top            = false,
-		right          = false,
-		bottom         = false,
-		left           = false,
-		clip           = false,
-		overflow       = false,
-		vertical_align = "top",
-
-		box_shadow     = false,
+	self.gui                = gui
+	self.focus              = false
+	self.type               = element[1]
+	self.value              = ""
+	self.parent             = parent          or false
+	self.id                 = element.id      or false
+	self.scroll_size        = cpml.vec2(0, 0) -- dp scrollable
+	self.scroll_position    = cpml.vec2(0, 0) -- % scrolled
+	self.children           = {}
+	self.properties         = {}
+	self.custom_properties  = {}
+	self.default_properties = {
+		display = "inline",
+		visible = true,
 
 		-- TOP, RIGHT, BOTTOM, LEFT
-		padding        = { 5, 5, 5, 5 },
-		border         = { 1, 1, 1, 1 },
-		margin         = { 10, 10, 10, 10 },
+		margin  = { 0, 0, 0, 0 },
+		border  = { 0, 0, 0, 0 },
+		padding = { 0, 0, 0, 0 },
 	}
 
 	if element.value then

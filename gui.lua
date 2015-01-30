@@ -39,14 +39,14 @@ function GUI:update(dt)
 end
 
 function GUI:draw()
-	--!!! ALL OF THIS CODE IS TEMPORARY AND SUBJECT TO CHANGE !!!
+	self:apply_styles()
 
 	--[[         ~~ BOX MODEL ~~
 
-	{                 WIDTH                 }
-	+---------------------------------------+ ~~~
+	    {             WIDTH             }
+	+---------------------------------------+
 	|                MARGIN                 |
-	|   +-------------------------------+   |
+	|   +-------------------------------+   | ~~~
 	|   |/////////// BORDER ////////////|   |
 	|   |///+-----------------------+///|   |
 	|   |///|        PADDING        |///|   |  H
@@ -58,73 +58,16 @@ function GUI:draw()
 	|   |///|        PADDING        |///|   |
 	|   |///+-----------------------+///|   |
 	|   |/////////// BORDER ////////////|   |
-	|   +-------------------------------+   |
+	|   +-------------------------------+   | ~~~
 	|                MARGIN                 |
-	+---------------------------------------+ ~~~
-	{                 WIDTH                 }
+	+---------------------------------------+
+	    {             WIDTH             }
 
 	--]]
 
-	local function draw_element(element, x, y)
-		local ep = element.properties
-
-		-- TL position of element
-		x = x or 0
-		y = y or 0
-
-		-- Full size of element
-		local w = ep.width
-		local h = ep.height
-
-		-- Content start of element
-		local sw = x + ep.padding[4] + ep.border[4]
-		local sh = y + ep.padding[1] + ep.border[1]
-
-		-- Content end of element
-		local ew = x + w - (sw - w) - ep.padding[2] - ep.border[2]
-		local eh = y + h - (sh - h) - ep.padding[3] - ep.border[3]
-
-		love.graphics.rectangle("line", x, y, w, h)
-		if ep.text_color then
-			love.graphics.setColor(ep.text_color)
-		end
-		love.graphics.printf(tostring(element.value), sw, sh, ew)
-		love.graphics.setColor({ 255, 255, 255, 255})
-
-		-- Accumulated Child positions
-		local cw = 0
-		local ch = 0
-		for _, child in ipairs(element.children) do
-			local cp = child.properties
-
-			if cp.display == "inline" then
-				draw_element(child, ep.margin[4] + sw + cw, sh + ep.margin[1])
-			elseif cp.display == "block" then
-				draw_element(child, ep.margin[4] + sw, sh + ch + ep.margin[1])
-			end
-
-			cw = cw + child.properties.width  + ep.margin[2] + ep.margin[4]
-			ch = ch + child.properties.height + ep.margin[1] + ep.margin[3]
-		end
-	end
-
-	-- Accumulated root positions
-	local rw = 0
-	local rh = 0
-	for _, element in ipairs(self.elements) do
-		if not element.parent then
-			local ep = element.properties
-			local d = ep.display
-			if d == "inline" then
-				draw_element(element, ep.margin[4] + rw, ep.margin[1])
-			elseif d == "block" then
-				draw_element(element, ep.margin[4], rh + ep.margin[1])
-			end
-
-			rw = rw + ep.width  + ep.margin[2] + ep.margin[4]
-			rh = rh + ep.height + ep.margin[1] + ep.margin[3]
-		end
-	end
+	-- All root objects
+	local root = self:get_elements_by_query(":root")
+	self:position_elements(root)
 end
 
 function GUI:import_markup(file)
@@ -427,25 +370,7 @@ end
 
 function GUI:get_elements_by_query(query, elements)
 	elements = elements or self.elements
-	return self:filter_query(query, elements)
-end
 
-function GUI:set_absolute_location(element)
-end
-
-function GUI:apply_styles()
-	for _, style in ipairs(self.styles) do
-		local filter = self:filter_query(style.query)
-
-		for _, element in ipairs(filter) do
-			for property, value in pairs(style.properties) do
-				element.properties[property] = value
-			end
-		end
-	end
-end
-
-function GUI:filter_query(query)
 	-- https://love2d.org/forums/viewtopic.php?f=4&t=79562&p=179516#p179515
 	local function get_groups(query)
 		local groups = {}
@@ -460,7 +385,7 @@ function GUI:filter_query(query)
 			}
 
 			-- match every keyword and their preceding but optional symbol
-			for char, keyword in match:gmatch("([#%.:]?)([%w-_]+)") do
+			for char, keyword in match:gmatch("([#%.:]?)([%w_]+)") do
 				local category =          -- sort them by their symbol
 				char == '#' and 'ids'     or
 				char == '.' and 'classes' or
@@ -480,8 +405,10 @@ function GUI:filter_query(query)
 	local section = {}
 
 	for k, group in ipairs(groups) do
+		section[k] = elements
+
 		if #group.ids > 0 then
-			section[k] = { self:get_element_by_id(group.ids[1]) }
+			section[k] = { self:get_element_by_id(group.ids[1], section[k]) }
 		end
 
 		if #group.elements > 0 then
@@ -535,6 +462,16 @@ function GUI:filter_query(query)
 				if pseudo == "last" then
 					section[k] = { section[k][#section[k]] }
 				end
+
+				if pseudo == "root" then
+					local filter = {}
+					for _, element in ipairs(section[k]) do
+						if not element.parent then
+							table.insert(filter, element)
+						end
+					end
+					section[k] = filter
+				end
 			end
 		end
 	end
@@ -577,6 +514,191 @@ function GUI:filter_query(query)
 	end
 
 	return filter
+end
+
+function GUI:set_absolute_location(element)
+end
+
+function GUI:apply_styles()
+	-- Apply default properties
+	for _, element in ipairs(self.elements) do
+		element.properties = {}
+
+		for property, value in pairs(element.default_properties) do
+			element.properties[property] = value
+		end
+	end
+
+	-- Apply query properties
+	for _, style in ipairs(self.styles) do
+		local filter = self:get_elements_by_query(style.query)
+
+		for _, element in ipairs(filter) do
+			for property, value in pairs(style.properties) do
+				element.properties[property] = value
+			end
+		end
+	end
+
+	-- Apply custom properties
+	for _, element in ipairs(self.elements) do
+		for property, value in pairs(element.custom_properties) do
+			element.properties[property] = value
+		end
+	end
+end
+
+function GUI:position_elements(elements, d, x, y, w, h)
+	local d  = d or "inline"
+	local x  = x or 0
+	local y  = y or 0
+	local w  = w or 0
+	local h  = h or 0
+
+	-- Parent box
+	local px = x
+	local py = y
+	local pw = love.graphics.getWidth()  - x
+	local ph = love.graphics.getHeight() - y
+
+	-- Fix for inline nonsense, inline bottom margin
+	local ibm
+
+	-- Determine parent
+	local parent, pp
+	if elements[1] then
+		parent = elements[1].parent
+	else
+		parent = elements.parent
+	end
+
+	if parent then
+		pp = parent.properties
+
+		-- Parent content box
+		px = x
+		py = y
+		pw = w
+		ph = h
+	end
+
+	for _, element in ipairs(elements) do
+		local ep  = element.properties
+		local epp = ep.padding[2] + ep.padding[4] + ep.border[2] + ep.border[4]
+		local epm = ep.margin[4]  + ep.margin[2]
+		ep.height = ep.height or 0
+
+		if ep.display == "block" then
+			-- Determine width of element
+			if not ep.width then
+				ep.width = pw - epm
+
+				if parent then
+					ep.width = ep.width - pp.padding[4] - pp.border[4]
+				end
+			end
+
+			x = px + ep.margin[4]
+			y = y  + ep.margin[1]
+
+			if ibm then
+				y = y + h + ibm
+				ibm = nil
+			end
+
+			self:draw_element(element, x, y)
+
+			d = "block"
+			x = px
+			y = y + ep.height + ep.margin[3]
+			w = ep.width
+			h = ep.height
+		elseif ep.display == "inline" then
+			-- Determine width of element
+			if not ep.width then
+				ep.width = epp
+
+				-- Set width to largest child
+				for _, child in ipairs(element.children) do
+					local cp = child.properties
+					local w = cp.width + cp.margin[2] + cp.margin[4] + epp
+
+					if w > ep.width then
+						ep.width = w
+					end
+				end
+
+				if element.value then
+					local font = love.graphics.getFont()
+					local w    = font:getWidth(element.value) + epp
+
+					if w > ep.width then
+						ep.width = w
+					end
+				end
+			end
+
+			if d == "block" then
+				x = px + ep.margin[4]
+				y = y  + ep.margin[1]
+			elseif x + ep.width + epm > px + pw then
+				x = px + ep.margin[4]
+				y = y  + ep.margin[1] + h + ep.margin[3]
+			elseif d == "child" then
+				x = px + ep.margin[4]
+				y = py + ep.margin[1]
+			else
+				x = x  + ep.margin[4]
+			end
+
+			self:draw_element(element, x, y)
+
+			d = "inline"
+			x = x + ep.margin[2] + ep.width
+			y = y
+			w = ep.width
+			h = ep.height
+			ibm = ep.margin[3]
+		end
+	end
+end
+
+function GUI:draw_element(element, x, y)
+	local ep = element.properties
+
+	-- Position of element
+	x = x or 0
+	y = y or 0
+
+	-- Full size of element
+	local w = ep.width  or 0
+	local h = ep.height or 0
+
+	-- Content start of element
+	local cx = x + ep.padding[4] + ep.border[4]
+	local cy = y + ep.padding[1] + ep.border[1]
+
+	-- Content end of element
+	local cw = w - ep.padding[1] - ep.border[1] - ep.padding[2] - ep.border[2]
+	local ch = h - ep.padding[4] - ep.border[4] - ep.padding[3] - ep.border[3]
+
+	love.graphics.rectangle("line", x, y, w, h)
+
+	-- DEBUG
+	love.graphics.setColor(255, 255, 0, 255)
+	love.graphics.rectangle("line", x-ep.margin[4], y-ep.margin[1], w+ep.margin[4]+ep.margin[2], h+ep.margin[1]+ep.margin[3])
+	love.graphics.setColor(0, 255, 255, 255)
+	love.graphics.rectangle("line", cx, cy, cw, ch)
+	love.graphics.setColor(255, 255, 255, 255)
+	-- DEBUG
+
+	if ep.text_color then
+		love.graphics.setColor(ep.text_color)
+	end
+	love.graphics.printf(tostring(element.value), cx, cy, cw)
+	love.graphics.setColor(255, 255, 255, 255)
+
+	self:position_elements(element.children, "child", cx, cy, cw, ch)
 end
 
 return GUI
