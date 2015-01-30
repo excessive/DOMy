@@ -572,10 +572,9 @@ function GUI:position_elements(elements, d, x, y, w, h)
 		parent = elements.parent
 	end
 
+	-- Parent content box
 	if parent then
 		pp = parent.properties
-
-		-- Parent content box
 		px = x
 		py = y
 		pw = w
@@ -598,16 +597,20 @@ function GUI:position_elements(elements, d, x, y, w, h)
 				end
 			end
 
+			-- Add margin to positions
 			x = px + ep.margin[4]
 			y = y  + ep.margin[1]
 
+			-- If previous element was inline
 			if ibm then
 				y = y + h + ibm
 				ibm = nil
 			end
 
+			-- Draw it!
 			self:draw_element(element, x, y)
 
+			-- Prepare position for next element
 			d = "block"
 			x = px
 			y = y + ep.height + ep.margin[3]
@@ -628,6 +631,7 @@ function GUI:position_elements(elements, d, x, y, w, h)
 					end
 				end
 
+				-- Set width to value size if larger than largest child
 				if element.value then
 					local font = love.graphics.getFont()
 					local w    = font:getWidth(element.value) + epp
@@ -638,21 +642,24 @@ function GUI:position_elements(elements, d, x, y, w, h)
 				end
 			end
 
+			-- Determine how to add margins to element position
 			if d == "block" then
 				x = px + ep.margin[4]
 				y = y  + ep.margin[1]
-			elseif x + ep.width + epm > px + pw then
-				x = px + ep.margin[4]
-				y = y  + ep.margin[1] + h + ep.margin[3]
 			elseif d == "child" then
 				x = px + ep.margin[4]
 				y = py + ep.margin[1]
+			elseif x + ep.width + epm > px + pw then
+				x = px + ep.margin[4]
+				y = y  + ep.margin[1] + h + ep.margin[3]
 			else
 				x = x  + ep.margin[4]
 			end
 
+			-- Draw it!
 			self:draw_element(element, x, y)
 
+			-- Prepare position for next element
 			d = "inline"
 			x = x + ep.margin[2] + ep.width
 			y = y
@@ -682,22 +689,27 @@ function GUI:draw_element(element, x, y)
 	local cw = w - ep.padding[1] - ep.border[1] - ep.padding[2] - ep.border[2]
 	local ch = h - ep.padding[4] - ep.border[4] - ep.padding[3] - ep.border[3]
 
-	love.graphics.rectangle("line", x, y, w, h)
-
 	-- DEBUG
-	love.graphics.setColor(255, 255, 0, 255)
+	love.graphics.setColor(255, 255, 0, 63)
 	love.graphics.rectangle("line", x-ep.margin[4], y-ep.margin[1], w+ep.margin[4]+ep.margin[2], h+ep.margin[1]+ep.margin[3])
-	love.graphics.setColor(0, 255, 255, 255)
+	love.graphics.setColor(0, 255, 255, 63)
 	love.graphics.rectangle("line", cx, cy, cw, ch)
 	love.graphics.setColor(255, 255, 255, 255)
 	-- DEBUG
 
+	-- Draw full sized box
+	love.graphics.rectangle("line", x, y, w, h)
+
+	-- Set text color
 	if ep.text_color then
 		love.graphics.setColor(ep.text_color)
 	end
+
+	-- Draw text within content area
 	love.graphics.printf(tostring(element.value), cx, cy, cw)
 	love.graphics.setColor(255, 255, 255, 255)
 
+	-- Continue down the rabbit hole
 	self:position_elements(element.children, "child", cx, cy, cw, ch)
 end
 
