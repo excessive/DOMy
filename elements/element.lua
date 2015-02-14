@@ -23,6 +23,20 @@ function Element:init(element, parent, gui)
 		margin  = { 0, 0, 0, 0 },
 		border  = { 0, 0, 0, 0 },
 		padding = { 0, 0, 0, 0 },
+
+		-- Flex Container
+		flex_direction  = "row",
+		flex_wrap       = "none",
+		justify_content = "start",
+		align_items     = "stretch",
+		align_content   = "stretch",
+
+		-- Flex Item
+		order       = 1,
+		flex_grow   = 0,
+		flex_shrink = 0,
+		flex_basis  = "auto",
+		align_self  = "auto",
 	}
 
 	if element.value then

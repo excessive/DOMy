@@ -552,13 +552,16 @@ function GUI:_position_elements(elements, d, x, y, w, h)
 	local ibm
 
 	-- Parent box
-	local parent = elements[1].parent
-	local px, py = x, y
-	local pw, ph = w, h
+	local parent = {
+		x = x,
+		y = y,
+		w = w,
+		h = h,
+	}
 
-	if not parent then
-		pw = love.graphics.getWidth()  - x
-		ph = love.graphics.getHeight() - y
+	if not elements[1].parent then
+		parent.w = love.graphics.getWidth()  - x
+		parent.h = love.graphics.getHeight() - y
 	end
 
 	for _, element in ipairs(elements) do
@@ -566,42 +569,37 @@ function GUI:_position_elements(elements, d, x, y, w, h)
 		local display = "_display_"..ep.display
 
 		if self[display] then
-			d, x, y, w, h, ibm = self[display](self, element, x, y, w, h, px, py, pw, ph, ibm)
-
-			-- Content start of element
-			local cx = element.position.x + ep.padding[4] + ep.border[4]
-			local cy = element.position.y + ep.padding[1] + ep.border[1]
-
-			-- Content end of element
-			local cw = ep.width  - ep.padding[4] - ep.border[4] - ep.padding[2] - ep.border[2]
-			local ch = ep.height - ep.padding[1] - ep.border[1] - ep.padding[3] - ep.border[3]
-
-			-- Continue down the rabbit hole
-			self:_position_elements(element.children, "child", cx, cy, cw, ch)
+			d, x, y, w, h, ibm = self[display](self, element, d, x, y, w, h, parent, ibm)
 		end
 	end
 end
 
-function GUI:_display_block(element, x, y, w, h, px, py, pw, ph, ibm)
+function GUI:_get_content_box(element)
+	local ep  = element.properties
+	local x = element.position.x + ep.padding[4] + ep.border[4]
+	local y = element.position.y + ep.padding[1] + ep.border[1]
+	local w = ep.width  - ep.padding[4] - ep.border[4] - ep.padding[2] - ep.border[2]
+	local h = ep.height - ep.padding[1] - ep.border[1] - ep.padding[3] - ep.border[3]
+
+	return x, y, w, h
+end
+
+function GUI:_display_block(element, d, x, y, w, h, parent, ibm)
 	local ep  = element.properties
 	ep.height = ep.height or 0
-	local pp
-
-	if element.parent then
-		pp = parent.properties
-	end
 
 	-- Determine width of element
 	if not ep.width then
-		ep.width = pw - (ep.margin[4] + ep.margin[2])
+		ep.width = parent.w - (ep.margin[4] + ep.margin[2])
 
-		if parent then
+		if element.parent then
+			local pp = element.parent.properties
 			ep.width = ep.width - pp.padding[4] - pp.border[4]
 		end
 	end
 
 	-- Add margin to positions
-	element.position.x = px + ep.margin[4]
+	element.position.x = parent.x + ep.margin[4]
 	element.position.y = y  + ep.margin[1]
 
 	-- If previous element was inline
@@ -610,9 +608,15 @@ function GUI:_display_block(element, x, y, w, h, px, py, pw, ph, ibm)
 		ibm = nil
 	end
 
+	-- If not a flexbox, propogate to children
+	if ep.display == "block" then
+		local cx, cy, cw, ch = self:_get_content_box(element)
+		self:_position_elements(element.children, "child", cx, cy, cw, ch)
+	end
+
 	-- Return position for next element
 	d = "block"
-	x = px
+	x = parent.x
 	y = element.position.y + ep.height + ep.margin[3]
 	w = ep.width
 	h = ep.height
@@ -620,7 +624,7 @@ function GUI:_display_block(element, x, y, w, h, px, py, pw, ph, ibm)
 	return d, x, y, w, h
 end
 
-function GUI:_display_inline(element, x, y, w, h, px, py, pw, ph, ibm)
+function GUI:_display_inline(element, d, x, y, w, h, parent, ibm)
 	local ep  = element.properties
 	ep.height = ep.height or 0
 	local epp = ep.padding[2] + ep.padding[4] + ep.border[2] + ep.border[4]
@@ -652,17 +656,23 @@ function GUI:_display_inline(element, x, y, w, h, px, py, pw, ph, ibm)
 
 	-- Determine how to add margins to element position
 	if d == "block" then
-		element.position.x = px + ep.margin[4]
+		element.position.x = parent.x + ep.margin[4]
 		element.position.y = y  + ep.margin[1]
 	elseif d == "child" then
-		element.position.x = px + ep.margin[4]
-		element.position.y = py + ep.margin[1]
-	elseif x + ep.width + ep.margin[4] + ep.margin[2] > px + pw then
-		element.position.x = px + ep.margin[4]
+		element.position.x = parent.x + ep.margin[4]
+		element.position.y = parent.y + ep.margin[1]
+	elseif x + ep.width + ep.margin[4] + ep.margin[2] > parent.x + parent.w then
+		element.position.x = parent.x + ep.margin[4]
 		element.position.y = y  + ep.margin[1] + h + ep.margin[3]
 	else
 		element.position.x = x  + ep.margin[4]
 		element.position.y = y
+	end
+
+	-- If not a flexbox, propogate to children
+	if ep.display == "inline" then
+		local cx, cy, cw, ch = self:_get_content_box(element)
+		self:_position_elements(element.children, "child", cx, cy, cw, ch)
 	end
 
 	-- Return position for next element
@@ -676,12 +686,21 @@ function GUI:_display_inline(element, x, y, w, h, px, py, pw, ph, ibm)
 	return d, x, y, w, h, ibm
 end
 
-function GUI:_display_flex(element, x, y, w, h, px, py, pw, ph, ibm)
+function GUI:_display_flex(element, d, x, y, w, h, parent, ibm)
+	d, x, y, w, h, ibm = self:_display_block(element, d, x, y, w, h, parent, ibm)
+	local ep  = element.properties
+
+	-- Return position for next element
+	return d, x, y, w, h
 
 end
 
-function GUI:_display_inline_flex(element, x, y, w, h, px, py, pw, ph, ibm)
+function GUI:_display_inline_flex(element, d, x, y, w, h, parent, ibm)
+	d, x, y, w, h, ibm = self:_display_inline(element, d, x, y, w, h, parent, ibm)
+	local ep  = element.properties
 
+	-- Return position for next element
+	return d, x, y, w, h, ibm
 end
 
 function GUI:_draw_element(element)
