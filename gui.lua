@@ -39,35 +39,29 @@ function GUI:update(dt)
 end
 
 function GUI:draw()
-	self:apply_styles()
+	local function draw_element(element)
+		self:_draw_element(element)
 
-	--[[         ~~ BOX MODEL ~~
-
-	    {             WIDTH             }
-	+---------------------------------------+
-	|                MARGIN                 |
-	|   +-------------------------------+   | ~~~
-	|   |/////////// BORDER ////////////|   |
-	|   |///+-----------------------+///|   |
-	|   |///|        PADDING        |///|   |  H
-	|   |///|   +---------------+   |///|   |  E
-	|   |///|   |               |   |///|   |  I
-	|   |///|   |    CONTENT    |   |///|   |  G
-	|   |///|   |               |   |///|   |  H
-	|   |///|   +---------------+   |///|   |  T
-	|   |///|        PADDING        |///|   |
-	|   |///+-----------------------+///|   |
-	|   |/////////// BORDER ////////////|   |
-	|   +-------------------------------+   | ~~~
-	|                MARGIN                 |
-	+---------------------------------------+
-	    {             WIDTH             }
-
-	--]]
+		if #element.children > 0 then
+			for _, e in ipairs(element.children) do
+				draw_element(e)
+			end
+		end
+	end
 
 	-- All root objects
 	local root = self:get_elements_by_query(":root")
-	self:position_elements(root)
+	for _, element in ipairs(root) do
+		draw_element(element)
+	end
+end
+
+function GUI:resize()
+	self:_apply_styles()
+
+	-- All root objects
+	local root = self:get_elements_by_query(":root")
+	self:_position_elements(root)
 end
 
 function GUI:import_markup(file)
@@ -292,7 +286,7 @@ function GUI:import_styles(file)
 			end
 		end
 
-		self:apply_styles()
+		self:_apply_styles()
 	end
 end
 
@@ -516,10 +510,7 @@ function GUI:get_elements_by_query(query, elements)
 	return filter
 end
 
-function GUI:set_absolute_location(element)
-end
-
-function GUI:apply_styles()
+function GUI:_apply_styles()
 	-- Apply default properties
 	for _, element in ipairs(self.elements) do
 		element.properties = {}
@@ -548,24 +539,20 @@ function GUI:apply_styles()
 	end
 end
 
-function GUI:position_elements(elements, d, x, y, w, h)
-	local d  = d or "inline"
-	local x  = x or 0
-	local y  = y or 0
-	local w  = w or 0
-	local h  = h or 0
-
-	-- Parent box
-	local px = x
-	local py = y
-	local pw = love.graphics.getWidth()  - x
-	local ph = love.graphics.getHeight() - y
+function GUI:_position_elements(elements, d, x, y, w, h)
+	local d = d or "inline"
+	local x = x or 0
+	local y = y or 0
+	local w = w or 0
+	local h = h or 0
 
 	-- Fix for inline nonsense, inline bottom margin
 	local ibm
 
+	-- Parent box
+	local parent, px, py, pw, ph
+
 	-- Determine parent
-	local parent, pp
 	if elements[1] then
 		parent = elements[1].parent
 	else
@@ -574,118 +561,182 @@ function GUI:position_elements(elements, d, x, y, w, h)
 
 	-- Parent content box
 	if parent then
-		pp = parent.properties
 		px = x
 		py = y
 		pw = w
 		ph = h
+	else
+		px = x
+		py = y
+		pw = love.graphics.getWidth()  - x
+		ph = love.graphics.getHeight() - y
 	end
 
 	for _, element in ipairs(elements) do
 		local ep  = element.properties
-		local epp = ep.padding[2] + ep.padding[4] + ep.border[2] + ep.border[4]
-		local epm = ep.margin[4]  + ep.margin[2]
-		ep.height = ep.height or 0
 
-		if ep.display == "block" then
-			-- Determine width of element
-			if not ep.width then
-				ep.width = pw - epm
-
-				if parent then
-					ep.width = ep.width - pp.padding[4] - pp.border[4]
-				end
-			end
-
-			-- Add margin to positions
-			x = px + ep.margin[4]
-			y = y  + ep.margin[1]
-
-			-- If previous element was inline
-			if ibm then
-				y = y + h + ibm
-				ibm = nil
-			end
-
-			-- Draw it!
-			self:draw_element(element, x, y)
-
-			-- Prepare position for next element
-			d = "block"
-			x = px
-			y = y + ep.height + ep.margin[3]
-			w = ep.width
-			h = ep.height
+		if ep.display     == "block" then
+			d, x, y, w, h, ibm = self:_display_block(element, x, y, w, h, px, py, pw, ph, ibm)
 		elseif ep.display == "inline" then
-			-- Determine width of element
-			if not ep.width then
-				ep.width = epp
+			d, x, y, w, h, ibm = self:_display_inline(element, x, y, w, h, px, py, pw, ph, ibm)
+		elseif ep.display == "flex" then
+			d, x, y, w, h, ibm = self:_display_flex(element, x, y, w, h, px, py, pw, ph, ibm)
+		elseif ep.display == "inline_flex" then
+			d, x, y, w, h, ibm = self:_display_inline_flex(element, x, y, w, h, px, py, pw, ph, ibm)
+		end
 
-				-- Set width to largest child
-				for _, child in ipairs(element.children) do
-					local cp = child.properties
-					local w = cp.width + cp.margin[2] + cp.margin[4] + epp
+		if ep.display ~= "none" then
+			-- Content start of element
+			local cx = element.position.x + ep.padding[4] + ep.border[4]
+			local cy = element.position.y + ep.padding[1] + ep.border[1]
 
-					if w > ep.width then
-						ep.width = w
-					end
-				end
+			-- Content end of element
+			local cw = ep.width  - ep.padding[4] - ep.border[4] - ep.padding[2] - ep.border[2]
+			local ch = ep.height - ep.padding[1] - ep.border[1] - ep.padding[3] - ep.border[3]
 
-				-- Set width to value size if larger than largest child
-				if element.value then
-					local font = love.graphics.getFont()
-					local w    = font:getWidth(element.value) + epp
-
-					if w > ep.width then
-						ep.width = w
-					end
-				end
-			end
-
-			-- Determine how to add margins to element position
-			if d == "block" then
-				x = px + ep.margin[4]
-				y = y  + ep.margin[1]
-			elseif d == "child" then
-				x = px + ep.margin[4]
-				y = py + ep.margin[1]
-			elseif x + ep.width + epm > px + pw then
-				x = px + ep.margin[4]
-				y = y  + ep.margin[1] + h + ep.margin[3]
-			else
-				x = x  + ep.margin[4]
-			end
-
-			-- Draw it!
-			self:draw_element(element, x, y)
-
-			-- Prepare position for next element
-			d = "inline"
-			x = x + ep.margin[2] + ep.width
-			y = y
-			w = ep.width
-			h = ep.height
-			ibm = ep.margin[3]
+			-- Continue down the rabbit hole
+			self:_position_elements(element.children, "child", cx, cy, cw, ch)
 		end
 	end
 end
 
-function GUI:draw_element(element, x, y)
+function GUI:_display_block(element, x, y, w, h, px, py, pw, ph, ibm)
+	local ep  = element.properties
+	ep.height = ep.height or 0
+	local pp
+
+	if element.parent then
+		pp = parent.properties
+	end
+
+	-- Determine width of element
+	if not ep.width then
+		ep.width = pw - (ep.margin[4] + ep.margin[2])
+
+		if parent then
+			ep.width = ep.width - pp.padding[4] - pp.border[4]
+		end
+	end
+
+	-- Add margin to positions
+	element.position.x = px + ep.margin[4]
+	element.position.y = y  + ep.margin[1]
+
+	-- If previous element was inline
+	if ibm then
+		element.position.y = element.position.y + h + ibm
+		ibm = nil
+	end
+
+	-- Return position for next element
+	d = "block"
+	x = px
+	y = element.position.y + ep.height + ep.margin[3]
+	w = ep.width
+	h = ep.height
+
+	return d, x, y, w, h
+end
+
+function GUI:_display_inline(element, x, y, w, h, px, py, pw, ph, ibm)
+	local ep  = element.properties
+	ep.height = ep.height or 0
+	local epp = ep.padding[2] + ep.padding[4] + ep.border[2] + ep.border[4]
+
+	-- Determine width of element
+	if not ep.width then
+		ep.width = epp
+
+		-- Set width to largest child
+		for _, child in ipairs(element.children) do
+			local cp = child.properties
+			local w = cp.width + cp.margin[2] + cp.margin[4] + epp
+
+			if w > ep.width then
+				ep.width = w
+			end
+		end
+
+		-- Set width to value size if larger than largest child
+		if element.value then
+			local font = love.graphics.getFont()
+			local w    = font:getWidth(element.value) + epp
+
+			if w > ep.width then
+				ep.width = w
+			end
+		end
+	end
+
+	-- Determine how to add margins to element position
+	if d == "block" then
+		element.position.x = px + ep.margin[4]
+		element.position.y = y  + ep.margin[1]
+	elseif d == "child" then
+		element.position.x = px + ep.margin[4]
+		element.position.y = py + ep.margin[1]
+	elseif x + ep.width + ep.margin[4] + ep.margin[2] > px + pw then
+		element.position.x = px + ep.margin[4]
+		element.position.y = y  + ep.margin[1] + h + ep.margin[3]
+	else
+		element.position.x = x  + ep.margin[4]
+		element.position.y = y
+	end
+
+	-- Return position for next element
+	d   = "inline"
+	x   = element.position.x + ep.margin[2] + ep.width
+	y   = element.position.y
+	w   = ep.width
+	h   = ep.height
+	ibm = ep.margin[3]
+
+	return d, x, y, w, h, ibm
+end
+
+function GUI:_display_flex(element, x, y, w, h, px, py, pw, ph, ibm)
+
+end
+
+function GUI:_display_inline_flex(element, x, y, w, h, px, py, pw, ph, ibm)
+
+end
+
+function GUI:_draw_element(element)
+	--[[         ~~ BOX MODEL ~~
+
+	    {             WIDTH             }
+	+---------------------------------------+
+	|                MARGIN                 |
+	|   +-------------------------------+   | ~~~
+	|   |/////////// BORDER ////////////|   |
+	|   |///+-----------------------+///|   |
+	|   |///|        PADDING        |///|   |  H
+	|   |///|   +---------------+   |///|   |  E
+	|   |///|   |               |   |///|   |  I
+	|   |///|   |    CONTENT    |   |///|   |  G
+	|   |///|   |               |   |///|   |  H
+	|   |///|   +---------------+   |///|   |  T
+	|   |///|        PADDING        |///|   |
+	|   |///+-----------------------+///|   |
+	|   |/////////// BORDER ////////////|   |
+	|   +-------------------------------+   | ~~~
+	|                MARGIN                 |
+	+---------------------------------------+
+	    {             WIDTH             }
+
+	--]]
 	local ep = element.properties
 
-	-- Position of element
-	x = x or 0
-	y = y or 0
+	-- Position & size of element
+	local x = element.position.x
+	local y = element.position.y
+	local w = ep.width
+	local h = ep.height
 
-	-- Full size of element
-	local w = ep.width  or 0
-	local h = ep.height or 0
-
-	-- Content start of element
+	-- Content start & end of element
 	local cx = x + ep.padding[4] + ep.border[4]
 	local cy = y + ep.padding[1] + ep.border[1]
-
-	-- Content end of element
 	local cw = w - ep.padding[1] - ep.border[1] - ep.padding[2] - ep.border[2]
 	local ch = h - ep.padding[4] - ep.border[4] - ep.padding[3] - ep.border[3]
 
@@ -708,9 +759,6 @@ function GUI:draw_element(element, x, y)
 	-- Draw text within content area
 	love.graphics.printf(tostring(element.value), cx, cy, cw)
 	love.graphics.setColor(255, 255, 255, 255)
-
-	-- Continue down the rabbit hole
-	self:position_elements(element.children, "child", cx, cy, cw, ch)
 end
 
 return GUI

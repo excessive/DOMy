@@ -10,6 +10,7 @@ function Element:init(element, parent, gui)
 	self.value              = ""
 	self.parent             = parent          or false
 	self.id                 = element.id      or false
+	self.position           = cpml.vec2(0, 0)
 	self.scroll_size        = cpml.vec2(0, 0) -- dp scrollable
 	self.scroll_position    = cpml.vec2(0, 0) -- % scrolled
 	self.children           = {}
@@ -17,7 +18,6 @@ function Element:init(element, parent, gui)
 	self.custom_properties  = {}
 	self.default_properties = {
 		display = "inline",
-		visible = true,
 
 		-- TOP, RIGHT, BOTTOM, LEFT
 		margin  = { 0, 0, 0, 0 },
