@@ -540,6 +540,8 @@ function GUI:_apply_styles()
 end
 
 function GUI:_position_elements(elements, d, x, y, w, h)
+	if #elements == 0 then return end
+
 	local d = d or "inline"
 	local x = x or 0
 	local y = y or 0
@@ -550,42 +552,22 @@ function GUI:_position_elements(elements, d, x, y, w, h)
 	local ibm
 
 	-- Parent box
-	local parent, px, py, pw, ph
+	local parent = elements[1].parent
+	local px, py = x, y
+	local pw, ph = w, h
 
-	-- Determine parent
-	if elements[1] then
-		parent = elements[1].parent
-	else
-		parent = elements.parent
-	end
-
-	-- Parent content box
-	if parent then
-		px = x
-		py = y
-		pw = w
-		ph = h
-	else
-		px = x
-		py = y
+	if not parent then
 		pw = love.graphics.getWidth()  - x
 		ph = love.graphics.getHeight() - y
 	end
 
 	for _, element in ipairs(elements) do
 		local ep  = element.properties
+		local display = "_display_"..ep.display
 
-		if ep.display     == "block" then
-			d, x, y, w, h, ibm = self:_display_block(element, x, y, w, h, px, py, pw, ph, ibm)
-		elseif ep.display == "inline" then
-			d, x, y, w, h, ibm = self:_display_inline(element, x, y, w, h, px, py, pw, ph, ibm)
-		elseif ep.display == "flex" then
-			d, x, y, w, h, ibm = self:_display_flex(element, x, y, w, h, px, py, pw, ph, ibm)
-		elseif ep.display == "inline_flex" then
-			d, x, y, w, h, ibm = self:_display_inline_flex(element, x, y, w, h, px, py, pw, ph, ibm)
-		end
+		if self[display] then
+			d, x, y, w, h, ibm = self[display](self, element, x, y, w, h, px, py, pw, ph, ibm)
 
-		if ep.display ~= "none" then
 			-- Content start of element
 			local cx = element.position.x + ep.padding[4] + ep.border[4]
 			local cy = element.position.y + ep.padding[1] + ep.border[1]
@@ -740,15 +722,7 @@ function GUI:_draw_element(element)
 	local cw = w - ep.padding[1] - ep.border[1] - ep.padding[2] - ep.border[2]
 	local ch = h - ep.padding[4] - ep.border[4] - ep.padding[3] - ep.border[3]
 
-	-- DEBUG
-	love.graphics.setColor(255, 255, 0, 63)
-	love.graphics.rectangle("line", x-ep.margin[4], y-ep.margin[1], w+ep.margin[4]+ep.margin[2], h+ep.margin[1]+ep.margin[3])
-	love.graphics.setColor(0, 255, 255, 63)
-	love.graphics.rectangle("line", cx, cy, cw, ch)
-	love.graphics.setColor(255, 255, 255, 255)
-	-- DEBUG
-
-	-- Draw full sized box
+	-- Draw box
 	love.graphics.rectangle("line", x, y, w, h)
 
 	-- Set text color
@@ -759,6 +733,14 @@ function GUI:_draw_element(element)
 	-- Draw text within content area
 	love.graphics.printf(tostring(element.value), cx, cy, cw)
 	love.graphics.setColor(255, 255, 255, 255)
+
+	-- DEBUG
+	love.graphics.setColor(255, 255, 0, 63)
+	love.graphics.rectangle("line", x-ep.margin[4], y-ep.margin[1], w+ep.margin[4]+ep.margin[2], h+ep.margin[1]+ep.margin[3])
+	love.graphics.setColor(0, 255, 255, 63)
+	love.graphics.rectangle("line", cx, cy, cw, ch)
+	love.graphics.setColor(255, 255, 255, 255)
+	-- DEBUG
 end
 
 return GUI
