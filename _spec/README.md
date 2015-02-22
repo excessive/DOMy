@@ -64,55 +64,55 @@
 
 ***Virtual Input Events™ is a processing layer for events that can take in raw input from love or from any other source (e.g. network). VIE can be toggled in part or in full to allow full customization of if and when the GUI should be accepting input, and from where (e.g. only enable mouse events if some flag is set).***
 
-**Capture:** Event propogates forward through document hierarchy from least significant object to most.
+**Bubble:** Event propagates up through document hierarchy from the target object to the root ancestor.
 
-**Bubble:** Event propogates back through document hierarchy from most significant object to least.
+**Capture:** Event propagates down through document hierarchy from the root ancestor to the target object.
 
-**Catch:** Object takes over event and stops propogation from going further.
+**Catch:** Object takes over event and stops propagation from going further.
 
 ### Mouse Events
 
 * **on_mouse_enter**
     * Mouse cursor begins hovering over object
-    * No propogation
+    * No propagation
 * **on_mouse_over**
     * Mouse cursor is hovering over object
-    * No propogation
+    * No propagation
 * **on_mouse_leave**
     * Mouse cursor stops hovering over object
-    * No propogation
+    * No propagation
 * **on_mouse_pressed**
     * Mouse button is pressed while hovering over object
-    * Capture propogation until Catch
-    * If no Catch, Bubble propogation until Catch
+    * Bubble propagation until Catch
+    * If no Catch, Capture propagation until Catch
 * **on_mouse_released**
     * Mouse button is released while hovering over object
-    * Capture propogation until Catch
-    * If no Catch, Bubble propogation until Catch
+    * Bubble propagation until Catch
+    * If no Catch, Capture propagation until Catch
 * **on_mouse_clicked**
     * Mouse button is both pressed and released while hovering over object
-    * Capture propogation until Catch
-    * If no Catch, Bubble propogation until Catch
+    * Bubble propagation until Catch
+    * If no Catch, Capture propagation until Catch
 * **on_mouse_down**
     * Mouse button is held down
-    * Capture propogation until Catch
-    * If no Catch, Bubble propogation until Catch
+    * Bubble propagation until Catch
+    * If no Catch, Capture propagation until Catch
 
 
 ### Keyboard Events
 
 * **on_key_pressed**
     * A key is pressed
-    * Capture propogation until Catch
-    * If no Catch, Bubble propogation until Catch
+    * Bubble propagation until Catch
+    * If no Catch, Capture propagation until Catch
 * **on_key_released**
     * A key is released
-    * Capture propogation until Catch
-    * If no Catch, Bubble propogation until Catch
+    * Bubble propagation until Catch
+    * If no Catch, Capture propagation until Catch
 * **on_key_down**
     * A key is held down
-    * Capture propogation until Catch
-    * If no Catch, Bubble propogation until Catch
+    * Bubble propagation until Catch
+    * If no Catch, Capture propagation until Catch
 * **on_text_input**
     * Text is inputted into LOVE
 
@@ -121,16 +121,16 @@
 
 * **on_touch_pressed**
     * A finger has been placed on a touch screen
-    * Capture propogation until Catch
-    * If no Catch, Bubble propogation until Catch
+    * Bubble propagation until Catch
+    * If no Catch, Capture propagation until Catch
 * **on_touch_released**
     * A finger has been removed from a touch screen
-    * Capture propogation until Catch
-    * If no Catch, Bubble propogation until Catch
+    * Bubble propagation until Catch
+    * If no Catch, Capture propagation until Catch
 * **on_touch_moved**
     * A finger that has been pressed but not released has moved to a new point on the touch screen
-    * Capture propogation until Catch
-    * If no Catch, Bubble propogation until Catch
+    * Bubble propagation until Catch
+    * If no Catch, Capture propagation until Catch
 * **on_touch_gestured**
     * Predefined list of general on_touch_moved events
         * "Finger moved left 10% then up 15% then down 25%"
@@ -138,8 +138,8 @@
     * Probably requires an optional starting and ending point
         * if on_touch_pressed is on Object 1
         * if on_touch_released is on Object 2
-    * Capture propogation until Catch
-    * If no Catch, Bubble propogation until Catch
+    * Bubble propagation until Catch
+    * If no Catch, Capture propagation until Catch
 
 
 ### Joystick Events
@@ -150,25 +150,25 @@
     * A joystick is removed
 * **on_joystick_pressed**
     * A joystick button is pressed
-    * Capture propogation until Catch
-    * If no Catch, Bubble propogation until Catch
+    * Bubble propagation until Catch
+    * If no Catch, Capture propagation until Catch
 * **on_joystick_released**
     * A joystick button is released
-    * Capture propogation until Catch
-    * If no Catch, Bubble propogation until Catch
+    * Bubble propagation until Catch
+    * If no Catch, Capture propagation until Catch
 * **on_joystick_down**
     * A joystick button is held down
     * Includes axis and hat checks
-    * Capture propogation until Catch
-    * If no Catch, Bubble propogation until Catch
+    * Bubble propagation until Catch
+    * If no Catch, Capture propagation until Catch
 * **on_joystick_axis**
     * A joystick axis value changes
-    * Capture propogation until Catch
-    * If no Catch, Bubble propogation until Catch
+    * Bubble propagation until Catch
+    * If no Catch, Capture propagation until Catch
 * **on_joystick_hat**
     * A joystick hat value changes
-    * Capture propogation until Catch
-    * If no Catch, Bubble propogation until Catch
+    * Bubble propagation until Catch
+    * If no Catch, Capture propagation until Catch
 
 
 ### Gamepad Events
@@ -177,21 +177,21 @@
 
 * **on_gamepad_pressed**
     * A gamepad button is pressed
-    * Capture propogation until Catch
-    * If no Catch, Bubble propogation until Catch
+    * Bubble propagation until Catch
+    * If no Catch, Capture propagation until Catch
 * **on_gamepad_released**
     * A gamepad button is released
-    * Capture propogation until Catch
-    * If no Catch, Bubble propogation until Catch
+    * Bubble propagation until Catch
+    * If no Catch, Capture propagation until Catch
 * **on_gamepad_down**
     * A gamepad button is held down
-    * Capture propogation until Catch
-    * If no Catch, Bubble propogation until Catch
+    * Bubble propagation until Catch
+    * If no Catch, Capture propagation until Catch
     * Includes axis checks
 * **on_gamepad_axis**
     * A gamepad axis value changes
-    * Capture propogation until Catch
-    * If no Catch, Bubble propogation until Catch
+    * Bubble propagation until Catch
+    * If no Catch, Capture propagation until Catch
 
 
 ### Window Events
@@ -336,7 +336,7 @@
 * **flex-flow**
     * A shorthand property for the flex-direction and the flex-wrap properties
 * **flex-grow**
-    * Specifies how much the item will grow relative to the rest 
+    * Specifies how much the item will grow relative to the rest
 * **flex-shrink**
     *Specifies how the item will shrink relative to the rest
 * **flex-wrap**
