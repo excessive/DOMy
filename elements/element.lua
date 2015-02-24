@@ -6,6 +6,7 @@ local Element = Class {}
 function Element:init(element, parent, gui)
 	self.gui                = gui
 	self.focus              = false
+	self.enabled            = true
 	self.type               = element[1]
 	self.value              = ""
 	self.parent             = parent          or false
@@ -62,6 +63,18 @@ function Element:_get_position()
 	end
 
 	return false
+end
+
+function Element:enable()
+	self.enabled = true
+end
+
+function Element:disable()
+	self.enabled = false
+end
+
+function Element_is_enabled()
+	return self.enabled
 end
 
 function Element:has_property(property)
