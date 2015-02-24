@@ -128,6 +128,8 @@ return {
 
 ### Script Syntax
 
+The scripting API uses the "gui" namespace, much like how JavaScript uses "document".
+
 ```lua
 local element = gui:get_element_by_id("some_id")
 element:set_property("text_color", { 255, 0, 0, 255 })

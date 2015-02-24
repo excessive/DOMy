@@ -538,13 +538,12 @@ function GUI:import_scripts(file)
 
 	-- Sandbox
 	local env = {}
+	env.gui = self
 
 	-- Some useful globals
 	for _, v in ipairs(global) do
 		env[v] = _G[v]
 	end
-
-	env.gui = self
 
 	local scripts
 
@@ -559,9 +558,8 @@ function GUI:import_scripts(file)
 
 	local ok, err = pcall(scripts)
 
-	print(err)
-
-	if ok then
+	if not ok then
+		print(err)
 	end
 end
 
