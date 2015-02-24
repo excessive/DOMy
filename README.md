@@ -2,7 +2,7 @@
 
 DOMinatrix is a DOM-like GUI framework designed for the \*awesome\* LÖVE framework. DOMinatrix is currently under heavy development and is in no way ready to be used by anyone. If you are currently in need of a GUI system, there are several others out there or you can build your own.
 
-If you would like to be a part of the development of DOMinatrix, you are welcome to join discussions in the issue tracker, open your own issues, create feature requests, et cetera. We are not currently accepting pull requests until DOMinatrix has some form of visual component.
+If you would like to be a part of the development of DOMinatrix, you are welcome to join discussions in the issue tracker, open your own issues, create feature requests, et cetera. We are not currently accepting pull requests until DOMinatrix has an official release.
 
 All bundled tests pass. To verify tests, simply require the test file in main.lua and run it. Test verification is printed to the console.
 
@@ -10,24 +10,24 @@ All bundled tests pass. To verify tests, simply require the test file in main.lu
 ## Current Features
 
 * UI instances
-* Markup parser
-* Style parser
-* Script API (preliminary)
+* Import Markup
+* Import Styles
+* Import Scripts
+* Script API
 * Base element
 * Element hierarchy
 * Element selectors
 * Drawing to screen (preliminary)
+* Event System
 * Bring back the dinosaurs
+* Teach dinosaurs to fly space ships
 
 
 ## TODO
 
 * Implement dp and sp units
-* Script API
-* Callbacks
 * Draw elements properly
 * Batch drawing
-* Teach dinosaurs to fly space ships
 * Conquer galaxy
 
 
@@ -123,6 +123,31 @@ return {
 		display = "block",
 	}},
 }
+```
+
+
+### Script Syntax
+
+```lua
+local element = gui:get_element_by_id("some_id")
+element:set_property("text_color", { 255, 0, 0, 255 })
+
+function element:on_mouse_enter()
+	element:set_property("text_color", { 255, 255, 0, 255 })
+end
+
+function element:on_mouse_leave()
+	element:set_property("text_color", { 255, 0, 0, 255 })
+end
+
+local new = gui:new_element({ "button", "Click Me!" })
+new:attach(element)
+
+function new:on_mouse_clicked(button)
+	if button == "l" then
+		print("Left click!")
+	end
+end
 ```
 
 

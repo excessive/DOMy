@@ -35,7 +35,6 @@ function GUI:init(path)
 	self.draw_order    = {}
 	self.elements      = {}
 	self.styles        = {}
-	self.scripts       = {}
 	self.key_down      = {}
 	self.joystick_down = {}
 	self.gamepad_down  = {}
@@ -413,8 +412,8 @@ function GUI:import_styles(file)
 	local global = {
 		"bit", "math", "string", "table",
 		"type", "tonumber", "tostring",
-		"pairs", "ipairs",
-		"pcall", "xpcall",
+		"pairs", "ipairs", "getfenv",
+		"pcall", "xpcall", "print",
 		"next", "select", "unpack",
 	}
 
@@ -528,10 +527,42 @@ function GUI:import_styles(file)
 end
 
 function GUI:import_scripts(file)
-	local scripts = love.filesystem.load(file)
-	assert(scripts, string.format("Scripts file (%s) not found.", file))
+	-- lol
+	local global = {
+		"bit", "math", "string", "table",
+		"type", "tonumber", "tostring",
+		"pairs", "ipairs", "print",
+		"pcall", "xpcall", "getfenv",
+		"next", "select", "unpack",
+	}
 
-	scripts = scripts()
+	-- Sandbox
+	local env = {}
+
+	-- Some useful globals
+	for _, v in ipairs(global) do
+		env[v] = _G[v]
+	end
+
+	env.gui = self
+
+	local scripts
+
+	if type(file) == "string" then
+		scripts = love.filesystem.load(file)
+		assert(scripts, string.format("Scripts file (%s) not found.", file))
+	else
+		scripts = function() return file end
+	end
+
+	setfenv(scripts, env)
+
+	local ok, err = pcall(scripts)
+
+	print(err)
+
+	if ok then
+	end
 end
 
 function GUI:new_element(element, parent, position)
@@ -779,7 +810,11 @@ end
 
 function GUI:bubble_event(element, event, ...)
 	if element[event] then
-		element[event](element, unpack(...))
+		if ... then
+			element[event](element, unpack({ ... }))
+		else
+			element[event](element)
+		end
 	elseif element.parent then
 		self:bubble_event(element.parent, event, ...)
 	end
