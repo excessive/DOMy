@@ -50,40 +50,6 @@ function Element:init(element, parent, gui)
 	else
 		self.class = element.class
 	end
-
-	self.on_focus             = function(self, focus) end
-
-	self.on_mouse_enter       = function(self) end
-	self.on_mouse_over        = function(self) end
-	self.on_mouse_leave       = function(self) end
-	self.on_mouse_pressed     = function(self, button) end
-	self.on_mouse_released    = function(self, button) end
-	self.on_mouse_clicked     = function(self, button) end
-	self.on_mouse_down        = function(self, button) end
-	self.on_mouse_scroll      = function(self, direction) end
-
-	self.on_key_pressed       = function(self, key) end
-	self.on_key_released      = function(self, key) end
-	self.on_key_down          = function(self, key) end
-	self.on_text_input        = function(self, text) end
-
-	self.on_touch_pressed     = function(self) end
-	self.on_touch_released    = function(self) end
-	self.on_touch_moved       = function(self) end
-	self.on_touch_gestured    = function(self, gesture) end
-
-	self.on_joystick_added    = function(self) end
-	self.on_joystick_removed  = function(self) end
-	self.on_joystick_pressed  = function(self, button) end
-	self.on_joystick_released = function(self, button) end
-	self.on_joystick_down     = function(self, button) end
-	self.on_joystick_axis     = function(self, axis) end
-	self.on_joystick_hat      = function(self, hat) end
-
-	self.on_gamepad_pressed   = function(self, button) end
-	self.on_gamepad_released  = function(self, button) end
-	self.on_gamepad_down      = function(self, button) end
-	self.on_gamepad_axis      = function(self, axis) end
 end
 
 function Element:_get_position()
@@ -223,6 +189,14 @@ end
 
 function Element:attach(element, position)
 	element:add_child(self, position)
+
+	-- Remove self from draw stack
+	for k, e in ipairs(self.gui.draw_order) do
+		if self == e then
+			table.remove(self.gui.draw_order, k)
+			break
+		end
+	end
 end
 
 function Element:detach()
@@ -230,6 +204,7 @@ function Element:detach()
 		error("No parent to detatch from.")
 	end
 
+	table.insert(self.gui.draw_order, self)
 	table.remove(self.parent.children, self:_get_position())
 	self.parent = false
 
@@ -242,10 +217,18 @@ function Element:destroy()
 		self.children[1]:destroy()
 	end
 
-	-- Remove self from parent
 	if self.parent then
+		-- Remove self from parent
 		table.remove(self.parent.children, self:_get_position())
 		self.parent = false
+	else
+		-- Remove self from draw stack
+		for k, e in ipairs(self.gui.draw_order) do
+			if self == e then
+				table.remove(self.gui.draw_order, k)
+				break
+			end
+		end
 	end
 
 	-- Goodbye, cruel world.
@@ -278,41 +261,6 @@ function Element:clone(deep, parent)
 		end
 	end
 
-	-- Clone callbacks
-	clone.on_focus             = self.on_focus
-
-	clone.on_mouse_enter       = self.on_mouse_enter
-	clone.on_mouse_over        = self.on_mouse_over
-	clone.on_mouse_leave       = self.on_mouse_leave
-	clone.on_mouse_pressed     = self.on_mouse_pressed
-	clone.on_mouse_released    = self.on_mouse_released
-	clone.on_mouse_clicked     = self.on_mouse_clicked
-	clone.on_mouse_down        = self.on_mouse_down
-	clone.on_mouse_scroll      = self.on_mouse_scroll
-
-	clone.on_key_pressed       = self.on_key_pressed
-	clone.on_key_released      = self.on_key_released
-	clone.on_key_down          = self.on_key_down
-	clone.on_text_input        = self.on_text_input
-
-	clone.on_touch_pressed     = self.on_touch_pressed
-	clone.on_touch_released    = self.on_touch_released
-	clone.on_touch_moved       = self.on_touch_moved
-	clone.on_touch_gestured    = self.on_touch_gestured
-
-	clone.on_joystick_added    = self.on_joystick_added
-	clone.on_joystick_removed  = self.on_joystick_removed
-	clone.on_joystick_pressed  = self.on_joystick_pressed
-	clone.on_joystick_released = self.on_joystick_released
-	clone.on_joystick_down     = self.on_joystick_down
-	clone.on_joystick_axis     = self.on_joystick_axis
-	clone.on_joystick_hat      = self.on_joystick_hat
-
-	clone.on_gamepad_pressed   = self.on_gamepad_pressed
-	clone.on_gamepad_released  = self.on_gamepad_released
-	clone.on_gamepad_down      = self.on_gamepad_down
-	clone.on_gamepad_axis      = self.on_gamepad_axis
-
 	-- Deep clone all children
 	if deep then
 		for _, child in ipairs(self.children) do
@@ -320,9 +268,12 @@ function Element:clone(deep, parent)
 		end
 	end
 
-	-- Add self to parent
 	if parent then
+		-- Add self to parent
 		parent:add_child(clone)
+	else
+		-- Add self to draw stack
+		table.insert(self.gui.draw_order, clone)
 	end
 
 	return clone
@@ -367,6 +318,98 @@ function Element:next_sibling()
 		if nxt <= #self.parent.children then
 			return self.parent.children[nxt]
 		end
+	end
+
+	return false
+end
+
+function Element:bring_to_front()
+	if not self.parent then
+		for k, element in ipairs(self.gui.draw_order) do
+			if self == element then
+				table.remove(self.gui.draw_order, k)
+				table.insert(self.gui.draw_order, self)
+				break
+			end
+		end
+	else
+		self.parent:bring_to_front()
+	end
+end
+
+function Element:send_to_back()
+	if not self.parent then
+		for k, element in ipairs(self.gui.draw_order) do
+			if self == element then
+				table.remove(self.gui.draw_order, k)
+				table.insert(self.gui.draw_order, self, 1)
+				break
+			end
+		end
+	else
+		self.parent:send_to_back()
+	end
+end
+
+function Element:set_index(index)
+	if not self.parent then
+		for k, element in ipairs(self.gui.draw_order) do
+			if self == element then
+				table.remove(self.gui.draw_order, k)
+				table.insert(self.gui.draw_order, self, index)
+				break
+			end
+		end
+	else
+		self.parent:set_index(index)
+	end
+end
+
+function Element:exchange_with(index)
+	if not self.parent then
+		for k, element in ipairs(self.gui.draw_order) do
+			if self == element then
+				local exchange = self.gui.draw_order[index]
+
+				table.remove(self.gui.draw_order, k)
+				table.insert(self.gui.draw_order, exchange, k)
+
+				table.remove(self.gui.draw_order, index)
+				table.insert(self.gui.draw_order, self, index)
+				break
+			end
+		end
+	else
+		self.parent:exchange_with(index)
+	end
+end
+
+function Element:set_focus(focus)
+	if focus == true and not self:has_focus() then
+		if self.gui.active then
+			self.gui:bubble_event(self.gui.active, "on_focus_leave")
+		end
+
+		self.gui.active = self
+		self.gui:bubble_event(self.gui.active, "on_focus")
+	elseif focus == false and self:has_focus() then
+		self.gui:bubble_event(self.gui.active, "on_focus_leave")
+		self.gui.active = false
+	end
+end
+
+function Element:has_focus()
+	return self.gui.active == self
+end
+
+function Element:is_binding(x, y)
+	local ex = self.position.x
+	local ey = self.position.y
+	local ew = self.properties.width
+	local eh = self.properties.height
+
+	if ex <= x and ex + ew >= x and ey <= y and ey + eh >= y then
+		return true
 	end
 
 	return false

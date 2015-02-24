@@ -32,12 +32,90 @@ function GUI:init(path)
 		elements[name] = love.filesystem.load(new_path .. file)(path)
 	end
 
-	self.elements = {}
-	self.styles   = {}
+	self.draw_order    = {}
+	self.elements      = {}
+	self.styles        = {}
+	self.scripts       = {}
+	self.key_down      = {}
+	self.joystick_down = {}
+	self.gamepad_down  = {}
+	self.mouse_down    = {}
+	self.active        = false
+	self.hover         = false
+	self.mx, self.my   = love.mouse.getPosition()
 end
 
 function GUI:update(dt)
+	local hover  = false
+	local mx, my = love.mouse.getPosition()
 
+	local function check_binding(elements)
+		for _, element in ipairs(elements) do
+			if element:is_binding(mx, my) then
+				hover = element
+				check_binding(element.children)
+
+				break
+			end
+		end
+	end
+
+	local i = #self.draw_order
+	while i >= 1 do
+		local element = self.draw_order[i]
+		check_binding({ element })
+
+		i = i - 1
+		if hover then break end
+	end
+
+	if self.hover ~= hover then
+		if self.hover then
+			self:bubble_event(self.hover, "on_mouse_leave")
+		end
+
+		self.hover = hover
+
+		if self.hover then
+			self:bubble_event(self.hover, "on_mouse_enter")
+		end
+	end
+
+	if self.active then
+		-- Loop through active keys
+		for key in pairs(self.key_down) do
+			self:bubble_event(self.active, "on_key_down", key)
+		end
+
+		-- Loop through active mouse buttons
+		for button, element in pairs(self.mouse_down) do
+			if self.hover == element then
+				self:bubble_event(self.active, "on_mouse_down", button)
+			end
+		end
+
+		-- Loop through active joystick buttons
+		for _, joystick in pairs(self.joystick_down) do
+			for button in pairs(joystick.button) do
+				self:bubble_event(self.active, "on_joystick_down", joystick, button)
+			end
+
+			for axis in pairs(joystick.axis) do
+				self:bubble_event(self.active, "on_joystick_axis", joystick, axis, value)
+			end
+
+			for hat in pairs(joystick.hat) do
+				self:bubble_event(self.active, "on_joystick_hat", joystick, hat, direction)
+			end
+		end
+
+		-- Loop through active gamepad buttons
+		for _k, gamepad in pairs(self.gamepad_down) do
+			for button, value in pairs(gamepad) do
+				self:bubble_event(self.active, "on_gamepad_down", gamepad, button, value)
+			end
+		end
+	end
 end
 
 function GUI:draw()
@@ -52,18 +130,175 @@ function GUI:draw()
 	end
 
 	-- All root objects
-	local root = self:get_elements_by_query(":root")
-	for _, element in ipairs(root) do
+	for _, element in ipairs(self.draw_order) do
 		draw_element(element)
 	end
 end
 
-function GUI:resize()
-	self:_apply_styles()
+function GUI:keypressed(key, isrepeat)
+	if self.active then
+		self.key_down[key] = true
+		self:bubble_event(self.active, "on_key_pressed", key)
+	end
+end
 
-	-- All root objects
-	local root = self:get_elements_by_query(":root")
-	Display.position_elements(root)
+function GUI:keyreleased(key)
+	if self.active then
+		self.key_down[key] = nil
+		self:bubble_event(self.active, "on_key_released", key)
+	end
+end
+
+function GUI:textinput(text)
+	if self.active then
+		self:bubble_event(self.active, "on_text_input", text)
+	end
+end
+
+function GUI:mousepressed(x, y, button)
+	local pressed = false
+
+	local function check_binding(elements)
+		for _, element in ipairs(elements) do
+			if element:is_binding(x, y) then
+				pressed = element
+				check_binding(element.children)
+
+				break
+			end
+		end
+	end
+
+	local i = #self.draw_order
+	while i >= 1 do
+		local element = self.draw_order[i]
+		check_binding({ element })
+
+		i = i - 1
+		if pressed then break end
+	end
+
+	if pressed then
+		if button == "wu" or button == "wd" then
+			self:bubble_event(pressed, "on_mouse_scrolled", button)
+		else
+			self.mouse_down[button] = pressed
+			pressed:set_focus(true)
+			self:bubble_event(pressed, "on_mouse_pressed", button)
+		end
+	end
+end
+
+function GUI:mousereleased(x, y, button)
+	local pressed = false
+
+	local function check_binding(elements)
+		for _, element in ipairs(elements) do
+			if element:is_binding(x, y) then
+				pressed = element
+				check_binding(element.children)
+
+				break
+			end
+		end
+	end
+
+	local i = #self.draw_order
+	while i >= 1 do
+		local element = self.draw_order[i]
+		check_binding({ element })
+
+		i = i - 1
+		if pressed then break end
+	end
+
+	if pressed then
+		self:bubble_event(pressed, "on_mouse_released", button)
+
+		if self.mouse_down[button] == pressed then
+			self:bubble_event(pressed, "on_mouse_clicked", button)
+		end
+
+		self.mouse_down[button] = nil
+	end
+end
+
+function GUI:joystickadded(joystick)
+	self.joystick_down[joystick]        = {}
+	self.joystick_down[joystick].button = {}
+	self.joystick_down[joystick].hat    = {}
+	self.joystick_down[joystick].axis   = {}
+
+	if joystick:isGamepad() then
+		self.gamepad_down[joystick] = {}
+	end
+
+	if self.active then
+		self:bubble_event(self.active, "on_joystick_added", joystick)
+	end
+end
+
+function GUI:joystickremoved(joystick)
+	self.joystick_down[joystick] = nil
+
+	if joystick:isGamepad() then
+		self.gamepad_down[joystick] = nil
+	end
+
+	if self.active then
+		self:bubble_event(self.active, "on_joystick_removed", joystick)
+	end
+end
+
+function GUI:joystickpressed(joystick, button)
+	if self.active then
+		self.joystick_down[joystick].button[button] = true
+		self:bubble_event(self.active, "on_joystick_pressed", joystick, button)
+	end
+end
+
+function GUI:joystickreleased(joystick, button)
+	if self.active then
+		self.joystick_down[joystick].button[button] = nil
+		self:bubble_event(self.active, "on_joystick_released", joystick, button)
+	end
+end
+
+function GUI:joystickaxis(joystick, axis, value)
+	if self.active then
+		self.joystick_down[joystick].axis[axis] = value
+	end
+end
+
+function GUI:joystickhat(joystick, hat, direction)
+	if self.active then
+		self.joystick_down[joystick].hat[hat] = direction
+	end
+end
+
+function GUI:gamepadpressed(joystick, button)
+	if self.active then
+		self.gamepad_down[joystick][button] = true
+		self:bubble_event(self.active, "on_gamepad_pressed", joystick, button)
+	end
+end
+
+function GUI:gamepadreleased(joystick, button)
+	if self.active then
+		self.gamepad_down[joystick][button] = nil
+		self:bubble_event(self.active, "on_gamepad_released", joystick, button)
+	end
+end
+
+function GUI:gamepadaxis(joystick, axis, value)
+	if self.active then
+		self.gamepad_down[joystick][axis] = value
+	end
+end
+
+function GUI:resize(w, h)
+	self:_apply_styles()
+	Display.position_elements(self.draw_order)
 end
 
 function GUI:import_markup(file)
@@ -313,12 +548,42 @@ function GUI:new_element(element, parent, position)
 	object:init(element, parent, self)
 	table.insert(self.elements, object)
 
-	-- If the element has a parent, send it along
 	if parent then
+		-- If the element has a parent, send it along
 		parent:add_child(object, position)
+	else
+		-- Otherwise, add it to the draw stack
+		table.insert(self.draw_order, object)
 	end
 
 	return object
+end
+
+function GUI:set_active_element(element)
+	if self.active_element then
+		self.active:on_focus_leave()
+	end
+
+	self.active = element
+	self.active:on_focus()
+
+	return self.active
+end
+
+function GUI:get_active_element()
+	return self.active
+end
+
+function GUI:get_elements_by_bounding(x, y)
+	local filter = {}
+
+	for _, element in ipairs(self.elements) do
+		if element:is_binding(x, y) then
+			table.insert(filter, element)
+		end
+	end
+
+	return filter
 end
 
 function GUI:get_element_by_id(id, elements)
@@ -510,6 +775,14 @@ function GUI:get_elements_by_query(query, elements)
 	end
 
 	return filter
+end
+
+function GUI:bubble_event(element, event, ...)
+	if element[event] then
+		element[event](element, unpack(...))
+	elseif element.parent then
+		self:bubble_event(element.parent, event, ...)
+	end
 end
 
 function GUI:_apply_styles()
