@@ -116,9 +116,8 @@ function Display.block_set_height(element, parent)
 
 	-- If element has a value and no children
 	if ep.height == epp and element.value then
-		local font         = love.graphics.getFont()
-		local width, lines = font:getWrap(element.value, ep.width - ep.border_left - ep.border_right - ep.padding_left - ep.padding_right)
-		local height       = font:getHeight()
+		local width, lines = ep.font:getWrap(element.value, ep.width - ep.border_left - ep.border_right - ep.padding_left - ep.padding_right)
+		local height       = ep.font:getHeight()
 
 		ep.height = ep.height + (height * lines)
 	end
@@ -199,8 +198,7 @@ function Display.inline_set_width(element)
 
 	-- Set width to value size if larger than largest child
 	if element.value then
-		local font = love.graphics.getFont()
-		local w    = font:getWidth(element.value) + epp
+		local w    = ep.font:getWidth(element.value) + epp
 
 		if w > ep.width then
 			ep.width = w
@@ -248,9 +246,8 @@ function Display.inline_set_height(element)
 
 	-- If element has a value and no children
 	if ep.height == epp and element.value then
-		local font         = love.graphics.getFont()
-		local width, lines = font:getWrap(element.value, ep.width - ep.border_left - ep.border_right - ep.padding_left - ep.padding_right)
-		local height       = font:getHeight()
+		local width, lines = ep.font:getWrap(element.value, ep.width - ep.border_left - ep.border_right - ep.padding_left - ep.padding_right)
+		local height       = ep.font:getHeight()
 
 		ep.height = ep.height + (height * lines)
 	end

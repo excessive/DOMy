@@ -65,6 +65,7 @@ function GUI:init(path)
 		elements[name] = love.filesystem.load(new_path .. file)(path)
 	end
 
+	self.cache         = {}
 	self.draw_order    = {}
 	self.elements      = {}
 	self.styles        = {}
@@ -410,11 +411,7 @@ function GUI:import_styles(file)
 				-- Grab all of the properties (no nests!) from the style
 				for property, value in pairs(style[#style]) do
 					if type(property) ~= "number" then
-						if property == "background_image" then
-							properties[property] = love.graphics.newImage(value)
-						else
 							properties[property] = value
-						end
 					end
 				end
 
@@ -1112,6 +1109,7 @@ function GUI:_apply_styles()
 		ep[left]   = value[4] or 0
 	end
 
+	-- Expand border_color to longform
 	local function expand_border_color(element, value)
 		local ep     = element.properties
 		local white  = { 255, 255, 255, 255 }
@@ -1126,20 +1124,60 @@ function GUI:_apply_styles()
 		ep[left]   = value[4] or white
 	end
 
+	-- Check all properties for special cases
+	local function check_property(element, property, value)
+		local ep = element.properties
+		ep[property] = value
+
+		if property == "margin"  or
+		   property == "border"  or
+		   property == "padding" then
+			expand_box(element, property, value)
+		elseif property == "border_color" then
+			expand_border_color(element, value)
+		elseif property == "background_path" then
+			if not self.cache[value] then
+				self.cache[value] = love.graphics.newImage(value)
+			end
+
+			ep.background_image = self.cache[value]
+		elseif property == "font_path" then
+			local font_size = element.custom_properties.font_size or
+				ep.font_size or
+				element.default_properties.font_size
+
+			if not self.cache[value..font_size] then
+				if value == "default" then
+					self.cache[value..font_size] = love.graphics.newFont(font_size)
+				else
+					self.cache[value..font_size] = love.graphics.newFont(value, font_size)
+				end
+			end
+
+			ep.font = self.cache[value..font_size]
+		elseif property == "font_size" then
+			local font_path = element.custom_properties.font_path or
+				ep.font_path or
+				element.default_properties.font_path
+
+			if not self.cache[font_path..value] then
+				if font_path == "default" then
+					self.cache[font_path..value] = love.graphics.newFont(value)
+				else
+					self.cache[font_path..value] = love.graphics.newFont(font_path, value)
+				end
+			end
+
+			ep.font = self.cache[font_path..value]
+		end
+	end
+
 	-- Apply default properties
 	for _, element in ipairs(self.elements) do
 		element.properties = {}
 
 		for property, value in pairs(element.default_properties) do
-			if property == "margin"  or
-			   property == "border"  or
-			   property == "padding" then
-				expand_box(element, property, value)
-			elseif property == "border_color" then
-				expand_border_color(element, value)
-			else
-				element.properties[property] = value
-			end
+			check_property(element, property, value)
 		end
 	end
 
@@ -1149,15 +1187,7 @@ function GUI:_apply_styles()
 
 		for _, element in ipairs(filter) do
 			for property, value in pairs(style.properties) do
-				if property == "margin"  or
-				   property == "border"  or
-				   property == "padding" then
-					expand_box(element, property, value)
-				elseif property == "border_color" then
-					expand_border_color(element, value)
-				else
-					element.properties[property] = value
-				end
+				check_property(element, property, value)
 			end
 		end
 	end
@@ -1165,15 +1195,7 @@ function GUI:_apply_styles()
 	-- Apply custom properties
 	for _, element in ipairs(self.elements) do
 		for property, value in pairs(element.custom_properties) do
-			if property == "margin"  or
-			   property == "border"  or
-			   property == "padding" then
-				expand_box(element, property, value)
-			elseif property == "border_color" then
-				expand_border_color(element, value)
-			else
-				element.properties[property] = value
-			end
+			check_property(element, property, value)
 		end
 	end
 end
@@ -1220,9 +1242,10 @@ function GUI:_draw_element(element)
 
 	-- Draw Background
 	if ep.background_color then
+		love.graphics.push("all")
 		love.graphics.setColor(ep.background_color)
 		love.graphics.rectangle("fill", x, y, w, h)
-		love.graphics.setColor(255, 255, 255, 255)
+		love.graphics.pop()
 	end
 
 	-- Draw Background Image
@@ -1253,39 +1276,52 @@ function GUI:_draw_element(element)
 
 	-- Draw Border (Top)
 	if ep.border_top_color then
+		love.graphics.push("all")
 		love.graphics.setColor(ep.border_top_color)
 		love.graphics.line(x, y, x+w, y)
-		love.graphics.setColor(255, 255, 255, 255)
+		love.graphics.pop()
 	end
 
 	-- Draw Border (Right)
 	if ep.border_right_color then
+		love.graphics.push("all")
 		love.graphics.setColor(ep.border_right_color)
 		love.graphics.line(x+w, y, x+w, y+h)
-		love.graphics.setColor(255, 255, 255, 255)
+		love.graphics.pop()
 	end
 
 	-- Draw Border (Bottom)
 	if ep.border_bottom_color then
+		love.graphics.push("all")
 		love.graphics.setColor(ep.border_bottom_color)
 		love.graphics.line(x+w, y+h, x, y+h)
-		love.graphics.setColor(255, 255, 255, 255)
+		love.graphics.pop()
 	end
 
 	-- Draw Border (Left)
 	if ep.border_left_color then
+		love.graphics.push("all")
 		love.graphics.setColor(ep.border_left_color)
 		love.graphics.line(x, y+h, x, y)
-		love.graphics.setColor(255, 255, 255, 255)
+		love.graphics.pop()
 	end
 
-	-- Draw text within content area
-	if ep.text_color then
-		love.graphics.setColor(ep.text_color)
-	end
+	-- Draw Text
+	if element.value then
+		love.graphics.push("all")
+		-- Set Text Color
+		if ep.text_color then
+			love.graphics.setColor(ep.text_color)
+		end
 
-	love.graphics.printf(tostring(element.value), cx, cy, cw)
-	love.graphics.setColor(255, 255, 255, 255)
+		-- Set Font
+		if ep.font then
+			love.graphics.setFont(ep.font)
+		end
+
+		love.graphics.printf(tostring(element.value), cx, cy, cw)
+		love.graphics.pop()
+	end
 
 	love.graphics.setScissor()
 

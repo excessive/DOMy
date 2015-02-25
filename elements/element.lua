@@ -38,6 +38,9 @@ function Element:init(element, parent, gui)
 		flex_shrink = 0,
 		flex_basis  = "auto",
 		align_self  = "auto",
+
+		font_path = "default",
+		font_size = 12,
 	}
 
 	if element.value then

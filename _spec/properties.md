@@ -2,7 +2,7 @@
 
 [ ] background_attachment
 [X] background_color
-[X] background_image
+[X] background_path
 [X] background_position
 [ ] background_repeat
 [X] background_size
@@ -91,10 +91,10 @@
 [ ] text_transform
 [ ] white_space
 
-# Font Properties (0 / 2)
+# Font Properties (2 / 2)
 
-[ ] font
-[ ] font_size
+[X] font_path
+[X] font_size
 
 # Table Properties (0 / 2)
 
@@ -160,4 +160,4 @@
 [ ] mask
 [ ] mask_type
 
-# Total (29 / 120) [24.17%]
+# Total (31 / 120) [25.83%]
