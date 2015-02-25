@@ -1094,12 +1094,32 @@ function GUI:bubble_event(element, event, ...)
 end
 
 function GUI:_apply_styles()
+	-- Expand shorthand properties to their longform format
+	local function expand_sides(element, property, value)
+		local ep     = element.properties
+		local top    = string.format("%s_top",    property)
+		local right  = string.format("%s_right",  property)
+		local bottom = string.format("%s_bottom", property)
+		local left   = string.format("%s_left",   property)
+
+		ep[top]    = value[1] or 0
+		ep[right]  = value[2] or 0
+		ep[bottom] = value[3] or 0
+		ep[left]   = value[4] or 0
+	end
+
 	-- Apply default properties
 	for _, element in ipairs(self.elements) do
 		element.properties = {}
 
 		for property, value in pairs(element.default_properties) do
-			element.properties[property] = value
+			if property == "margin"  or
+			   property == "border"  or
+			   property == "padding" then
+				expand_sides(element, property, value)
+			else
+				element.properties[property] = value
+			end
 		end
 	end
 
@@ -1109,7 +1129,13 @@ function GUI:_apply_styles()
 
 		for _, element in ipairs(filter) do
 			for property, value in pairs(style.properties) do
-				element.properties[property] = value
+				if property == "margin"  or
+				   property == "border"  or
+				   property == "padding" then
+					expand_sides(element, property, value)
+				else
+					element.properties[property] = value
+				end
 			end
 		end
 	end
@@ -1117,7 +1143,13 @@ function GUI:_apply_styles()
 	-- Apply custom properties
 	for _, element in ipairs(self.elements) do
 		for property, value in pairs(element.custom_properties) do
-			element.properties[property] = value
+			if property == "margin"  or
+			   property == "border"  or
+			   property == "padding" then
+				expand_sides(element, property, value)
+			else
+				element.properties[property] = value
+			end
 		end
 	end
 end
@@ -1155,10 +1187,10 @@ function GUI:_draw_element(element)
 	local h = ep.height
 
 	-- Content start & end of element
-	local cx = x + ep.padding[4] + ep.border[4]
-	local cy = y + ep.padding[1] + ep.border[1]
-	local cw = w - ep.padding[1] - ep.border[1] - ep.padding[2] - ep.border[2]
-	local ch = h - ep.padding[4] - ep.border[4] - ep.padding[3] - ep.border[3]
+	local cx = x + ep.padding_left + ep.border_left
+	local cy = y + ep.padding_top  + ep.border_top
+	local cw = w - ep.padding_top  - ep.border_top  - ep.padding_right  - ep.border_right
+	local ch = h - ep.padding_left - ep.border_left - ep.padding_bottom - ep.border_bottom
 
 	-- Draw box
 	love.graphics.rectangle("line", x, y, w, h)
@@ -1174,7 +1206,7 @@ function GUI:_draw_element(element)
 
 	-- DEBUG
 	love.graphics.setColor(255, 255, 0, 63)
-	love.graphics.rectangle("line", x-ep.margin[4], y-ep.margin[1], w+ep.margin[4]+ep.margin[2], h+ep.margin[1]+ep.margin[3])
+	love.graphics.rectangle("line", x-ep.margin_left, y-ep.margin_top, w+ep.margin_left+ep.margin_right, h+ep.margin_top+ep.margin_bottom)
 	love.graphics.setColor(0, 255, 255, 63)
 	love.graphics.rectangle("line", cx, cy, cw, ch)
 	love.graphics.setColor(255, 255, 255, 255)

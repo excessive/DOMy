@@ -39,8 +39,8 @@ function Display.block(element, d, x, y, nl, parent)
 	local ep  = element.properties
 
 	-- Element position
-	element.position.x = parent.x + ep.margin[4]
-	element.position.y = y        + ep.margin[1] + nl
+	element.position.x = parent.x + ep.margin_left
+	element.position.y = y        + ep.margin_top + nl
 
 	-- Determine width of element
 	if not ep.width then
@@ -61,7 +61,7 @@ function Display.block(element, d, x, y, nl, parent)
 	-- Return position for next element
 	d = "block"
 	x = parent.x
-	y = element.position.y + ep.height + ep.margin[3]
+	y = element.position.y + ep.height + ep.margin_bottom
 	nl = 0
 
 	return d, x, y, nl
@@ -69,17 +69,17 @@ end
 
 function Display.block_set_width(element, parent)
 	local ep = element.properties
-	ep.width = parent.w - (ep.margin[4] + ep.margin[2])
+	ep.width = parent.w - (ep.margin_left + ep.margin_right)
 
 	if element.parent then
 		local pp = element.parent.properties
-		ep.width = ep.width - pp.padding[4] - pp.border[4]
+		ep.width = ep.width - pp.padding_left - pp.border_left
 	end
 end
 
 function Display.block_set_height(element, parent)
 	local ep  = element.properties
-	local epp = ep.padding[1] + ep.padding[3] + ep.border[1] + ep.border[3]
+	local epp = ep.padding_top + ep.padding_bottom + ep.border_top + ep.border_bottom
 
 	-- Calculate total height of children
 	for _, child in ipairs(element.children) do
@@ -88,7 +88,7 @@ function Display.block_set_height(element, parent)
 		-- Determine width of child
 		if not cp.width then
 			if cp.display == "block" or cp.display == "flex" then
-				local p = { w = ep.width - ep.margin[2] }
+				local p = { w = ep.width - ep.margin_right }
 				Display.block_set_width(child, p)
 			elseif cp.display == "inline" or cp.display == "inline_flex" then
 				Display.inline_set_width(child)
@@ -98,7 +98,7 @@ function Display.block_set_height(element, parent)
 		-- Determine height of child
 		if not cp.height then
 			if cp.display == "block" or cp.display == "flex" then
-				local p = { w = ep.width - ep.margin[2] }
+				local p = { w = ep.width - ep.margin_right }
 				Display.block_set_height(child, p)
 			elseif cp.display == "inline" or cp.display == "inline_flex" then
 				Display.inline_set_height(child)
@@ -117,7 +117,7 @@ function Display.block_set_height(element, parent)
 	-- If element has a value and no children
 	if ep.height == epp and element.value then
 		local font         = love.graphics.getFont()
-		local width, lines = font:getWrap(element.value, ep.width - ep.border[4] - ep.border[2] - ep.padding[4] - ep.padding[2])
+		local width, lines = font:getWrap(element.value, ep.width - ep.border_left - ep.border_right - ep.padding_left - ep.padding_right)
 		local height       = font:getHeight()
 
 		ep.height = ep.height + (height * lines)
@@ -141,18 +141,18 @@ function Display.inline(element, d, x, y, nl, parent)
 
 	-- Determine element position
 	if d == "block" then
-		element.position.x = parent.x + ep.margin[4]
-		element.position.y = y        + ep.margin[1]
+		element.position.x = parent.x + ep.margin_left
+		element.position.y = y        + ep.margin_top
 	elseif d == "child" then
-		element.position.x = parent.x + ep.margin[4]
-		element.position.y = parent.y + ep.margin[1]
-	elseif x + ep.width + ep.margin[4] + ep.margin[2] > parent.x + parent.w then
-		element.position.x = parent.x + ep.margin[4]
-		element.position.y = y        + ep.margin[1] + nl
+		element.position.x = parent.x + ep.margin_left
+		element.position.y = parent.y + ep.margin_top
+	elseif x + ep.width + ep.margin_left + ep.margin_right > parent.x + parent.w then
+		element.position.x = parent.x + ep.margin_left
+		element.position.y = y        + ep.margin_top + nl
 
 		nl = 0
 	else
-		element.position.x = x + ep.margin[4]
+		element.position.x = x + ep.margin_left
 		element.position.y = y
 	end
 
@@ -164,11 +164,11 @@ function Display.inline(element, d, x, y, nl, parent)
 
 	-- Return position for next element
 	d  = "inline"
-	x  = element.position.x + ep.margin[2] + ep.width
+	x  = element.position.x + ep.margin_right + ep.width
 	y  = element.position.y
 
-	if nl < ep.height + ep.margin[3] then
-		nl = ep.height + ep.margin[3]
+	if nl < ep.height + ep.margin_bottom then
+		nl = ep.height + ep.margin_bottom
 	end
 
 	return d, x, y, nl
@@ -176,7 +176,7 @@ end
 
 function Display.inline_set_width(element)
 	local ep  = element.properties
-	local epp = ep.padding[4] + ep.padding[2] + ep.border[4] + ep.border[2]
+	local epp = ep.padding_left + ep.padding_right + ep.border_left + ep.border_right
 	ep.width  = epp
 
 	-- Set width to largest child
@@ -190,7 +190,7 @@ function Display.inline_set_width(element)
 			end
 		end
 
-		local w = cp.width + cp.margin[4] + cp.margin[2] + epp
+		local w = cp.width + cp.margin_left + cp.margin_right + epp
 
 		if w > ep.width then
 			ep.width = w
@@ -211,14 +211,14 @@ function Display.inline_set_width(element)
 	if element.parent then
 		local pp = element.parent.properties
 		if ep.width > pp.width then
-			ep.width = pp.width - ep.margin[4] - ep.margin[2] - pp.border[4] - pp.border[2] - pp.padding[4] - pp.padding[2]
+			ep.width = pp.width - ep.margin_left - ep.margin_right - pp.border_left - pp.border_right - pp.padding_left - pp.padding_right
 		end
 	end
 end
 
 function Display.inline_set_height(element)
 	local ep  = element.properties
-	local epp = ep.padding[1] + ep.padding[3] + ep.border[1] + ep.border[3]
+	local epp = ep.padding_top + ep.padding_bottom + ep.border_top + ep.border_bottom
 
 	for _, child in ipairs(element.children) do
 		local cp = child.properties
@@ -249,7 +249,7 @@ function Display.inline_set_height(element)
 	-- If element has a value and no children
 	if ep.height == epp and element.value then
 		local font         = love.graphics.getFont()
-		local width, lines = font:getWrap(element.value, ep.width - ep.border[4] - ep.border[2] - ep.padding[4] - ep.padding[2])
+		local width, lines = font:getWrap(element.value, ep.width - ep.border_left - ep.border_right - ep.padding_left - ep.padding_right)
 		local height       = font:getHeight()
 
 		ep.height = ep.height + (height * lines)
@@ -286,14 +286,14 @@ function Display.get_wrap(element)
 
 	for _, child in ipairs(element.children) do
 		local cp = child.properties
-		local w  = cp.width  + cp.margin[4] + cp.margin[2]
-		local h  = cp.height + cp.margin[1] + cp.margin[3]
+		local w  = cp.width  + cp.margin_left + cp.margin_right
+		local h  = cp.height + cp.margin_top + cp.margin_right
 
 		if cp.display == "block" or x + w > ep.width then
 			lines = lines + 1
 			table.insert(width, 0)
 			table.insert(height, 0)
-			x = cp.width + cp.margin[4] + cp.margin[2]
+			x = cp.width + cp.margin_left + cp.margin_right
 		else
 			if lines == 0 then
 				lines = lines + 1
@@ -318,10 +318,10 @@ end
 
 function Display.get_content_box(element)
 	local ep = element.properties
-	local x  = element.position.x + ep.padding[4] + ep.border[4]
-	local y  = element.position.y + ep.padding[1] + ep.border[1]
-	local w  = ep.width  - ep.padding[4] - ep.border[4] - ep.padding[2] - ep.border[2]
-	local h  = ep.height - ep.padding[1] - ep.border[1] - ep.padding[3] - ep.border[3]
+	local x  = element.position.x + ep.padding_left + ep.border_left
+	local y  = element.position.y + ep.padding_top + ep.border_top
+	local w  = ep.width  - ep.padding_left - ep.border_left - ep.padding_right - ep.border_right
+	local h  = ep.height - ep.padding_top - ep.border_top - ep.padding_right - ep.border_right
 
 	return x, y, w, h
 end
