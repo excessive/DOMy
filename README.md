@@ -108,8 +108,8 @@ return {
 		padding = { 5, 5, 5, 5 },
 	}},
 
-	-- The very last element with the "grandchild" class that is a descendant of an element with the "child" class
-	{ ".child .grandchild:last", {
+	-- The last child element with the "grandchild" class that is a descendant of an element with the "child" class
+	{ ".child .grandchild:last_child", {
 		text_color = { 0, 255, 0, 255 },
 	}},
 

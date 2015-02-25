@@ -993,32 +993,33 @@ function GUI:get_elements_by_query(query, elements)
 					section[k] = filter
 				end
 
-				if selector == "first_of_type" then
-					local filter = {}
-
-					for _, element in ipairs(section[k]) do
-						if element.parent and element.type == value then
-							for _, child in ipairs(element.parent.children) do
-								if child.type == value then
-									if child == element then
-										table.insert(filter, element)
-									end
-
-									break
-								end
-							end
-						end
-					end
-
-					section[k] = filter
-				end
-
 				if pseudo == "only_child" then
 					local filter = {}
 
 					for _, element in ipairs(section[k]) do
 						if element.parent and #element.parent.children == 1 then
 							table.insert(filter, element)
+						end
+					end
+
+					section[k] = filter
+				end
+
+				if selector == "only_of_type" then
+					local filter = {}
+
+					for _, element in ipairs(section[k]) do
+						if element.parent and element.type == value then
+							local count = 0
+							for _, child in ipairs(element.parent.children) do
+								if child.type == value then
+									count = count + 1
+								end
+							end
+
+							if count == 1 then
+								table.insert(filter, element)
+							end
 						end
 					end
 
