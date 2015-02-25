@@ -1,38 +1,37 @@
-# Background Properties (0 / 7)
+# Background Properties (4 / 6)
 
-[ ] background
 [ ] background_attachment
-[ ] background_color
-[ ] background_image
-[ ] background_position
+[X] background_color
+[X] background_image
+[X] background_position
 [ ] background_repeat
-[ ] background_size
+[X] background_size
 
-# Border Properties (5 / 16)
+# Border Properties (10 / 16)
 
 [X] border
 [X] border_bottom
-[ ] border_bottom_color
+[X] border_bottom_color
 [ ] border_bottom_left_radius
 [ ] border_bottom_right_radius
-[ ] border_color
+[X] border_color
 [X] border_left
-[ ] border_left_color
+[X] border_left_color
 [ ] border_radius
 [X] border_right
-[ ] border_right_color
+[X] border_right_color
 [X] border_top
-[ ] border_top_color
+[X] border_top_color
 [ ] border_top_left_radius
 [ ] border_top_right_radius
 [ ] box_shadow
 
-# Basic Box Properties (7 / 22)
+# Basic Box Properties (8 / 22)
 
 [ ] bottom
 [ ] clear
 [ ] clip
-[ ] display
+[X] display
 [ ] float
 [X] height
 [ ] left
@@ -161,4 +160,4 @@
 [ ] mask
 [ ] mask_type
 
-# Total (19 / 121) [9.92%]
+# Total (29 / 120) [24.17%]
