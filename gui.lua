@@ -22,6 +22,39 @@ local function format_path(path)
 	return path
 end
 
+-- http://wiki.interfaceware.com/534.html
+local function string_split(s, d)
+	local magic = { "(", ")", ".", "%", "+", "-", "*", "?", "[", "^", "$" }
+
+	for _, v in ipairs(magic) do
+		if d == v then
+			d = "%"..d
+			break
+		end
+	end
+
+	local t = {}
+	local i = 0
+	local f
+	local match = '(.-)' .. d .. '()'
+
+	if string.find(s, d) == nil then
+		return {s}
+	end
+
+	for sub, j in string.gmatch(s, match) do
+		i = i + 1
+		t[i] = sub
+		f = j
+	end
+
+	if i ~= 0 then
+		t[i+1] = string.sub(s, f)
+	end
+
+	return t
+end
+
 function GUI:init(path)
 	-- Load the default element classes
 	local new_path      = path:gsub("%.", "/") .. "elements/"
@@ -143,9 +176,10 @@ end
 
 function GUI:keyreleased(key)
 	if self.active then
-		self.key_down[key] = nil
 		self:bubble_event(self.active, "on_key_released", key)
 	end
+
+	self.key_down[key] = nil
 end
 
 function GUI:textinput(text)
@@ -217,9 +251,9 @@ function GUI:mousereleased(x, y, button)
 		if self.mouse_down[button] == pressed then
 			self:bubble_event(pressed, "on_mouse_clicked", button)
 		end
-
-		self.mouse_down[button] = nil
 	end
+
+	self.mouse_down[button] = nil
 end
 
 function GUI:joystickadded(joystick)
@@ -238,14 +272,14 @@ function GUI:joystickadded(joystick)
 end
 
 function GUI:joystickremoved(joystick)
+	if self.active then
+		self:bubble_event(self.active, "on_joystick_removed", joystick)
+	end
+
 	self.joystick_down[joystick] = nil
 
 	if joystick:isGamepad() then
 		self.gamepad_down[joystick] = nil
-	end
-
-	if self.active then
-		self:bubble_event(self.active, "on_joystick_removed", joystick)
 	end
 end
 
@@ -258,9 +292,10 @@ end
 
 function GUI:joystickreleased(joystick, button)
 	if self.active then
-		self.joystick_down[joystick].button[button] = nil
 		self:bubble_event(self.active, "on_joystick_released", joystick, button)
 	end
+
+	self.joystick_down[joystick].button[button] = nil
 end
 
 function GUI:joystickaxis(joystick, axis, value)
@@ -284,9 +319,10 @@ end
 
 function GUI:gamepadreleased(joystick, button)
 	if self.active then
-		self.gamepad_down[joystick][button] = nil
 		self:bubble_event(self.active, "on_gamepad_released", joystick, button)
 	end
+
+	self.gamepad_down[joystick][button] = nil
 end
 
 function GUI:gamepadaxis(joystick, axis, value)
@@ -713,68 +749,75 @@ function GUI:get_elements_by_query(query, elements)
 
 		if #group.pseudos > 0 then
 			for _, pseudo in ipairs(group.pseudos) do
-				--[[
-				Selector				Example					Example description
-				-------------------------------------------------------------------
-				:checked				input:checked			Selects every checked <input> element
-				:not(selector)			:not(p)					Selects every element that is not a <p> element
-				:nth-child(n)			p:nth-child(2)			Selects every <p> element that is the second child of its parent
-				:nth-last-child(n)		p:nth-last-child(2)		Selects every <p> element that is the second child of its parent, counting from the last child
-				:nth-last-of-type(n)	p:nth-last-of-type(2)	Selects every <p> element that is the second <p> element of its parent, counting from the last child
-				:nth-of-type(n)			p:nth-of-type(2)		Selects every <p> element that is the second <p> element of its parent
-				--]]
+				local selector, value = pseudo:match("([^%(%s]+)%(([^%)]*)%)")
 
 				if pseudo == "checked" then
+					local filter = {}
 
+					for _, element in ipairs(section[k]) do
+						if element.checked then
+							table.insert(filter, element)
+						end
+					end
+
+					section[k] = filter
 				end
 
 				if pseudo == "disabled" then
 					local filter = {}
+
 					for _, element in ipairs(section[k]) do
 						if not element.enabled then
 							table.insert(filter, element)
 						end
 					end
+
 					section[k] = filter
 				end
 
 				if pseudo == "empty" then
 					local filter = {}
+
 					for _, element in ipairs(section[k]) do
 						if #element.children == 0 then
 							table.insert(filter, element)
 						end
 					end
+
 					section[k] = filter
 				end
 
 				if pseudo == "enabled" then
 					local filter = {}
+
 					for _, element in ipairs(section[k]) do
 						if element.enabled then
 							table.insert(filter, element)
 						end
 					end
+
 					section[k] = filter
 				end
 
 				if pseudo == "first_child" then
 					local filter = {}
+
 					for _, element in ipairs(section[k]) do
 						if element.parent and element.parent:first_child() == element then
 							table.insert(filter, element)
 						end
 					end
+
 					section[k] = filter
 				end
 
-				local selector, type = pseudo:match("([^%(%s]+)%(([^%)]*)%)")
-				if selector == "first_of_type") then
+				if selector == "first_of_type" then
 					local filter = {}
+
 					for _, element in ipairs(section[k]) do
-						if element.parent and element.type == type then
+						if element.parent and element.type == value then
 							for _, child in ipairs(element.parent.children) do
-								if child.type == type then
+								if child.type == value then
 									if child == element then
 										table.insert(filter, element)
 									end
@@ -785,6 +828,7 @@ function GUI:get_elements_by_query(query, elements)
 
 						end
 					end
+
 					section[k] = filter
 				end
 
@@ -808,24 +852,26 @@ function GUI:get_elements_by_query(query, elements)
 
 				if pseudo == "last_child" then
 					local filter = {}
+
 					for _, element in ipairs(section[k]) do
 						if element.parent and element.parent:last_child() == element then
 							table.insert(filter, element)
 						end
 					end
+
 					section[k] = filter
 				end
 
-				local selector, type = pseudo:match("([^%(%s]+)%(([^%)]*)%)")
-				if selector == "last_of_type") then
+				if selector == "last_of_type" then
 					local filter = {}
+
 					for _, element in ipairs(section[k]) do
-						if element.parent and element.type == type then
+						if element.parent and element.type == value then
 							local i = #element.parent.children
 
 							while i > 1 do
 								local child = element.parent.children[i]
-								if child.type == type then
+								if child.type == value then
 									if child == element then
 										table.insert(filter, element)
 									end
@@ -838,66 +884,156 @@ function GUI:get_elements_by_query(query, elements)
 
 						end
 					end
+
 					section[k] = filter
 				end
 
-				if pseudo == "not(selector)" then
-
-				end
-
-				if pseudo == "nth_child(n)" then
-
-				end
-
-				if pseudo == "nth_last_child(n)" then
-
-				end
-
-				if pseudo == "nth_last_of_type(n)" then
-
-				end
-
-				if pseudo == "nth_of_type(n)" then
-
-				end
-
-				local selector, type = pseudo:match("([^%(%s]+)%(([^%)]*)%)")
-				if selector == "first_of_type") then
+				if selector == "not" then
 					local filter = {}
-					for _, element in ipairs(section[k]) do
-						if element.parent and element.type == type then
-							local count = 0
-							for _, child in ipairs(element.parent.children) do
-								if child.type == type then
-									count = count + 1
-								end
-							end
+					value        = self:get_elements_by_query(value, section[k])
 
-							if count == 1 then
+					for _, element in ipairs(section[k]) do
+						local found = false
+
+						for _, t in ipairs(type) do
+							if element == t then
+								found = true
+								break
+							end
+						end
+
+						if not found then
+							table.insert(filter, element)
+						end
+					end
+
+					section[k] = filter
+				end
+
+				if selector == "nth_child" then
+					local filter = {}
+
+					for _, element in ipairs(section[k]) do
+						if #element.parent.children >= value then
+							if element.parent.children[value] == element then
 								table.insert(filter, element)
 							end
 						end
 					end
+
+					section[k] = filter
+				end
+
+				if selector == "nth_last_child" then
+					local filter = {}
+
+					for _, element in ipairs(section[k]) do
+						if #element.parent.children >= value + 1 then
+							if element.parent.children[#element.parent.children - value] == element then
+								table.insert(filter, element)
+							end
+						end
+					end
+
+					section[k] = filter
+				end
+
+				if selector == "nth_last_of_type" then
+					local filter = {}
+					value        = string_split(value, ",")
+
+					for _, element in ipairs(section[k]) do
+						if element.parent and element.type == value[1] then
+							local count = 0
+							local i     = #element.parent.children
+
+							while i > 1 do
+								local child = element.parent.children[i]
+								if child.type == value[1] then
+									count = count + 1
+
+									if child == element and count == value[2] then
+										table.insert(filter, element)
+									end
+
+									if count == value[2] then break end
+								end
+
+								i = i - 1
+							end
+
+						end
+					end
+
+					section[k] = filter
+				end
+
+				if selector == "nth_of_type" then
+					local filter = {}
+					value        = string_split(value, ",")
+
+					for _, element in ipairs(section[k]) do
+						if element.parent and element.type == value[1] then
+							local count = 0
+
+							for _, child in ipairs(element.parent.children) do
+								if child.type == value[1] then
+									count = count + 1
+
+									if child == element and count == value[2] then
+										table.insert(filter, element)
+									end
+
+									if count == value[2] then break end
+								end
+							end
+						end
+					end
+
+					section[k] = filter
+				end
+
+				if selector == "first_of_type" then
+					local filter = {}
+
+					for _, element in ipairs(section[k]) do
+						if element.parent and element.type == value then
+							for _, child in ipairs(element.parent.children) do
+								if child.type == value then
+									if child == element then
+										table.insert(filter, element)
+									end
+
+									break
+								end
+							end
+						end
+					end
+
 					section[k] = filter
 				end
 
 				if pseudo == "only_child" then
 					local filter = {}
+
 					for _, element in ipairs(section[k]) do
 						if element.parent and #element.parent.children == 1 then
 							table.insert(filter, element)
 						end
 					end
+
 					section[k] = filter
 				end
 
 				if pseudo == "root" then
 					local filter = {}
+
 					for _, element in ipairs(section[k]) do
 						if not element.parent then
 							table.insert(filter, element)
 						end
 					end
+
 					section[k] = filter
 				end
 			end

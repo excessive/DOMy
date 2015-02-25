@@ -86,7 +86,8 @@ function Element:get_property(property)
 end
 
 function Element:set_property(property, value)
-	self.properties[property] = value
+	self.properties[property]        = value
+	self.custom_properties[property] = value
 end
 
 function Element:remove_property(property)
