@@ -56,6 +56,144 @@ function Element:init(element, parent, gui)
 	end
 end
 
+function Element:_draw()
+	--[[         ~~ BOX MODEL ~~
+
+	    {             WIDTH             }
+	+---------------------------------------+
+	|                MARGIN                 |
+	|   +-------------------------------+   | ~~~
+	|   |/////////// BORDER ////////////|   |
+	|   |///+-----------------------+///|   |
+	|   |///|        PADDING        |///|   |  H
+	|   |///|   +---------------+   |///|   |  E
+	|   |///|   |               |   |///|   |  I
+	|   |///|   |    CONTENT    |   |///|   |  G
+	|   |///|   |               |   |///|   |  H
+	|   |///|   +---------------+   |///|   |  T
+	|   |///|        PADDING        |///|   |
+	|   |///+-----------------------+///|   |
+	|   |/////////// BORDER ////////////|   |
+	|   +-------------------------------+   | ~~~
+	|                MARGIN                 |
+	+---------------------------------------+
+	    {             WIDTH             }
+
+	--]]
+	local ep = self.properties
+
+	-- Position & size of element
+	local x = self.position.x
+	local y = self.position.y
+	local w = ep.width
+	local h = ep.height
+
+	-- Content start & end of element
+	local cx = x + ep.padding_left + ep.border_left
+	local cy = y + ep.padding_top  + ep.border_top
+	local cw = w - ep.padding_top  - ep.border_top  - ep.padding_right  - ep.border_right
+	local ch = h - ep.padding_left - ep.border_left - ep.padding_bottom - ep.border_bottom
+
+	love.graphics.setScissor(x, y, w, h)
+
+	-- Draw Background
+	if ep.background_color then
+		love.graphics.push("all")
+		love.graphics.setColor(ep.background_color)
+		love.graphics.rectangle("fill", x, y, w, h)
+		love.graphics.pop()
+	end
+
+	-- Draw Background Image
+	if ep.background_image then
+		local bx, by = x, y
+		local bw, bh = ep.background_image:getDimensions()
+
+		-- Set Background Offset
+		if ep.background_position then
+			bx = bx + ep.background_position[1]
+			by = by + ep.background_position[2]
+		end
+
+		-- Set Background Size
+		if ep.background_size then
+			if ep.background_size[1] < bw then
+				bw = ep.background_size[1]
+			end
+
+			if ep.background_size[2] < bh then
+				bh = ep.background_size[2]
+			end
+		end
+
+		local quad = love.graphics.newQuad(0, 0, bw, bh, ep.background_image:getDimensions())
+		love.graphics.draw(ep.background_image, quad, bx, by)
+	end
+
+	-- Draw Border (Top)
+	if ep.border_top_color then
+		love.graphics.push("all")
+		love.graphics.setColor(ep.border_top_color)
+		love.graphics.line(x, y, x+w, y)
+		love.graphics.pop()
+	end
+
+	-- Draw Border (Right)
+	if ep.border_right_color then
+		love.graphics.push("all")
+		love.graphics.setColor(ep.border_right_color)
+		love.graphics.line(x+w, y, x+w, y+h)
+		love.graphics.pop()
+	end
+
+	-- Draw Border (Bottom)
+	if ep.border_bottom_color then
+		love.graphics.push("all")
+		love.graphics.setColor(ep.border_bottom_color)
+		love.graphics.line(x+w, y+h, x, y+h)
+		love.graphics.pop()
+	end
+
+	-- Draw Border (Left)
+	if ep.border_left_color then
+		love.graphics.push("all")
+		love.graphics.setColor(ep.border_left_color)
+		love.graphics.line(x, y+h, x, y)
+		love.graphics.pop()
+	end
+
+	-- Draw Text
+	if self.value then
+		love.graphics.push("all")
+		-- Set Text Color
+		if ep.text_color then
+			love.graphics.setColor(ep.text_color)
+		end
+
+		-- Set Font
+		if ep.font then
+			love.graphics.setFont(ep.font)
+		end
+
+		love.graphics.printf(tostring(self.value), cx, cy, cw)
+		love.graphics.pop()
+	end
+
+	love.graphics.setScissor()
+
+	-- DEBUG
+	love.graphics.setColor(255, 255, 0, 63)
+	love.graphics.rectangle("line", x-ep.margin_left, y-ep.margin_top, w+ep.margin_left+ep.margin_right, h+ep.margin_top+ep.margin_bottom)
+	love.graphics.setColor(0, 255, 255, 63)
+	love.graphics.rectangle("line", cx, cy, cw, ch)
+	love.graphics.setColor(255, 255, 255, 255)
+	-- DEBUG
+end
+
+function Element:draw()
+	self:_draw()
+end
+
 function Element:_get_position()
 	if self.parent then
 		for k, child in ipairs(self.parent.children) do
