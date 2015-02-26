@@ -402,6 +402,20 @@ function GUI:get_active_element()
 	return self.active
 end
 
+function GUI:set_cache(path, data)
+	if not self.cache[path] then
+		self.cache[path] = data
+	end
+end
+
+function GUI:get_cache(path)
+	return self.cache[path]
+end
+
+function GUI:remove_cache(path)
+	self.cache[path] = nil
+end
+
 function GUI:get_elements_by_bounding(x, y)
 	local filter = {}
 
