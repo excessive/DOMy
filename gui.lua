@@ -1,4 +1,4 @@
-local path     = (...):gsub('%.[^%.]+$', '')
+local path     = (...):gsub('%.[^%.]+$', '') .. "."
 local elements = {}
 local GUI      = {}
 
@@ -54,7 +54,7 @@ local function string_split(s, d)
 	return t
 end
 
-function GUI:init(path)
+function GUI:init()
 	-- Load the default element classes
 	local new_path      = path:gsub("%.", "/") .. "elements/"
 	local element_files = love.filesystem.getDirectoryItems(new_path)
@@ -78,7 +78,7 @@ function GUI:init(path)
 	self.hover         = false
 	self.mx, self.my   = love.mouse.getPosition()
 
-	local Callback       = require(path..".callbacks")
+	local Callback       = require(path.."callbacks")
 	GUI.update           = Callback.update
 	GUI.draw             = Callback.draw
 	GUI.keypressed       = Callback.keypressed

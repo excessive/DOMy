@@ -36,7 +36,7 @@ local path = ... .. "." -- lol
 
 function DOM.new()
 	local gui = setmetatable({}, { __index = require(path .. "gui") })
-	gui:init(path)
+	gui:init()
 	return gui
 end
 
