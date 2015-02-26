@@ -1,6 +1,6 @@
-local path    = ... .. "."
-local Class   = require(path.."thirdparty.hump.class")
-local cpml    = require(path.."thirdparty.cpml")
+local path    = (...):gsub('%.[^%.]+$', '')
+local Class   = require(path..".thirdparty.hump.class")
+local cpml    = require(path..".thirdparty.cpml")
 local Element = Class {}
 
 function Element:init(element, parent, gui)
@@ -44,6 +44,7 @@ function Element:init(element, parent, gui)
 		font_size   = 12,
 		line_height = 1,
 		text_align  = "left",
+		text_color  = { 255, 255, 255, 255 },
 	}
 
 	if element.value then

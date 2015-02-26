@@ -1,4 +1,4 @@
-local path     = (...):gsub('%.[^%.]+$', '') .. "."
+local path     = (...):gsub('%.[^%.]+$', '')
 local elements = {}
 local GUI      = {}
 
@@ -76,7 +76,7 @@ function GUI:init(path)
 	self.hover         = false
 	self.mx, self.my   = love.mouse.getPosition()
 
-	local Callback       = require(path.."callbacks")
+	local Callback       = require(path..".callbacks")
 	GUI.update           = Callback.update
 	GUI.draw             = Callback.draw
 	GUI.keypressed       = Callback.keypressed
