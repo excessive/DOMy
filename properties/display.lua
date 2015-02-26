@@ -47,9 +47,27 @@ function Display.block(element, d, x, y, nl, parent)
 		Display.block_set_width(element, parent)
 	end
 
+	-- Width within bounds
+	if ep.min_width and ep.width < ep.min_width then
+		ep.width = ep.min_width
+	end
+
+	if ep.max_width and ep.width > ep.max_width then
+		ep.width = ep.max_width
+	end
+
 	-- Determine height of element
 	if not ep.height then
 		Display.block_set_height(element, parent)
+	end
+
+	-- Height within bounds
+	if ep.min_height and ep.height < ep.min_height then
+		ep.height = ep.min_height
+	end
+
+	if ep.max_height and ep.height > ep.max_height then
+		ep.height = ep.max_height
 	end
 
 	-- If not a flexbox, propogate to children
@@ -118,8 +136,7 @@ function Display.block_set_height(element, parent)
 	if ep.height == epp and element.value then
 		local width, lines = ep.font:getWrap(element.value, ep.width - ep.border_left - ep.border_right - ep.padding_left - ep.padding_right)
 		local height       = ep.font:getHeight()
-
-		ep.height = ep.height + (height * lines)
+		ep.height          = ep.height + (height * lines * ep.line_height)
 	end
 end
 
@@ -130,12 +147,30 @@ function Display.inline(element, d, x, y, nl, parent)
 
 	-- Determine width of element
 	if not ep.width then
-		Display.inline_set_width(element)
+		Display.inline_set_width(element, parent)
+	end
+
+	-- Width within bounds
+	if ep.min_width and ep.width < ep.min_width then
+		ep.width = ep.min_width
+	end
+
+	if ep.max_width and ep.width > ep.max_width then
+		ep.width = ep.max_width
 	end
 
 	-- Determine height of element
 	if not ep.height then
-		Display.inline_set_height(element)
+		Display.inline_set_height(element, parent)
+	end
+
+	-- Height within bounds
+	if ep.min_height and ep.height < ep.min_height then
+		ep.height = ep.min_height
+	end
+
+	if ep.max_height and ep.height > ep.max_height then
+		ep.height = ep.max_height
 	end
 
 	-- Determine element position
@@ -248,8 +283,7 @@ function Display.inline_set_height(element)
 	if ep.height == epp and element.value then
 		local width, lines = ep.font:getWrap(element.value, ep.width - ep.border_left - ep.border_right - ep.padding_left - ep.padding_right)
 		local height       = ep.font:getHeight()
-
-		ep.height = ep.height + (height * lines)
+		ep.height          = ep.height + (height * lines * ep.line_height)
 	end
 end
 

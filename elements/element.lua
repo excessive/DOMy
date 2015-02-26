@@ -39,8 +39,11 @@ function Element:init(element, parent, gui)
 		flex_basis  = "auto",
 		align_self  = "auto",
 
-		font_path = "default",
-		font_size = 12,
+		-- Font
+		font_path   = "default",
+		font_size   = 12,
+		line_height = 1,
+		text_align  = "left",
 	}
 
 	if element.value then
@@ -101,6 +104,7 @@ function Element:default_draw()
 	local cw = w - ep.padding_top  - ep.border_top  - ep.padding_right  - ep.border_right
 	local ch = h - ep.padding_left - ep.border_left - ep.padding_bottom - ep.border_bottom
 
+	-- Set clip space to element bounds
 	love.graphics.setScissor(x, y, w, h)
 
 	-- Draw Background
@@ -169,6 +173,9 @@ function Element:default_draw()
 		love.graphics.pop()
 	end
 
+	-- Set clip space to content bounds
+	love.graphics.setScissor(cx, cy, cw, ch)
+
 	-- Draw Text
 	if self.value then
 		love.graphics.push("all")
@@ -182,10 +189,18 @@ function Element:default_draw()
 			love.graphics.setFont(ep.font)
 		end
 
-		love.graphics.printf(tostring(self.value), cx, cy, cw)
+		-- Set Line Height
+		local line_height = ep.font:getLineHeight()
+		ep.font:setLineHeight(ep.line_height)
+
+		local text_offset = cy + (ep.font:getHeight() * ep.font:getLineHeight() - ep.font:getHeight()) / 2
+
+		love.graphics.printf(tostring(self.value), cx, text_offset, cw, ep.text_align)
+		ep.font:setLineHeight(line_height)
 		love.graphics.pop()
 	end
 
+	-- Reset clip space
 	love.graphics.setScissor()
 
 	-- DEBUG

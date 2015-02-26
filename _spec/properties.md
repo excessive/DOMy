@@ -51,12 +51,11 @@
 [X] width
 [ ] vertical_align
 
-# Flexible Box Layout (6 / 22)
+# Flexible Box Layout (9 / 21)
 
 [ ] align_content
 [ ] align_items
 [ ] align_self
-[X] display
 [ ] flex
 [ ] flex_basis
 [ ] flex_direction
@@ -70,19 +69,19 @@
 [X] margin_left
 [X] margin_right
 [X] margin_top
-[ ] max_height
-[ ] max_width
-[ ] min_height
-[ ] min_width
+[X] max_height
+[X] max_width
+[X] min_height
+[X] min_width
 [ ] order
 
-# Text Properties (1 / 12)
+# Text Properties (3 / 12)
 
 [ ] direction
-[ ] line_height
+[X] line_height
 [ ] overflow_wrap
 [ ] tab_size
-[ ] text_align
+[X] text_align
 [X] text_color
 [ ] text_decoration
 [ ] text_indent
@@ -160,4 +159,4 @@
 [ ] mask
 [ ] mask_type
 
-# Total (31 / 120) [25.83%]
+# Total (36 / 119) [30.25%]
