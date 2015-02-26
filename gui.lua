@@ -78,24 +78,33 @@ function GUI:init()
 	self.hover         = false
 	self.mx, self.my   = love.mouse.getPosition()
 
-	local Callback       = require(path.."callbacks")
-	GUI.update           = Callback.update
-	GUI.draw             = Callback.draw
-	GUI.keypressed       = Callback.keypressed
-	GUI.keyreleased      = Callback.keyreleased
-	GUI.textinput        = Callback.textinput
-	GUI.mousepressed     = Callback.mousepressed
-	GUI.mousereleased    = Callback.mousereleased
-	GUI.joystickadded    = Callback.joystickadded
-	GUI.joystickremoved  = Callback.joystickremoved
-	GUI.joystickpressed  = Callback.joystickpressed
-	GUI.joystickreleased = Callback.joystickreleased
-	GUI.joystickaxis     = Callback.joystickaxis
-	GUI.joystickhat      = Callback.joystickhat
-	GUI.gamepadpressed   = Callback.gamepadpressed
-	GUI.gamepadreleased  = Callback.gamepadreleased
-	GUI.gamepadaxis      = Callback.gamepadaxis
-	GUI.resize           = Callback.resize
+	local Callback = require(path.."callbacks")
+	local list     = self:get_callbacks()
+	for _, v in ipairs(list) do
+		GUI[v] = Callback[v]
+	end
+end
+
+function GUI:get_callbacks()
+	return {
+		"update",
+		"draw",
+		"keypressed",
+		"keyreleased",
+		"textinput",
+		"mousepressed",
+		"mousereleased",
+		"joystickadded",
+		"joystickremoved",
+		"joystickpressed",
+		"joystickreleased",
+		"joystickaxis",
+		"joystickhat",
+		"gamepadpressed",
+		"gamepadreleased",
+		"gamepadaxis",
+		"resize"
+	}
 end
 
 function GUI:import_markup(file)

@@ -145,6 +145,11 @@ function Element:default_draw()
 		love.graphics.draw(ep.background_image, quad, bx, by)
 	end
 
+	-- Draw Image
+	if ep.image then
+		love.graphics.draw(ep.image, x, y)
+	end
+
 	-- Draw Border (Top)
 	if ep.border_top_color then
 		love.graphics.push("all")
