@@ -213,6 +213,7 @@ function GUI:import_styles(file)
 		"pairs", "ipairs", "getfenv",
 		"pcall", "xpcall", "print",
 		"next", "select", "unpack",
+		"love",
 	}
 
 	-- Sandbox
@@ -325,23 +326,14 @@ function GUI:import_styles(file)
 end
 
 function GUI:import_scripts(file)
-	-- lol
-	local global = {
-		"bit", "math", "string", "table",
-		"type", "tonumber", "tostring",
-		"pairs", "ipairs", "print",
-		"pcall", "xpcall", "getfenv",
-		"next", "select", "unpack",
-	}
-
 	-- Sandbox
 	local env = {}
-	env.gui = self
 
-	-- Some useful globals
-	for _, v in ipairs(global) do
-		env[v] = _G[v]
+	for k in pairs(_G) do
+		env[k] = _G[k]
 	end
+
+	env.gui = self
 
 	local scripts
 

@@ -9,8 +9,7 @@ function Element:init(element, parent, gui)
 	self.enabled            = true
 	self.type               = element[1]
 	self.value              = ""
-	self.parent             = parent          or false
-	self.id                 = element.id      or false
+	self.parent             = parent or false
 	self.position           = cpml.vec2(0, 0)
 	self.scroll_size        = cpml.vec2(0, 0) -- dp scrollable
 	self.scroll_position    = cpml.vec2(0, 0) -- % scrolled
@@ -47,9 +46,13 @@ function Element:init(element, parent, gui)
 		text_color  = { 255, 255, 255, 255 },
 	}
 
-	if element.value then
-		self.value = element.value
-	elseif type(element[2]) ~= "table" then
+	for k, v in pairs(element) do
+		if type(k) == "string" then
+			self[k] = v
+		end
+	end
+
+	if self.value == "" and type(element[2]) ~= "table" then
 		self.value = element[2]
 	end
 
