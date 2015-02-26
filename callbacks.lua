@@ -3,6 +3,10 @@ local Display  = require(path.."properties.display")
 local Callback = {}
 
 function Callback.update(self, dt)
+	for _, element in ipairs(self.elements) do
+		element:update(dt)
+	end
+
 	local hover  = false
 	local mx, my = love.mouse.getPosition()
 

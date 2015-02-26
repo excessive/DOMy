@@ -17,18 +17,18 @@ All bundled tests pass. To verify tests, simply require the test file in main.lu
 * Base element
 * Element hierarchy
 * Element selectors
-* Drawing to screen (preliminary)
+* Draw GUI
 * Event System
-* Bring back the dinosaurs
-* Teach dinosaurs to fly space ships
 
 
 ## TODO
 
+* Finish adding styles
+* Finish adding default elements
+* Implement templating system
+* Implement virtual input system
+* Implement smart draw system
 * Implement dp and sp units
-* Draw elements properly
-* Batch drawing
-* Conquer galaxy
 
 
 ## Quick Example
@@ -73,7 +73,7 @@ The style syntax takes very heavily from CSS and SCSS. It uses symbols to organi
 * (:): Pseudo-Class
 * ( ): Descendant\*
 
-\*Styles can be nested wherein the nested style is treated as a descendant of all parent selectors.
+\* Styles can be nested wherein the nested style is treated as a descendant of all parent selectors.
 
 A style block can have any number of selectors and will terminate when it finds a table. It will then recursively check that table for a nested style block.
 

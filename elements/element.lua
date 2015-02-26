@@ -54,9 +54,16 @@ function Element:init(element, parent, gui)
 	else
 		self.class = element.class
 	end
+
+	self.update = self.default_update
+	self.draw   = self.default_draw
 end
 
-function Element:_draw()
+function Element:default_update(dt)
+
+end
+
+function Element:default_draw()
 	--[[         ~~ BOX MODEL ~~
 
 	    {             WIDTH             }
@@ -188,10 +195,6 @@ function Element:_draw()
 	love.graphics.rectangle("line", cx, cy, cw, ch)
 	love.graphics.setColor(255, 255, 255, 255)
 	-- DEBUG
-end
-
-function Element:draw()
-	self:_draw()
 end
 
 function Element:_get_position()
