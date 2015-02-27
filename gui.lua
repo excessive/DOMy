@@ -66,6 +66,7 @@ function GUI:init()
 		end
 	end
 
+	self._debug        = false
 	self.cache         = {}
 	self.draw_order    = {}
 	self.elements      = {}

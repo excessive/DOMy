@@ -3,7 +3,7 @@ local new_path = path:gsub("%.", "/")
 local Class    = require(path..".thirdparty.hump.class")
 local cpml     = require(path..".thirdparty.cpml")
 local Element  = assert(love.filesystem.load(new_path.."elements/element.lua"))(path)
-local Image   = Class {}
+local Image    = Class {}
 
 Image:include(Element)
 

@@ -213,11 +213,13 @@ function Element:default_draw()
 	love.graphics.setScissor()
 
 	-- DEBUG
-	love.graphics.setColor(255, 255, 0, 63)
-	love.graphics.rectangle("line", x-ep.margin_left, y-ep.margin_top, w+ep.margin_left+ep.margin_right, h+ep.margin_top+ep.margin_bottom)
-	love.graphics.setColor(0, 255, 255, 63)
-	love.graphics.rectangle("line", cx, cy, cw, ch)
-	love.graphics.setColor(255, 255, 255, 255)
+	if self.gui._debug then
+		love.graphics.setColor(255, 255, 0, 63)
+		love.graphics.rectangle("line", x-ep.margin_left, y-ep.margin_top, w+ep.margin_left+ep.margin_right, h+ep.margin_top+ep.margin_bottom)
+		love.graphics.setColor(0, 255, 255, 63)
+		love.graphics.rectangle("line", cx, cy, cw, ch)
+		love.graphics.setColor(255, 255, 255, 255)
+	end
 	-- DEBUG
 end
 
