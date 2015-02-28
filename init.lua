@@ -34,8 +34,12 @@ local DOM = {
 
 local path = ... .. "." -- lol
 
-function DOM.new()
+function DOM.new(quirks_mode)
 	local gui = setmetatable({}, { __index = require(path .. "gui") })
+	if not quirks_mode then
+		local major, minor, rev = love.getVersion()
+		assert(major == 0 and minor == 9 and rev >= 2, "DOMinatrix requires LÖVE 0.9.2 or higher (if you are absolutely sure of what you are doing, use DOM.new(true) to skip this check).")
+	end
 	gui:init()
 	return gui
 end

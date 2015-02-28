@@ -71,6 +71,40 @@ function Element:default_update(dt)
 end
 
 function Element:default_draw()
+	local function get_scissor_clip(parent, x, y, w, h)
+		local sx, sy, sw, sh = x, y, w, h
+		local cx, cy, cw, ch = 0, 0, love.graphics.getDimensions()
+
+		if parent then
+			local pp = parent.properties
+
+			cx = parent.position.x + pp.padding_left + pp.border_left
+			cy = parent.position.y + pp.padding_top  + pp.border_top
+			cw = pp.width  - pp.padding_left - pp.border_left - pp.padding_right  - pp.border_right
+			ch = pp.height - pp.padding_top  - pp.border_top  - pp.padding_bottom - pp.border_bottom
+		end
+
+		if sx < cx then
+			sx = cx
+		end
+
+		if sy < cy then
+			sy = cy
+		end
+
+		if sx + sw - cx > cw then
+			sw = sw - ((sx + sw) - (cx + cw))
+			if sw < 0 then sw = 0 end
+		end
+
+		if sy + sh - cy > ch then
+			sh = sh - ((sy + sh) - (cy + ch))
+			if sh < 0 then sh = 0 end
+		end
+
+		return sx, sy, sw, sh
+	end
+
 	--[[         ~~ BOX MODEL ~~
 
 	    {             WIDTH             }
@@ -105,11 +139,11 @@ function Element:default_draw()
 	-- Content start & end of element
 	local cx = x + ep.padding_left + ep.border_left
 	local cy = y + ep.padding_top  + ep.border_top
-	local cw = w - ep.padding_top  - ep.border_top  - ep.padding_right  - ep.border_right
-	local ch = h - ep.padding_left - ep.border_left - ep.padding_bottom - ep.border_bottom
+	local cw = w - ep.padding_left - ep.border_left - ep.padding_right  - ep.border_right
+	local ch = h - ep.padding_top  - ep.border_top  - ep.padding_bottom - ep.border_bottom
 
 	-- Set clip space to element bounds
-	love.graphics.setScissor(x, y, w, h)
+	love.graphics.setScissor(get_scissor_clip(self.parent, x, y, w, h))
 
 	-- Draw Background
 	if ep.background_color then
@@ -141,8 +175,16 @@ function Element:default_draw()
 			end
 		end
 
+		if ep.background_image_color then
+			love.graphics.push("all")
+		end
+
 		local quad = love.graphics.newQuad(0, 0, bw, bh, ep.background_image:getDimensions())
 		love.graphics.draw(ep.background_image, quad, bx, by)
+
+		if ep.background_image_color then
+			love.graphics.pop()
+		end
 	end
 
 	-- Draw Image
@@ -183,7 +225,7 @@ function Element:default_draw()
 	end
 
 	-- Set clip space to content bounds
-	love.graphics.setScissor(cx, cy, cw, ch)
+	love.graphics.setScissor(get_scissor_clip(self.parent, cx, cy, cw, ch))
 
 	-- Draw Text
 	if self.value then

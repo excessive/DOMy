@@ -61,7 +61,7 @@ function GUI:init()
 
 	for _, file in ipairs(element_files) do
 		local name = file:sub(1, -5)
-		if file:sub(-4) == ".lua" then
+		if file ~= "element.lua" and file:sub(-4) == ".lua" then
 			elements[name] = love.filesystem.load(new_path .. file)(path)
 		end
 	end

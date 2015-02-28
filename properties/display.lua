@@ -2,7 +2,7 @@ local path    = (...):gsub('%.[^%.]+$', '') .. "."
 local Flex    = require(path.."flex")
 local Display = {}
 
-function Display.position_elements(elements, d, x, y)
+function Display.position_elements(elements, d, x, y, w, h)
 	if #elements == 0 then return end
 
 	local d  = d or "inline"
@@ -16,9 +16,9 @@ function Display.position_elements(elements, d, x, y)
 		y = y,
 	}
 
-	if elements[1].parent then
-		parent.w = elements[1].parent.properties.width
-		parent.h = elements[1].parent.properties.height
+	if w then
+		parent.w = w
+		parent.h = h
 	else
 		parent.w = love.graphics.getWidth()  - x
 		parent.h = love.graphics.getHeight() - y
@@ -211,7 +211,7 @@ end
 function Display.inline_set_width(element)
 	local ep  = element.properties
 	local epp = ep.padding_left + ep.padding_right + ep.border_left + ep.border_right
-	ep.width  = epp
+	local new_width = epp
 
 	-- Set width to largest child
 	for _, child in ipairs(element.children) do
@@ -226,27 +226,31 @@ function Display.inline_set_width(element)
 
 		local w = cp.width + cp.margin_left + cp.margin_right + epp
 
-		if w > ep.width then
-			ep.width = w
+		if w > new_width then
+			new_width = w
 		end
 	end
 
 	-- Set width to value size if larger than largest child
 	if element.value then
-		local w    = ep.font:getWidth(element.value) + epp
+		local w = ep.font:getWidth(element.value) + epp
 
-		if w > ep.width then
-			ep.width = w
+		if w > new_width then
+			new_width = w
 		end
 	end
 
 	-- If parent has a set width, don't overshoot it
 	if element.parent then
-		local pp = element.parent.properties
-		if ep.width > pp.width then
-			ep.width = pp.width - ep.margin_left - ep.margin_right - pp.border_left - pp.border_right - pp.padding_left - pp.padding_right
+		local pp  = element.parent.properties
+		local ppp = pp.border_left + pp.border_right + pp.padding_left + pp.padding_right
+
+		if pp.width and new_width > pp.width - ppp and pp.width > pp.margin_left + pp.margin_right then
+			new_width = pp.width - ppp - ep.margin_left - ep.margin_right
 		end
 	end
+
+	ep.width = new_width
 end
 
 function Display.inline_set_height(element)
