@@ -14,8 +14,6 @@ function Button:init(element, parent, gui)
 	self.default_properties.border           = { 1, 1, 1, 1 }
 	self.default_properties.text_color       = { 19, 86, 128, 255 }
 	self.default_properties.text_align       = "center"
-	self.default_properties.line_height      = 2.5
-	self.default_properties.width            = 100
 
 	self.on_mouse_enter    = self.default_on_mouse_enter
 	self.on_mouse_pressed  = self.default_on_mouse_pressed

@@ -356,7 +356,7 @@ function Display.get_content_box(element)
 	local x  = element.position.x + ep.padding_left + ep.border_left
 	local y  = element.position.y + ep.padding_top + ep.border_top
 	local w  = ep.width  - ep.padding_left - ep.border_left - ep.padding_right - ep.border_right
-	local h  = ep.height - ep.padding_top - ep.border_top - ep.padding_right - ep.border_right
+	local h  = ep.height - ep.padding_top - ep.border_top - ep.padding_bottom - ep.border_bottom
 
 	return x, y, w, h
 end

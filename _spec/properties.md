@@ -1,7 +1,8 @@
-# Background Properties (4 / 6)
+# Background Properties (5 / 7)
 
 [ ] background_attachment
 [X] background_color
+[X] background_image_color
 [X] background_path
 [X] background_position
 [ ] background_repeat
@@ -159,4 +160,4 @@
 [ ] mask
 [ ] mask_type
 
-# Total (36 / 119) [30.25%]
+# Total (37 / 120) [30.83%]

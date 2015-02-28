@@ -43,7 +43,10 @@ function Element:init(element, parent, gui)
 		font_size   = 12,
 		line_height = 1,
 		text_align  = "left",
-		text_color  = { 255, 255, 255, 255 },
+
+		-- Color
+		border_color = { 255, 255, 255, 255 },
+		text_color   = { 255, 255, 255, 255 },
 	}
 
 	for k, v in pairs(element) do
@@ -193,33 +196,49 @@ function Element:default_draw()
 	end
 
 	-- Draw Border (Top)
-	if ep.border_top_color then
+	if ep.border_top > 0 then
+		local x = x + ep.border_top / 2
+		local y = y + ep.border_top / 2
 		love.graphics.push("all")
 		love.graphics.setColor(ep.border_top_color)
+		love.graphics.setLineWidth(ep.border_top)
+		love.graphics.setLineStyle("rough")
 		love.graphics.line(x, y, x+w, y)
 		love.graphics.pop()
 	end
 
 	-- Draw Border (Right)
-	if ep.border_right_color then
+	if ep.border_right > 0 then
+		local x = x - ep.border_top / 2
+		local y = y + ep.border_top / 2
 		love.graphics.push("all")
 		love.graphics.setColor(ep.border_right_color)
+		love.graphics.setLineWidth(ep.border_right)
+		love.graphics.setLineStyle("rough")
 		love.graphics.line(x+w, y, x+w, y+h)
 		love.graphics.pop()
 	end
 
 	-- Draw Border (Bottom)
-	if ep.border_bottom_color then
+	if ep.border_bottom > 0 then
+		local x = x - ep.border_top / 2
+		local y = y - ep.border_top / 2
 		love.graphics.push("all")
 		love.graphics.setColor(ep.border_bottom_color)
+		love.graphics.setLineWidth(ep.border_bottom)
+		love.graphics.setLineStyle("rough")
 		love.graphics.line(x+w, y+h, x, y+h)
 		love.graphics.pop()
 	end
 
 	-- Draw Border (Left)
-	if ep.border_left_color then
+	if ep.border_left > 0 then
+		local x = x + ep.border_top / 2
+		local y = y - ep.border_top / 2
 		love.graphics.push("all")
 		love.graphics.setColor(ep.border_left_color)
+		love.graphics.setLineWidth(ep.border_left)
+		love.graphics.setLineStyle("rough")
 		love.graphics.line(x, y+h, x, y)
 		love.graphics.pop()
 	end

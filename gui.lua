@@ -880,10 +880,27 @@ function GUI:_apply_styles()
 		local bottom = string.format("%s_bottom", property)
 		local left   = string.format("%s_left",   property)
 
-		ep[top]    = value[1] or 0
-		ep[right]  = value[2] or 0
-		ep[bottom] = value[3] or 0
-		ep[left]   = value[4] or 0
+		if type(value) == "number" then
+			ep[top]    = value
+			ep[right]  = value
+			ep[bottom] = value
+			ep[left]   = value
+		elseif #value == 1 then
+			ep[top]    = value[1]
+			ep[right]  = value[1]
+			ep[bottom] = value[1]
+			ep[left]   = value[1]
+		elseif #value == 2 then
+			ep[top]    = value[1]
+			ep[right]  = value[2]
+			ep[bottom] = value[1]
+			ep[left]   = value[2]
+		else
+			ep[top]    = value[1]
+			ep[right]  = value[2]
+			ep[bottom] = value[3]
+			ep[left]   = value[4]
+		end
 	end
 
 	-- Expand border_color to longform
@@ -895,10 +912,27 @@ function GUI:_apply_styles()
 		local bottom = "border_bottom_color"
 		local left   = "border_left_color"
 
-		ep[top]    = value[1] or white
-		ep[right]  = value[2] or white
-		ep[bottom] = value[3] or white
-		ep[left]   = value[4] or white
+		if type(value[1]) == "number" then
+			ep[top]    = value
+			ep[right]  = value
+			ep[bottom] = value
+			ep[left]   = value
+		elseif #value == 1 then
+			ep[top]    = value[1]
+			ep[right]  = value[1]
+			ep[bottom] = value[1]
+			ep[left]   = value[1]
+		elseif #value == 2 then
+			ep[top]    = value[1]
+			ep[right]  = value[2]
+			ep[bottom] = value[1]
+			ep[left]   = value[2]
+		else
+			ep[top]    = value[1]
+			ep[right]  = value[2]
+			ep[bottom] = value[3]
+			ep[left]   = value[4]
+		end
 	end
 
 	-- Check all properties for special cases
