@@ -16,6 +16,7 @@ function Element:init(element, parent, gui)
 	self.children           = {}
 	self.default_properties = {
 		display = "inline",
+		visible = true,
 
 		-- TOP, RIGHT, BOTTOM, LEFT
 		margin  = 0,
@@ -661,6 +662,8 @@ function Element:has_focus()
 end
 
 function Element:is_binding(x, y)
+	if not self.visible then return end
+
 	local ex = self.position.x
 	local ey = self.position.y
 	local ew = self.properties.width

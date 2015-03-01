@@ -25,10 +25,13 @@ function Display.position_elements(elements, d, x, y, w, h)
 	end
 
 	for _, element in ipairs(elements) do
-		local ep  = element.properties
+		element.visible = Display.get_visible(element)
+		if element.visible then
+			local ep  = element.properties
 
-		if Display[ep.display] then
-			d, x, y, nl = Display[ep.display](element, d, x, y, nl, parent)
+			if Display[ep.display] then
+				d, x, y, nl = Display[ep.display](element, d, x, y, nl, parent)
+			end
 		end
 	end
 end
@@ -359,6 +362,18 @@ function Display.get_content_box(element)
 	local h  = ep.height - ep.padding_top - ep.border_top - ep.padding_bottom - ep.border_bottom
 
 	return x, y, w, h
+end
+
+function Display.get_visible(element)
+	if not element then return true end
+
+	if element.properties.visible == true then
+		Display.get_visible(element.parent)
+	else
+		return false
+	end
+
+	return true
 end
 
 return Display

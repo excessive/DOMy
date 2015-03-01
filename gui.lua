@@ -991,6 +991,8 @@ function GUI:_apply_styles()
 
 	-- Check all properties for special cases
 	local function set_property(element, property, value)
+		if not element then return end
+
 		local ep = element.properties
 		ep[property] = value
 
@@ -1034,6 +1036,8 @@ function GUI:_apply_styles()
 			end
 
 			ep.font = self.cache[font_path..value]
+		elseif property == "cursor" then
+			ep.cursor = love.mouse.getSystemCursor(value)
 		end
 	end
 

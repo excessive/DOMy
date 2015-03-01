@@ -27,7 +27,7 @@
 [ ] border_top_right_radius
 [ ] box_shadow
 
-# Basic Box Properties (8 / 22)
+# Basic Box Properties (9 / 22)
 
 [ ] bottom
 [ ] clear
@@ -48,7 +48,7 @@
 [ ] position
 [ ] right
 [ ] top
-[ ] visibility
+[X] visible
 [X] width
 [ ] vertical_align
 
@@ -136,9 +136,9 @@
 [ ] transform_origin
 [ ] translate(x,y,z)
 
-# Basic User Interface Properties (0 / 8)
+# Basic User Interface Properties (1 / 8)
 
-[ ] cursor
+[X] cursor
 [ ] ime_mode
 [ ] nav_down
 [ ] nav_index
@@ -160,4 +160,4 @@
 [ ] mask
 [ ] mask_type
 
-# Total (37 / 120) [30.83%]
+# Total (39 / 120) [32.50%]

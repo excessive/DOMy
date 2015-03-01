@@ -33,12 +33,17 @@ function Callback.update(self, dt)
 	if self.pseudo.hover ~= hover then
 		if self.pseudo.hover then
 			self:bubble_event(self.pseudo.hover, "on_mouse_leave")
+			love.mouse.setCursor()
 		end
 
 		self.pseudo.hover = hover
 
 		if self.pseudo.hover then
 			self:bubble_event(self.pseudo.hover, "on_mouse_enter")
+
+			if self.pseudo.hover.properties.cursor then
+				love.mouse.setCursor(self.pseudo.hover.properties.cursor)
+			end
 		end
 	end
 
@@ -83,6 +88,8 @@ end
 
 function Callback.draw(self)
 	local function draw_element(element)
+		if not element.visible then return end
+
 		element:draw()
 
 		if #element.children > 0 then
