@@ -14,15 +14,13 @@ function Element:init(element, parent, gui)
 	self.scroll_size        = cpml.vec2(0, 0) -- dp scrollable
 	self.scroll_position    = cpml.vec2(0, 0) -- % scrolled
 	self.children           = {}
-	self.properties         = {}
-	self.custom_properties  = {}
 	self.default_properties = {
 		display = "inline",
 
 		-- TOP, RIGHT, BOTTOM, LEFT
-		margin  = { 0, 0, 0, 0 },
-		border  = { 0, 0, 0, 0 },
-		padding = { 0, 0, 0, 0 },
+		margin  = 0,
+		border  = 0,
+		padding = 0,
 
 		-- Flex Container
 		flex_direction  = "row",
@@ -48,6 +46,8 @@ function Element:init(element, parent, gui)
 		border_color = { 255, 255, 255, 255 },
 		text_color   = { 255, 255, 255, 255 },
 	}
+	self.custom_properties = {}
+	self.properties        = {}
 
 	for k, v in pairs(element) do
 		if type(k) == "string" then
@@ -74,6 +74,30 @@ function Element:default_update(dt)
 end
 
 function Element:default_draw()
+	--[[         ~~ BOX MODEL ~~
+
+		{             WIDTH             }
+	+---------------------------------------+
+	|                MARGIN                 |
+	|   +-------------------------------+   | ~~~
+	|   |/////////// BORDER ////////////|   |
+	|   |///+-----------------------+///|   |
+	|   |///|        PADDING        |///|   |  H
+	|   |///|   +---------------+   |///|   |  E
+	|   |///|   |               |   |///|   |  I
+	|   |///|   |    CONTENT    |   |///|   |  G
+	|   |///|   |               |   |///|   |  H
+	|   |///|   +---------------+   |///|   |  T
+	|   |///|        PADDING        |///|   |
+	|   |///+-----------------------+///|   |
+	|   |/////////// BORDER ////////////|   |
+	|   +-------------------------------+   | ~~~
+	|                MARGIN                 |
+	+---------------------------------------+
+		{             WIDTH             }
+
+	--]]
+
 	local function get_scissor_clip(parent, x, y, w, h)
 		local sx, sy, sw, sh = x, y, w, h
 		local cx, cy, cw, ch = 0, 0, love.graphics.getDimensions()
@@ -108,29 +132,18 @@ function Element:default_draw()
 		return sx, sy, sw, sh
 	end
 
-	--[[         ~~ BOX MODEL ~~
+	local function set_properties(new_properties, properties)
+		if not new_properties then return properties end
 
-	    {             WIDTH             }
-	+---------------------------------------+
-	|                MARGIN                 |
-	|   +-------------------------------+   | ~~~
-	|   |/////////// BORDER ////////////|   |
-	|   |///+-----------------------+///|   |
-	|   |///|        PADDING        |///|   |  H
-	|   |///|   +---------------+   |///|   |  E
-	|   |///|   |               |   |///|   |  I
-	|   |///|   |    CONTENT    |   |///|   |  G
-	|   |///|   |               |   |///|   |  H
-	|   |///|   +---------------+   |///|   |  T
-	|   |///|        PADDING        |///|   |
-	|   |///+-----------------------+///|   |
-	|   |/////////// BORDER ////////////|   |
-	|   +-------------------------------+   | ~~~
-	|                MARGIN                 |
-	+---------------------------------------+
-	    {             WIDTH             }
+		local properties = properties or {}
 
-	--]]
+		for k in pairs(new_properties) do
+			properties[k] = new_properties[k]
+		end
+
+		return properties
+	end
+
 	local ep = self.properties
 
 	-- Position & size of element
@@ -663,6 +676,22 @@ end
 function Element:scroll_into_view()
 	-- If parent is scrollable, scroll it so that self is visible
 	-- Self should be wholy visible or if too large, the top should match parent's top
+end
+
+function Element:add_class(class)
+	if type(class) == "string" then
+		table.insert(self.class, class)
+	end
+end
+
+function Element:remove_class(class)
+	if type(class) == "string" then
+		for k, v in ipairs(self.class) do
+			if class == v then
+				table.remove(self.class, k)
+			end
+		end
+	end
 end
 
 return Element

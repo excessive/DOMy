@@ -75,8 +75,11 @@ function GUI:init()
 	self.joystick_down = {}
 	self.gamepad_down  = {}
 	self.mouse_down    = {}
-	self.active        = false
-	self.hover         = false
+	self.pseudo        = {
+		active = false,
+		hover  = false,
+	}
+
 	self.mx, self.my   = love.mouse.getPosition()
 
 	local Callback = require(path.."callbacks")
@@ -182,7 +185,7 @@ function GUI:import_styles(file)
 				-- Grab all of the properties (no nests!) from the style
 				for property, value in pairs(style[#style]) do
 					if type(property) ~= "number" then
-							properties[property] = value
+						properties[property] = value
 					end
 				end
 
@@ -303,6 +306,7 @@ function GUI:import_styles(file)
 	local ok, err = pcall(styles)
 
 	if ok then
+		-- This is not nil! It accumulates!
 		local parsed
 
 		-- Parse stylesheet
@@ -611,21 +615,29 @@ function GUI:get_elements_by_query(query, elements)
 				end
 
 				if pseudo == "focus" then
+					local filter = {}
+
 					for _, element in ipairs(section[k]) do
-						if self.active == element then
-							section[k] = element
+						if self.pseudo.active == element then
+							table.insert(filter, element)
 							break
 						end
 					end
+
+					section[k] = filter
 				end
 
 				if pseudo == "hover" then
+					local filter = {}
+
 					for _, element in ipairs(section[k]) do
-						if self.hover == element then
-							section[k] = element
+						if self.pseudo.hover == element then
+							table.insert(filter, element)
 							break
 						end
 					end
+
+					section[k] = filter
 				end
 
 				if pseudo == "last_child" then
@@ -815,6 +827,48 @@ function GUI:get_elements_by_query(query, elements)
 
 					section[k] = filter
 				end
+
+				if pseudo == "lclick" then
+					local filter = {}
+
+					for _, element in ipairs(section[k]) do
+						if  self.mouse_down.l == element
+						and self.pseudo.hover == element then
+							table.insert(filter, element)
+							break
+						end
+					end
+
+					section[k] = filter
+				end
+
+				if pseudo == "mclick" then
+					local filter = {}
+
+					for _, element in ipairs(section[k]) do
+						if  self.mouse_down.m == element
+						and self.pseudo.hover == element then
+							table.insert(filter, element)
+							break
+						end
+					end
+
+					section[k] = filter
+				end
+
+				if pseudo == "rclick" then
+					local filter = {}
+
+					for _, element in ipairs(section[k]) do
+						if  self.mouse_down.r == element
+						and self.pseudo.hover == element then
+							table.insert(filter, element)
+							break
+						end
+					end
+
+					section[k] = filter
+				end
 			end
 		end
 	end
@@ -936,7 +990,7 @@ function GUI:_apply_styles()
 	end
 
 	-- Check all properties for special cases
-	local function check_property(element, property, value)
+	local function set_property(element, property, value)
 		local ep = element.properties
 		ep[property] = value
 
@@ -988,7 +1042,7 @@ function GUI:_apply_styles()
 		element.properties = {}
 
 		for property, value in pairs(element.default_properties) do
-			check_property(element, property, value)
+			set_property(element, property, value)
 		end
 	end
 
@@ -998,7 +1052,7 @@ function GUI:_apply_styles()
 
 		for _, element in ipairs(filter) do
 			for property, value in pairs(style.properties) do
-				check_property(element, property, value)
+				set_property(element, property, value)
 			end
 		end
 	end
@@ -1006,7 +1060,7 @@ function GUI:_apply_styles()
 	-- Apply custom properties
 	for _, element in ipairs(self.elements) do
 		for property, value in pairs(element.custom_properties) do
-			check_property(element, property, value)
+			set_property(element, property, value)
 		end
 	end
 end

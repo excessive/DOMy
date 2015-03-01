@@ -322,7 +322,7 @@ function Display.get_wrap(element)
 	for _, child in ipairs(element.children) do
 		local cp = child.properties
 		local w  = cp.width  + cp.margin_left + cp.margin_right
-		local h  = cp.height + cp.margin_top + cp.margin_right
+		local h  = cp.height + cp.margin_top + cp.margin_bottom
 
 		if cp.display == "block" or x + w > ep.width then
 			lines = lines + 1
