@@ -270,8 +270,10 @@ function Callback.gamepadaxis(self, joystick, axis, value)
 end
 
 function Callback.resize(self, w, h)
+	self.width  = w or self.width
+	self.height = h or self.height
 	self:_apply_styles()
-	Display.position_elements(self.draw_order)
+	Display.position_elements(self.draw_order, nil, 0, 0, self.width, self.height)
 end
 
 return Callback
