@@ -10,13 +10,24 @@ All bundled tests pass. To verify tests, simply require the test file in main.lu
 ## Current Features
 
 * UI instances
-* Import Markup
-* Import Styles
-* Import Scripts
+* Import Files
+	* Markup
+	* Styles
+	* Scripts
 * Script API
-* Base element
+* Elements
+	* block
+	* button
+	* image
+	* inline
+	* text
 * Element hierarchy
 * Element selectors
+* Asset Cache
+	* Images
+	* Fonts
+* Units
+	* %
 * Draw GUI
 * Event System
 

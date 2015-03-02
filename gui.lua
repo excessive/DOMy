@@ -82,6 +82,7 @@ function GUI:init()
 	self.srgb          = select(3, love.window.getMode()).srgb
 
 	self.mx, self.my   = love.mouse.getPosition()
+	self.width, self.height = love.graphics.getDimensions()
 
 	local Callback = require(path.."callbacks")
 	local list     = self:get_callbacks()
@@ -927,6 +928,53 @@ function GUI:bubble_event(element, event, ...)
 end
 
 function GUI:_apply_styles()
+
+	local function get_content_box(element)
+		local ep = element.properties
+		local x  = element.position.x + ep.padding_left + ep.border_left
+		local y  = element.position.y + ep.padding_top + ep.border_top
+		local w  = ep.width  - ep.padding_left - ep.border_left - ep.padding_right - ep.border_right
+		local h  = ep.height - ep.padding_top - ep.border_top - ep.padding_bottom - ep.border_bottom
+
+		return x, y, w, h
+	end
+
+	local function check_percent(element, value, axis)
+		if type(value) == "string" and value:sub(-1) == "%" then
+			value = tonumber(value:sub(1, -2)) / 100
+
+			if value then
+				local px = 0
+				local py = 0
+				local pw = self.width
+				local ph = self.height
+
+				if element.parent then
+					px, py, pw, ph = get_content_box(element.parent)
+				end
+
+				if axis == "x" then
+					value = value * pw
+				elseif axis == "y" then
+					value = value * ph
+				end
+			end
+		end
+
+		return value
+	end
+
+	local function check_property(element, property, value, axis)
+		element.properties[property] = check_percent(element, value, axis)
+	end
+
+	local function check_vec2(element, property, value)
+		element.properties[property] = {
+			check_percent(element, value[1], "x"),
+			check_percent(element, value[2], "y"),
+		}
+	end
+
 	-- Expand margin/border/padding to longform
 	local function expand_box(element, property, value)
 		local ep     = element.properties
@@ -935,33 +983,32 @@ function GUI:_apply_styles()
 		local bottom = string.format("%s_bottom", property)
 		local left   = string.format("%s_left",   property)
 
-		if type(value) == "number" then
-			ep[top]    = value
-			ep[right]  = value
-			ep[bottom] = value
-			ep[left]   = value
+		if type(value) == "number" or type(value) == "string" then
+			ep[top]    = check_percent(element, value, "y")
+			ep[right]  = check_percent(element, value, "x")
+			ep[bottom] = check_percent(element, value, "y")
+			ep[left]   = check_percent(element, value, "x")
 		elseif #value == 1 then
-			ep[top]    = value[1]
-			ep[right]  = value[1]
-			ep[bottom] = value[1]
-			ep[left]   = value[1]
+			ep[top]    = check_percent(element, value[1], "y")
+			ep[right]  = check_percent(element, value[1], "x")
+			ep[bottom] = check_percent(element, value[1], "y")
+			ep[left]   = check_percent(element, value[1], "x")
 		elseif #value == 2 then
-			ep[top]    = value[1]
-			ep[right]  = value[2]
-			ep[bottom] = value[1]
-			ep[left]   = value[2]
+			ep[top]    = check_percent(element, value[1], "y")
+			ep[right]  = check_percent(element, value[2], "x")
+			ep[bottom] = check_percent(element, value[1], "y")
+			ep[left]   = check_percent(element, value[2], "x")
 		else
-			ep[top]    = value[1]
-			ep[right]  = value[2]
-			ep[bottom] = value[3]
-			ep[left]   = value[4]
+			ep[top]    = check_percent(element, value[1], "y")
+			ep[right]  = check_percent(element, value[2], "x")
+			ep[bottom] = check_percent(element, value[3], "y")
+			ep[left]   = check_percent(element, value[4], "x")
 		end
 	end
 
 	-- Expand border_color to longform
 	local function expand_border_color(element, value)
 		local ep     = element.properties
-		local white  = { 255, 255, 255, 255 }
 		local top    = "border_top_color"
 		local right  = "border_right_color"
 		local bottom = "border_bottom_color"
@@ -993,7 +1040,6 @@ function GUI:_apply_styles()
 	-- Expand border_radius to longform
 	local function expand_border_radius(element, value)
 		local ep     = element.properties
-		local white  = { 255, 255, 255, 255 }
 		local top    = "border_top_left_radius"
 		local right  = "border_top_right_radius"
 		local bottom = "border_bottom_right_radius"
@@ -1037,6 +1083,29 @@ function GUI:_apply_styles()
 			expand_border_color(element, value)
 		elseif property == "border_radius" then
 			expand_border_radius(element, value)
+		elseif property == "top"
+			or property == "bottom"
+			or property == "margin_top"
+			or property == "margin_bottom"
+			or property == "border_top"
+			or property == "border_bottom"
+			or property == "padding_top"
+			or property == "padding_bottom"
+			or property == "height" then
+				check_property(element, property, value, "y")
+		elseif property == "right"
+			or property == "left"
+			or property == "margin_right"
+			or property == "margin_left"
+			or property == "border_right"
+			or property == "border_left"
+			or property == "padding_right"
+			or property == "padding_left"
+			or property == "width" then
+				check_property(element, property, value, "x")
+		elseif property == "background_position"
+			or property == "background_size" then
+				check_vec2(element, property, value)
 		elseif property == "background_path" then
 			if not self.cache[value] then
 				self.cache[value] = love.graphics.newImage(value)

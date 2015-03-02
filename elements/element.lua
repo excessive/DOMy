@@ -104,7 +104,6 @@ function Element:default_draw()
 
 	local function get_scissor_clip(parent, x, y, w, h, ox, oy)
 		local sx, sy, sw, sh = x, y, w, h
-		--local cx, cy, cw, ch = 0, 0, love.graphics.getDimensions()
 
 		if parent then
 			local pp = parent.properties
@@ -123,14 +122,15 @@ function Element:default_draw()
 
 			if sx + sw - cx > cw then
 				sw = sw - ((sx + sw) - (cx + cw))
-				if sw < 0 then sw = 0 end
 			end
 
 			if sy + sh - cy > ch then
 				sh = sh - ((sy + sh) - (cy + ch))
-				if sh < 0 then sh = 0 end
 			end
 		end
+
+		if sw < 0 then sw = 0 end
+		if sh < 0 then sh = 0 end
 
 		return sx, sy, sw, sh
 	end
@@ -306,7 +306,7 @@ function Element:default_draw()
 			love.graphics.pop()
 		end
 
-		love.graphics.printf(tostring(self.value), cx, text_offset, cw, ep.text_align)
+		love.graphics.printf(tostring(self.value), cx, text_offset, (cw >= 0 and cw or 0), ep.text_align)
 		ep.font:setLineHeight(line_height)
 		love.graphics.pop()
 	end
