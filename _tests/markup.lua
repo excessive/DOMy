@@ -1,21 +1,21 @@
 local gui = {
-	{ "element", "one", value="1" },
-	{ "element", "2", id="two" },
-	{ "element", "3", class={ "root", "sub" } },
-	{ "element", "4", class="root" },
-	{ "element", "5", class={ "root" } },
+	{ "inline", "one", value="1" },
+	{ "inline", "2", id="two" },
+	{ "inline", "3", class={ "root", "sub" } },
+	{ "inline", "4", class="root" },
+	{ "inline", "5", class={ "root" } },
 }
 
 for i=6, 10 do
-	table.insert(gui, { "element", i, class={ "sub" } })
+	table.insert(gui, { "inline", i, class={ "sub" } })
 end
 
 for i=1, 2 do
-	table.insert(gui[5], { "element", ">"..i })
+	table.insert(gui[5], { "inline", ">"..i })
 end
 
 for i=1, 3 do
-	table.insert(gui[5][3], { "element", ">>"..i, class={ "sub" } })
+	table.insert(gui[5][3], { "inline", ">>"..i, class={ "sub" } })
 end
 
 gui[5].id    = "five"

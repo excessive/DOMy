@@ -79,6 +79,7 @@ function GUI:init()
 		active = false,
 		hover  = false,
 	}
+	self.srgb          = select(3, love.window.getMode()).srgb
 
 	self.mx, self.my   = love.mouse.getPosition()
 
@@ -989,6 +990,38 @@ function GUI:_apply_styles()
 		end
 	end
 
+	-- Expand border_radius to longform
+	local function expand_border_radius(element, value)
+		local ep     = element.properties
+		local white  = { 255, 255, 255, 255 }
+		local top    = "border_top_left_radius"
+		local right  = "border_top_right_radius"
+		local bottom = "border_bottom_right_radius"
+		local left   = "border_bottom_left_radius"
+
+		if type(value[1]) == "number" then
+			ep[top]    = value
+			ep[right]  = value
+			ep[bottom] = value
+			ep[left]   = value
+		elseif #value == 1 then
+			ep[top]    = value[1]
+			ep[right]  = value[1]
+			ep[bottom] = value[1]
+			ep[left]   = value[1]
+		elseif #value == 2 then
+			ep[top]    = value[1]
+			ep[right]  = value[2]
+			ep[bottom] = value[1]
+			ep[left]   = value[2]
+		else
+			ep[top]    = value[1]
+			ep[right]  = value[2]
+			ep[bottom] = value[3]
+			ep[left]   = value[4]
+		end
+	end
+
 	-- Check all properties for special cases
 	local function set_property(element, property, value)
 		if not element then return end
@@ -1002,6 +1035,8 @@ function GUI:_apply_styles()
 			expand_box(element, property, value)
 		elseif property == "border_color" then
 			expand_border_color(element, value)
+		elseif property == "border_radius" then
+			expand_border_radius(element, value)
 		elseif property == "background_path" then
 			if not self.cache[value] then
 				self.cache[value] = love.graphics.newImage(value)

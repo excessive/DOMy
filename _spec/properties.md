@@ -27,15 +27,14 @@
 [ ] border_top_right_radius
 [ ] box_shadow
 
-# Basic Box Properties (9 / 22)
+# Basic Box Properties (13 / 21)
 
-[ ] bottom
+[X] bottom
 [ ] clear
-[ ] clip
 [X] display
 [ ] float
 [X] height
-[ ] left
+[X] left
 [ ] opacity
 [ ] overflow
 [ ] overflow_x
@@ -45,12 +44,14 @@
 [X] padding_left
 [X] padding_right
 [X] padding_top
-[ ] position
-[ ] right
-[ ] top
+[!] position
+[X] right
+[X] top
 [X] visible
 [X] width
 [ ] vertical_align
+
+! relative works, absolute and fixed still need some work
 
 # Flexible Box Layout (9 / 21)
 
@@ -76,7 +77,7 @@
 [X] min_width
 [ ] order
 
-# Text Properties (3 / 12)
+# Text Properties (5 / 13)
 
 [ ] direction
 [X] line_height
@@ -87,7 +88,8 @@
 [ ] text_decoration
 [ ] text_indent
 [ ] text_orientation
-[ ] text_shadow
+[X] text_shadow
+[X] text_shadow_color
 [ ] text_transform
 [ ] white_space
 
@@ -160,4 +162,4 @@
 [ ] mask
 [ ] mask_type
 
-# Total (39 / 120) [32.50%]
+# Total (45 / 120) [37.50%]

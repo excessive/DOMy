@@ -15,8 +15,9 @@ function Element:init(element, parent, gui)
 	self.scroll_position    = cpml.vec2(0, 0) -- % scrolled
 	self.children           = {}
 	self.default_properties = {
-		display = "inline",
-		visible = true,
+		display  = "inline",
+		visible  = true,
+		position = "default",
 
 		-- TOP, RIGHT, BOTTOM, LEFT
 		margin  = 0,
@@ -42,10 +43,12 @@ function Element:init(element, parent, gui)
 		font_size   = 12,
 		line_height = 1,
 		text_align  = "left",
+		text_shadow = false,
 
 		-- Color
 		border_color = { 255, 255, 255, 255 },
 		text_color   = { 255, 255, 255, 255 },
+		text_shadow_color = { 0, 0, 0, 255 },
 	}
 	self.custom_properties = {}
 	self.properties        = {}
@@ -99,35 +102,34 @@ function Element:default_draw()
 
 	--]]
 
-	local function get_scissor_clip(parent, x, y, w, h)
+	local function get_scissor_clip(parent, x, y, w, h, ox, oy)
 		local sx, sy, sw, sh = x, y, w, h
-		local cx, cy, cw, ch = 0, 0, love.graphics.getDimensions()
+		--local cx, cy, cw, ch = 0, 0, love.graphics.getDimensions()
 
 		if parent then
 			local pp = parent.properties
+			local cx = parent.position.x + ox + pp.padding_left + pp.border_left
+			local cy = parent.position.y + oy + pp.padding_top  + pp.border_top
+			local cw = pp.width  - pp.padding_left - pp.border_left - pp.padding_right  - pp.border_right
+			local ch = pp.height - pp.padding_top  - pp.border_top  - pp.padding_bottom - pp.border_bottom
 
-			cx = parent.position.x + pp.padding_left + pp.border_left
-			cy = parent.position.y + pp.padding_top  + pp.border_top
-			cw = pp.width  - pp.padding_left - pp.border_left - pp.padding_right  - pp.border_right
-			ch = pp.height - pp.padding_top  - pp.border_top  - pp.padding_bottom - pp.border_bottom
-		end
+			if sx < cx then
+				sx = cx
+			end
 
-		if sx < cx then
-			sx = cx
-		end
+			if sy < cy then
+				sy = cy
+			end
 
-		if sy < cy then
-			sy = cy
-		end
+			if sx + sw - cx > cw then
+				sw = sw - ((sx + sw) - (cx + cw))
+				if sw < 0 then sw = 0 end
+			end
 
-		if sx + sw - cx > cw then
-			sw = sw - ((sx + sw) - (cx + cw))
-			if sw < 0 then sw = 0 end
-		end
-
-		if sy + sh - cy > ch then
-			sh = sh - ((sy + sh) - (cy + ch))
-			if sh < 0 then sh = 0 end
+			if sy + sh - cy > ch then
+				sh = sh - ((sy + sh) - (cy + ch))
+				if sh < 0 then sh = 0 end
+			end
 		end
 
 		return sx, sy, sw, sh
@@ -145,11 +147,28 @@ function Element:default_draw()
 		return properties
 	end
 
+	local cc = self.gui.srgb and love.math.gammaToLinear or function(...) return ... end
 	local ep = self.properties
 
 	-- Position & size of element
-	local x = self.position.x
-	local y = self.position.y
+	local ox, oy = self:_get_relative_position()
+	local x = self.position.x + ox
+	local y = self.position.y + oy
+
+	if ep.position == "fixed" or ep.position == "absolute" then
+		if ep.left then
+			x = ep.left
+		elseif ep.right then
+			x = ep.right - ep.width
+		end
+
+		if ep.top then
+			y = ep.top
+		elseif ep.bottom then
+			y = ep.bottom - ep.height
+		end
+	end
+
 	local w = ep.width
 	local h = ep.height
 
@@ -160,12 +179,12 @@ function Element:default_draw()
 	local ch = h - ep.padding_top  - ep.border_top  - ep.padding_bottom - ep.border_bottom
 
 	-- Set clip space to element bounds
-	love.graphics.setScissor(get_scissor_clip(self.parent, x, y, w, h))
+	love.graphics.setScissor(get_scissor_clip(self.parent, x, y, w, h, ox, oy))
 
 	-- Draw Background
 	if ep.background_color then
 		love.graphics.push("all")
-		love.graphics.setColor(ep.background_color)
+		love.graphics.setColor(cc(ep.background_color))
 		love.graphics.rectangle("fill", x, y, w, h)
 		love.graphics.pop()
 	end
@@ -194,6 +213,7 @@ function Element:default_draw()
 
 		if ep.background_image_color then
 			love.graphics.push("all")
+			love.graphics.setColor(ep.background_image_color)
 		end
 
 		local quad = love.graphics.newQuad(0, 0, bw, bh, ep.background_image:getDimensions())
@@ -214,7 +234,7 @@ function Element:default_draw()
 		local x = x + ep.border_top / 2
 		local y = y + ep.border_top / 2
 		love.graphics.push("all")
-		love.graphics.setColor(ep.border_top_color)
+		love.graphics.setColor(cc(ep.border_top_color))
 		love.graphics.setLineWidth(ep.border_top)
 		love.graphics.setLineStyle("rough")
 		love.graphics.line(x, y, x+w, y)
@@ -226,7 +246,7 @@ function Element:default_draw()
 		local x = x - ep.border_top / 2
 		local y = y + ep.border_top / 2
 		love.graphics.push("all")
-		love.graphics.setColor(ep.border_right_color)
+		love.graphics.setColor(cc(ep.border_right_color))
 		love.graphics.setLineWidth(ep.border_right)
 		love.graphics.setLineStyle("rough")
 		love.graphics.line(x+w, y, x+w, y+h)
@@ -238,7 +258,7 @@ function Element:default_draw()
 		local x = x - ep.border_top / 2
 		local y = y - ep.border_top / 2
 		love.graphics.push("all")
-		love.graphics.setColor(ep.border_bottom_color)
+		love.graphics.setColor(cc(ep.border_bottom_color))
 		love.graphics.setLineWidth(ep.border_bottom)
 		love.graphics.setLineStyle("rough")
 		love.graphics.line(x+w, y+h, x, y+h)
@@ -250,7 +270,7 @@ function Element:default_draw()
 		local x = x + ep.border_top / 2
 		local y = y - ep.border_top / 2
 		love.graphics.push("all")
-		love.graphics.setColor(ep.border_left_color)
+		love.graphics.setColor(cc(ep.border_left_color))
 		love.graphics.setLineWidth(ep.border_left)
 		love.graphics.setLineStyle("rough")
 		love.graphics.line(x, y+h, x, y)
@@ -258,14 +278,14 @@ function Element:default_draw()
 	end
 
 	-- Set clip space to content bounds
-	love.graphics.setScissor(get_scissor_clip(self.parent, cx, cy, cw, ch))
+	love.graphics.setScissor(get_scissor_clip(self.parent, cx, cy, cw, ch, ox, oy))
 
 	-- Draw Text
 	if self.value then
 		love.graphics.push("all")
 		-- Set Text Color
 		if ep.text_color then
-			love.graphics.setColor(ep.text_color)
+			love.graphics.setColor(cc(ep.text_color))
 		end
 
 		-- Set Font
@@ -279,6 +299,13 @@ function Element:default_draw()
 
 		local text_offset = cy + (ep.font:getHeight() * ep.font:getLineHeight() - ep.font:getHeight()) / 2
 
+		if ep.text_shadow then
+			love.graphics.push("all")
+			love.graphics.setColor(cc(ep.text_shadow_color))
+			love.graphics.printf(tostring(self.value), cx + ep.text_shadow[1], text_offset + ep.text_shadow[2], cw, ep.text_align)
+			love.graphics.pop()
+		end
+
 		love.graphics.printf(tostring(self.value), cx, text_offset, cw, ep.text_align)
 		ep.font:setLineHeight(line_height)
 		love.graphics.pop()
@@ -289,16 +316,16 @@ function Element:default_draw()
 
 	-- DEBUG
 	if self.gui._debug then
-		love.graphics.setColor(255, 255, 0, 63)
+		love.graphics.setColor(cc(255, 255, 0, 63))
 		love.graphics.rectangle("line", x-ep.margin_left, y-ep.margin_top, w+ep.margin_left+ep.margin_right, h+ep.margin_top+ep.margin_bottom)
-		love.graphics.setColor(0, 255, 255, 63)
+		love.graphics.setColor(cc(0, 255, 255, 63))
 		love.graphics.rectangle("line", cx, cy, cw, ch)
-		love.graphics.setColor(255, 255, 255, 255)
+		love.graphics.setColor(cc(255, 255, 255, 255))
 	end
 	-- DEBUG
 end
 
-function Element:_get_position()
+function Element:_get_sibling_position()
 	if self.parent then
 		for k, child in ipairs(self.parent.children) do
 			if child == self then
@@ -308,6 +335,22 @@ function Element:_get_position()
 	end
 
 	return false
+end
+
+function Element._get_relative_position(element, ox, oy)
+	if not element then return ox, oy end
+
+	local ep = element.properties
+
+	ox = ox or 0
+	oy = oy or 0
+
+	if ep.position == "relative" then
+		ox = ox + (ep.left or 0) - (ep.right  or 0)
+		oy = oy + (ep.top  or 0) - (ep.bottom or 0)
+	end
+
+	return Element._get_relative_position(element.parent, ox, oy)
 end
 
 function Element:enable()
@@ -402,7 +445,7 @@ function Element:replace_child(old, new)
 			error("Element does not belong to this parent.")
 		end
 
-		local position = old:_get_position()
+		local position = old:_get_sibling_position()
 		child = old
 		child:destroy()
 
@@ -419,7 +462,7 @@ function Element:insert_before(element)
 		error("Element does not have a parent.")
 	end
 
-	local position = element:_get_position()
+	local position = element:_get_sibling_position()
 
 	if position < 1 then
 		position = 1
@@ -464,7 +507,7 @@ function Element:detach()
 	end
 
 	table.insert(self.gui.draw_order, self)
-	table.remove(self.parent.children, self:_get_position())
+	table.remove(self.parent.children, self:_get_sibling_position())
 	self.parent = false
 
 	return self
@@ -478,7 +521,7 @@ function Element:destroy()
 
 	if self.parent then
 		-- Remove self from parent
-		table.remove(self.parent.children, self:_get_position())
+		table.remove(self.parent.children, self:_get_sibling_position())
 		self.parent = false
 	else
 		-- Remove self from draw stack
@@ -555,7 +598,7 @@ function Element:last_child()
 end
 
 function Element:previous_sibling()
-	local position = self:_get_position()
+	local position = self:_get_sibling_position()
 
 	if position then
 		local prev = position - 1
@@ -569,7 +612,7 @@ function Element:previous_sibling()
 end
 
 function Element:next_sibling()
-	local position = self:_get_position()
+	local position = self:_get_sibling_position()
 
 	if position then
 		local nxt = position + 1

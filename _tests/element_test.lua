@@ -13,7 +13,7 @@ assert(e:has_children() == true, output("true", e:has_children()))
 print("Passed: Has Children")
 
 -- Prepend Child to Element
-local o = gui:new_element("element")
+local o = gui:new_element("inline")
 o.value = "Prepended"
 o.id    = "prepend"
 e:prepend_child(o)
@@ -21,13 +21,13 @@ assert(e.children[1].value == "Prepended", output("Prepended", e.children[1].val
 print("Passed: Prepend Child")
 
 -- Append Child to Element
-local o = gui:new_element({ "element", value="Appended", id="append" })
+local o = gui:new_element({ "inline", value="Appended", id="append" })
 e:append_child(o)
 assert(e.children[#e.children].value == "Appended", output("Appended", e.children[#e.children].value))
 print("Passed: Append Child")
 
 -- Add Child to Element
-local o = gui:new_element("element")
+local o = gui:new_element("inline")
 o.value = "Added"
 e:add_child(o, 2)
 assert(e.children[2].value == "Added", output("Added", e.children[2].value))
@@ -42,21 +42,21 @@ assert(e.children[#e.children].value == ">2",    output(">2",    e.children[#e.c
 print("Passed: Remove Child")
 
 -- Replace One Element with Another
-local o = gui:new_element({ "element", "Replaced", id="replace" })
+local o = gui:new_element({ "inline", "Replaced", id="replace" })
 e:replace_child(1, o)
 assert(e.children[1].value           == "Replaced", output("Replaced", e.children[1].value))
 assert(e.children[#e.children].value == ">2",       output(">2",       e.children[#e.children].value))
 print("Passed: Replace Child")
 
 -- Insert Element Before Another
-local o = gui:new_element({ "element", "Before", id="before" })
+local o = gui:new_element({ "inline", "Before", id="before" })
 o:insert_before(e.children[2])
 assert(e.children[2].value == "Before", output("Before", e.children[2].value))
 assert(e.children[3].value == ">1",     output(">1",     e.children[3].value))
 print("Passed: Insert Before")
 
 -- Insert Element After Another
-local o = gui:new_element({ "element", "After", id="after" })
+local o = gui:new_element({ "inline", "After", id="after" })
 o:insert_after(e.children[3])
 assert(e.children[3].value == ">1",    output(">1",    e.children[3].value))
 assert(e.children[4].value == "After", output("After", e.children[4].value))

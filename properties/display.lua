@@ -368,12 +368,10 @@ function Display.get_visible(element)
 	if not element then return true end
 
 	if element.properties.visible == true then
-		Display.get_visible(element.parent)
+		return Display.get_visible(element.parent)
 	else
 		return false
 	end
-
-	return true
 end
 
 return Display

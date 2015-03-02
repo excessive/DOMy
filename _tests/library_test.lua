@@ -14,7 +14,7 @@ assert(e:last_child().value  == ">2", output(">2", e:last_child().value))
 print("Passed: ID Selector")
 
 -- Type Selector
-local filter = gui:get_elements_by_type("element")
+local filter = gui:get_elements_by_type("inline")
 assert(#filter == #gui.elements, output(#gui.elements, #filter))
 print("Passed: Type Selector")
 
@@ -34,21 +34,21 @@ assert(filter[1].parent.parent.class[1] == "root", output("root", filter[1].pare
 print("Passed: Query Selector")
 
 -- Insert Element
-local o = gui:new_element("element", e, 2)
+local o = gui:new_element("inline", e, 2)
 o.value = "Wassup?!"
 assert(e:first_child().value == ">1", output(">1", e:first_child().value))
 assert(e:last_child().value  == ">2", output(">2", e:last_child().value))
 print("Passed: New Element")
 
 -- Insert Element
-local o = gui:new_element("element", e, -20)
+local o = gui:new_element("inline", e, -20)
 o.value = "negz"
 assert(e:first_child().value == "negz", output("negz", e:first_child().value))
 assert(e:last_child().value  == ">2",   output(">2",   e:last_child().value))
 print("Passed: New Element (below 1)")
 
 -- Insert Element
-local o = gui:new_element("element", e, 20)
+local o = gui:new_element("inline", e, 20)
 o.value = "poz"
 assert(e:first_child().value == "negz", output("negz", e:first_child().value))
 assert(e:last_child().value  == "poz",  output("poz",  e:last_child().value))
@@ -61,7 +61,7 @@ assert(e.children[2]:next_sibling().value     == "Wassup?!", output("Wassup?!", 
 print("Passed: Check Siblings")
 
 -- Create Root Element
-local o = gui:new_element({ "element", "hide me!", value=11 })
+local o = gui:new_element({ "inline", "hide me!", value=11 })
 assert(softcompare(o.value, 11), output("11",    o.value))
 assert(o.parent == false,        output("false", o.parent))
 print("Passed: New Root Element")

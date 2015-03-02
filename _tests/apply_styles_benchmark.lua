@@ -23,9 +23,9 @@ gui:import_markup(markup)
 gui:import_styles(styles)
 local t = love.timer.getTime()
 for i=1, 600 do
-	gui:apply_styles()
+	gui:_apply_styles()
 end
-print(string.format("50 Elements, 50 Selectors, 600 Passes: %f", love.timer.getTime() - t))
+print(string.format("50 Elements, 50 Selectors, 600 Passes: %fs/f", (love.timer.getTime() - t) / 600))
 
 local markup  = {}
 local styles  = {}
@@ -48,9 +48,9 @@ gui:import_markup(markup)
 gui:import_styles(styles)
 local t = love.timer.getTime()
 for i=1, 600 do
-	gui:apply_styles()
+	gui:_apply_styles()
 end
-print(string.format("500 Elements, 50 Selectors, 600 Passes: %f", love.timer.getTime() - t))
+print(string.format("500 Elements, 50 Selectors, 600 Passes: %fs/f", (love.timer.getTime() - t) / 600))
 
 local markup  = {}
 local styles  = {}
@@ -73,9 +73,9 @@ gui:import_markup(markup)
 gui:import_styles(styles)
 local t = love.timer.getTime()
 for i=1, 600 do
-	gui:apply_styles()
+	gui:_apply_styles()
 end
-print(string.format("5000 Elements, 50 Selectors, 600 Passes: %f", love.timer.getTime() - t))
+print(string.format("5000 Elements, 50 Selectors, 600 Passes: %fs/f", (love.timer.getTime() - t) / 600))
 
 local markup  = {}
 local styles  = {}
@@ -98,9 +98,9 @@ gui:import_markup(markup)
 gui:import_styles(styles)
 local t = love.timer.getTime()
 for i=1, 600 do
-	gui:apply_styles()
+	gui:_apply_styles()
 end
-print(string.format("50 Elements, 500 Selectors, 600 Passes: %f", love.timer.getTime() - t))
+print(string.format("50 Elements, 500 Selectors, 600 Passes: %fs/f", (love.timer.getTime() - t) / 600))
 
 local markup  = {}
 local styles  = {}
@@ -123,9 +123,9 @@ gui:import_markup(markup)
 gui:import_styles(styles)
 local t = love.timer.getTime()
 for i=1, 600 do
-	gui:apply_styles()
+	gui:_apply_styles()
 end
-print(string.format("500 Elements, 500 Selectors, 600 Passes: %f", love.timer.getTime() - t))
+print(string.format("500 Elements, 500 Selectors, 600 Passes: %fs/f", (love.timer.getTime() - t) / 600))
 
 local markup  = {}
 local styles  = {}
@@ -148,9 +148,9 @@ gui:import_markup(markup)
 gui:import_styles(styles)
 local t = love.timer.getTime()
 for i=1, 600 do
-	gui:apply_styles()
+	gui:_apply_styles()
 end
-print(string.format("5000 Elements, 500 Selectors, 600 Passes: %f", love.timer.getTime() - t))
+print(string.format("5000 Elements, 500 Selectors, 600 Passes: %fs/f", (love.timer.getTime() - t) / 600))
 
 local markup  = {}
 local styles  = {}
@@ -173,9 +173,9 @@ gui:import_markup(markup)
 gui:import_styles(styles)
 local t = love.timer.getTime()
 for i=1, 600 do
-	gui:apply_styles()
+	gui:_apply_styles()
 end
-print(string.format("50 Elements, 5000 Selectors, 600 Passes: %f", love.timer.getTime() - t))
+print(string.format("50 Elements, 5000 Selectors, 600 Passes: %fs/f", (love.timer.getTime() - t) / 600))
 
 local markup  = {}
 local styles  = {}
@@ -198,9 +198,9 @@ gui:import_markup(markup)
 gui:import_styles(styles)
 local t = love.timer.getTime()
 for i=1, 600 do
-	gui:apply_styles()
+	gui:_apply_styles()
 end
-print(string.format("500 Elements, 5000 Selectors, 600 Passes: %f", love.timer.getTime() - t))
+print(string.format("500 Elements, 5000 Selectors, 600 Passes: %fs/f", (love.timer.getTime() - t) / 600))
 
 local markup  = {}
 local styles  = {}
@@ -223,7 +223,7 @@ gui:import_markup(markup)
 gui:import_styles(styles)
 local t = love.timer.getTime()
 for i=1, 600 do
-	gui:apply_styles()
+	gui:_apply_styles()
 end
 print(string.format("5000 Elements, 5000 Selectors, 600 Passes: %fs/f", (love.timer.getTime() - t) / 600))
 
