@@ -1091,7 +1091,9 @@ function GUI:_apply_styles()
 			or property == "border_bottom"
 			or property == "padding_top"
 			or property == "padding_bottom"
-			or property == "height" then
+			or property == "height"
+			or property == "min_height"
+			or property == "max_height" then
 				check_property(element, property, value, "y")
 		elseif property == "right"
 			or property == "left"
@@ -1101,7 +1103,9 @@ function GUI:_apply_styles()
 			or property == "border_left"
 			or property == "padding_right"
 			or property == "padding_left"
-			or property == "width" then
+			or property == "width"
+			or property == "min_width"
+			or property == "max_width" then
 				check_property(element, property, value, "x")
 		elseif property == "background_position"
 			or property == "background_size" then
