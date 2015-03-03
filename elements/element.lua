@@ -154,21 +154,6 @@ function Element:default_draw()
 	local ox, oy = self:_get_relative_position()
 	local x = self.position.x + ox
 	local y = self.position.y + oy
-
-	if ep.position == "fixed" or ep.position == "absolute" then
-		if ep.left then
-			x = ep.left
-		elseif ep.right then
-			x = ep.right - ep.width
-		end
-
-		if ep.top then
-			y = ep.top
-		elseif ep.bottom then
-			y = ep.bottom - ep.height
-		end
-	end
-
 	local w = ep.width
 	local h = ep.height
 

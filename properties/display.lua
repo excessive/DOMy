@@ -14,15 +14,9 @@ function Display.position_elements(elements, d, x, y, w, h)
 	local parent = {
 		x = x,
 		y = y,
+		w = w or love.graphics.getWidth()  - x,
+		h = h or love.graphics.getHeight() - y,
 	}
-
-	if w then
-		parent.w = w
-		parent.h = h
-	else
-		parent.w = love.graphics.getWidth()  - x
-		parent.h = love.graphics.getHeight() - y
-	end
 
 	for _, element in ipairs(elements) do
 		element.visible = Display.get_visible(element)
@@ -40,10 +34,6 @@ end
 
 function Display.block(element, d, x, y, nl, parent)
 	local ep  = element.properties
-
-	-- Element position
-	element.position.x = parent.x + ep.margin_left
-	element.position.y = y        + ep.margin_top + nl
 
 	-- Determine width of element
 	if not ep.width then
@@ -73,6 +63,14 @@ function Display.block(element, d, x, y, nl, parent)
 		ep.height = ep.max_height
 	end
 
+	-- Element position
+	if ep.position == "absolute" then
+		Display.absolute(element)
+	else
+		element.position.x = parent.x + ep.margin_left
+		element.position.y = y        + ep.margin_top + nl
+	end
+
 	-- If not a flexbox, propogate to children
 	if ep.display == "block" then
 		local cx, cy, cw, ch = Display.get_content_box(element)
@@ -80,10 +78,12 @@ function Display.block(element, d, x, y, nl, parent)
 	end
 
 	-- Return position for next element
-	d = "block"
-	x = parent.x
-	y = element.position.y + ep.height + ep.margin_bottom
-	nl = 0
+	if ep.position ~= "absolute" and ep.position ~= "fixed" then
+		d = "block"
+		x = parent.x
+		y = element.position.y + ep.height + ep.margin_bottom
+		nl = 0
+	end
 
 	return d, x, y, nl
 end
@@ -177,20 +177,24 @@ function Display.inline(element, d, x, y, nl, parent)
 	end
 
 	-- Determine element position
-	if d == "block" then
-		element.position.x = parent.x + ep.margin_left
-		element.position.y = y        + ep.margin_top
-	elseif d == "child" then
-		element.position.x = parent.x + ep.margin_left
-		element.position.y = parent.y + ep.margin_top
-	elseif x + ep.width + ep.margin_left + ep.margin_right > parent.x + parent.w then
-		element.position.x = parent.x + ep.margin_left
-		element.position.y = y        + ep.margin_top + nl
-
-		nl = 0
+	if ep.position == "absolute" then
+		Display.absolute(element)
 	else
-		element.position.x = x + ep.margin_left
-		element.position.y = y
+		if d == "block" then
+			element.position.x = parent.x + ep.margin_left
+			element.position.y = y        + ep.margin_top
+		elseif d == "child" then
+			element.position.x = parent.x + ep.margin_left
+			element.position.y = parent.y + ep.margin_top
+		elseif x + ep.width + ep.margin_left + ep.margin_right > parent.x + parent.w then
+			element.position.x = parent.x + ep.margin_left
+			element.position.y = y        + ep.margin_top + nl
+
+			nl = 0
+		else
+			element.position.x = x + ep.margin_left
+			element.position.y = y
+		end
 	end
 
 	-- If not a flexbox, propogate to children
@@ -199,13 +203,15 @@ function Display.inline(element, d, x, y, nl, parent)
 		Display.position_elements(element.children, "child", cx, cy, cw, ch)
 	end
 
-	-- Return position for next element
-	d  = "inline"
-	x  = element.position.x + ep.margin_right + ep.width
-	y  = element.position.y
+	if ep.position ~= "absolute" and ep.position ~= "fixed" then
+		-- Return position for next element
+		d  = "inline"
+		x  = element.position.x + ep.margin_right + ep.width
+		y  = element.position.y
 
-	if nl < ep.height + ep.margin_bottom then
-		nl = ep.height + ep.margin_bottom
+		if nl < ep.height + ep.margin_bottom then
+			nl = ep.height + ep.margin_bottom
+		end
 	end
 
 	return d, x, y, nl
@@ -312,6 +318,35 @@ function Display.inline_flex(element, d, x, y, nl, parent)
 	return d, x, y, nl
 end
 
+function Display.absolute(element)
+	local ep       = element.properties
+	local relative = Display.get_relative(element)
+	local cx, cy, cw, ch
+
+	if relative then
+		cx, cy, cw, ch = Display.get_content_box(relative)
+	else
+		cx, cy = 0, 0
+		cw, ch = love.graphics.getDimensions()
+	end
+
+	if ep.left then
+		element.position.x = cx + ep.left + ep.margin_left
+	elseif ep.right then
+		element.position.x = cx + cw - (ep.width + ep.right + ep.margin_right)
+	else
+		element.position.x = cx
+	end
+
+	if ep.top then
+		element.position.y = cy + ep.top + ep.margin_top
+	elseif ep.bottom then
+		element.position.y = cy + ch - (ep.height + ep.bottom + ep.margin_bottom)
+	else
+		element.position.y = cy
+	end
+end
+
 --==[[ HELPER FUNCTIONS ]]==--
 
 -- https://love2d.org/wiki/Font%3agetWrap
@@ -371,6 +406,16 @@ function Display.get_visible(element)
 		return Display.get_visible(element.parent)
 	else
 		return false
+	end
+end
+
+function Display.get_relative(element)
+	if not element then return false end
+
+	if element.properties.position == "relative" then
+		return element
+	else
+		Display.get_relative(element.parent)
 	end
 end
 
