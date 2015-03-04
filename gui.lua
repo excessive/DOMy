@@ -68,6 +68,7 @@ function GUI:init()
 
 	self._debug        = false
 	self.last_focus    = false
+	self.navigation    = false
 	self.cache         = {}
 	self.draw_order    = {}
 	self.elements      = {}
@@ -1217,6 +1218,18 @@ function GUI:remove_navigation_key(direction, ...)
 			end
 		end
 	end
+end
+
+function GUI:toggle_navigation()
+	self.navigation = not self.navigation
+end
+
+function GUI:enable_navigation()
+	self.navigation = true
+end
+
+function GUI:disable_navigation()
+	self.navigation = false
 end
 
 return GUI

@@ -110,20 +110,24 @@ function Callback.keypressed(self, key, isrepeat)
 		self.key_down[key] = true
 		self:bubble_event(self.pseudo.focus, "on_key_pressed", key)
 
-		for direction, keys in pairs(self.nav) do
-			for _, k in ipairs(keys) do
-				if k == key then
-					self:set_focus(self.pseudo.focus.properties["nav_"..direction])
-					break
+		if self.navigation then
+			for direction, keys in pairs(self.nav) do
+				for _, k in ipairs(keys) do
+					if k == key then
+						self:set_focus(self.pseudo.focus.properties["nav_"..direction])
+						break
+					end
 				end
 			end
 		end
 	elseif self.last_focus then
-		for direction, keys in pairs(self.nav) do
-			for _, k in ipairs(keys) do
-				if k == key then
-					self:set_focus(self.last_focus.properties["nav_"..direction])
-					break
+		if self.navigation then
+			for direction, keys in pairs(self.nav) do
+				for _, k in ipairs(keys) do
+					if k == key then
+						self:set_focus(self.last_focus.properties["nav_"..direction])
+						break
+					end
 				end
 			end
 		end
