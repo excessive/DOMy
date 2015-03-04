@@ -118,6 +118,15 @@ function Callback.keypressed(self, key, isrepeat)
 				end
 			end
 		end
+	elseif self.last_focus then
+		for direction, keys in pairs(self.nav) do
+			for _, k in ipairs(keys) do
+				if k == key then
+					self:set_focus(self.last_focus.properties["nav_"..direction])
+					break
+				end
+			end
+		end
 	end
 end
 
@@ -163,8 +172,12 @@ function Callback.mousepressed(self, x, y, button)
 			self:bubble_event(pressed, "on_mouse_scrolled", button)
 		else
 			self.mouse_down[button] = pressed
-			pressed:set_focus(true)
+			self:set_focus(pressed)
 			self:bubble_event(pressed, "on_mouse_pressed", button)
+		end
+	else
+		if button ~= "wu" and button ~= "wd" then
+			self:remove_focus()
 		end
 	end
 end

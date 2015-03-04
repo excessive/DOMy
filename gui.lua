@@ -67,6 +67,7 @@ function GUI:init()
 	end
 
 	self._debug        = false
+	self.last_focus    = false
 	self.cache         = {}
 	self.draw_order    = {}
 	self.elements      = {}
@@ -405,6 +406,7 @@ function GUI:set_focus(element)
 		self:bubble_event(self.pseudo.focus, "on_focus_leave")
 	end
 
+	self.last_focus   = element
 	self.pseudo.focus = element
 	self:bubble_event(self.pseudo.focus, "on_focus")
 
@@ -416,6 +418,10 @@ function GUI:get_focus()
 end
 
 function GUI:remove_focus()
+	if self.pseudo.focus then
+		self:bubble_event(self.pseudo.focus, "on_focus_leave")
+	end
+
 	self.pseudo.focus = false
 end
 

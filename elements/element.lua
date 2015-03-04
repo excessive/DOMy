@@ -671,24 +671,6 @@ function Element:exchange_with(index)
 	end
 end
 
-function Element:set_focus(focus)
-	if focus == true and not self:has_focus() then
-		if self.gui.pseudo.focus then
-			self.gui:bubble_event(self.gui.pseudo.focus, "on_focus_leave")
-		end
-
-		self.gui.pseudo.focus = self
-		self.gui:bubble_event(self.gui.pseudo.focus, "on_focus")
-	elseif focus == false and self:has_focus() then
-		self.gui:bubble_event(self.gui.pseudo.focus, "on_focus_leave")
-		self.gui.pseudo.focus = false
-	end
-end
-
-function Element:has_focus()
-	return self.gui.pseudo.focus == self
-end
-
 function Element:is_binding(x, y)
 	if not self.visible then return end
 
@@ -713,6 +695,16 @@ function Element:add_class(class)
 	if type(class) == "string" then
 		table.insert(self.class, class)
 	end
+end
+
+function Element:has_class(class)
+	for _, c in ipairs(self.class) do
+		if c == class then
+			return true
+		end
+	end
+
+	return false
 end
 
 function Element:remove_class(class)
