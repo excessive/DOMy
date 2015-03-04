@@ -75,9 +75,15 @@ function GUI:init()
 	self.joystick_down = {}
 	self.gamepad_down  = {}
 	self.mouse_down    = {}
+	self.nav           = {
+		up    = {},
+		right = {},
+		down  = {},
+		left  = {},
+	}
 	self.pseudo        = {
-		active = false,
-		hover  = false,
+		focus = false,
+		hover = false,
 	}
 	self.srgb          = select(3, love.window.getMode()).srgb
 
@@ -394,19 +400,23 @@ function GUI:new_element(element, parent, position)
 	return object
 end
 
-function GUI:set_active_element(element)
-	if self.active_element then
-		self.active:on_focus_leave()
+function GUI:set_focus(element)
+	if self.pseudo.focus then
+		self:bubble_event(self.pseudo.focus, "on_focus_leave")
 	end
 
-	self.active = element
-	self.active:on_focus()
+	self.pseudo.focus = element
+	self:bubble_event(self.pseudo.focus, "on_focus")
 
-	return self.active
+	return self.pseudo.focus
 end
 
-function GUI:get_active_element()
-	return self.active
+function GUI:get_focus()
+	return self.pseudo.focus
+end
+
+function GUI:remove_focus()
+	self.pseudo.focus = false
 end
 
 function GUI:set_cache(path, data)
@@ -620,7 +630,7 @@ function GUI:get_elements_by_query(query, elements)
 					local filter = {}
 
 					for _, element in ipairs(section[k]) do
-						if self.pseudo.active == element then
+						if self.pseudo.focus == element then
 							table.insert(filter, element)
 							break
 						end
@@ -1146,6 +1156,11 @@ function GUI:_apply_styles()
 			ep.font = self.cache[font_path..value]
 		elseif property == "cursor" then
 			ep.cursor = love.mouse.getSystemCursor(value)
+		elseif property == "nav_up"
+			or property == "nav_right"
+			or property == "nav_down"
+			or property == "nav_left" then
+				ep[property] = self:get_element_by_id(value)
 		end
 	end
 
@@ -1173,6 +1188,27 @@ function GUI:_apply_styles()
 	for _, element in ipairs(self.elements) do
 		for property, value in pairs(element.custom_properties) do
 			set_property(element, property, value)
+		end
+	end
+end
+
+function GUI:add_navigation_key(direction, ...)
+	for _, key in ipairs({ ... }) do
+		table.insert(self.nav[direction], key)
+	end
+end
+
+function GUI:get_navigation_key(direction)
+	return self.nav[direction]
+end
+
+function GUI:remove_navigation_key(direction, ...)
+	for _, key in ipairs({ ... }) do
+		for i, v in ipairs(self.nav[direction]) do
+			if key == v then
+				table.remove(self.nav[direction], i)
+				break
+			end
 		end
 	end
 end

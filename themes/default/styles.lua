@@ -17,4 +17,8 @@ return {
 	{ "button:lclick", {
 		background_color = { 33, 174, 254, 255 },
 	}},
+
+	{ "button:focus", {
+		background_color = { 189, 78, 255, 255 },
+	}},
 }

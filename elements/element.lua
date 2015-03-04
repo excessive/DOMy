@@ -673,20 +673,20 @@ end
 
 function Element:set_focus(focus)
 	if focus == true and not self:has_focus() then
-		if self.gui.active then
-			self.gui:bubble_event(self.gui.active, "on_focus_leave")
+		if self.gui.pseudo.focus then
+			self.gui:bubble_event(self.gui.pseudo.focus, "on_focus_leave")
 		end
 
-		self.gui.active = self
-		self.gui:bubble_event(self.gui.active, "on_focus")
+		self.gui.pseudo.focus = self
+		self.gui:bubble_event(self.gui.pseudo.focus, "on_focus")
 	elseif focus == false and self:has_focus() then
-		self.gui:bubble_event(self.gui.active, "on_focus_leave")
-		self.gui.active = false
+		self.gui:bubble_event(self.gui.pseudo.focus, "on_focus_leave")
+		self.gui.pseudo.focus = false
 	end
 end
 
 function Element:has_focus()
-	return self.gui.active == self
+	return self.gui.pseudo.focus == self
 end
 
 function Element:is_binding(x, y)

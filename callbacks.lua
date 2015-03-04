@@ -47,38 +47,38 @@ function Callback.update(self, dt)
 		end
 	end
 
-	if self.pseudo.active then
+	if self.pseudo.focus then
 		-- Loop through active keys
 		for key in pairs(self.key_down) do
-			self:bubble_event(self.pseudo.active, "on_key_down", key)
+			self:bubble_event(self.pseudo.focus, "on_key_down", key)
 		end
 
 		-- Loop through active mouse buttons
 		for button, element in pairs(self.mouse_down) do
 			if self.pseudo.hover == element then
-				self:bubble_event(self.pseudo.active, "on_mouse_down", button)
+				self:bubble_event(self.pseudo.focus, "on_mouse_down", button)
 			end
 		end
 
 		-- Loop through active joystick buttons
 		for _, joystick in pairs(self.joystick_down) do
 			for button in pairs(joystick.button) do
-				self:bubble_event(self.pseudo.active, "on_joystick_down", joystick, button)
+				self:bubble_event(self.pseudo.focus, "on_joystick_down", joystick, button)
 			end
 
 			for axis in pairs(joystick.axis) do
-				self:bubble_event(self.pseudo.active, "on_joystick_axis", joystick, axis, value)
+				self:bubble_event(self.pseudo.focus, "on_joystick_axis", joystick, axis, value)
 			end
 
 			for hat in pairs(joystick.hat) do
-				self:bubble_event(self.pseudo.active, "on_joystick_hat", joystick, hat, direction)
+				self:bubble_event(self.pseudo.focus, "on_joystick_hat", joystick, hat, direction)
 			end
 		end
 
 		-- Loop through active gamepad buttons
 		for _k, gamepad in pairs(self.gamepad_down) do
 			for button, value in pairs(gamepad) do
-				self:bubble_event(self.pseudo.active, "on_gamepad_down", gamepad, button, value)
+				self:bubble_event(self.pseudo.focus, "on_gamepad_down", gamepad, button, value)
 			end
 		end
 	end
@@ -106,23 +106,32 @@ function Callback.draw(self)
 end
 
 function Callback.keypressed(self, key, isrepeat)
-	if self.pseudo.active then
+	if self.pseudo.focus then
 		self.key_down[key] = true
-		self:bubble_event(self.pseudo.active, "on_key_pressed", key)
+		self:bubble_event(self.pseudo.focus, "on_key_pressed", key)
+
+		for direction, keys in pairs(self.nav) do
+			for _, k in ipairs(keys) do
+				if k == key then
+					self:set_focus(self.pseudo.focus.properties["nav_"..direction])
+					break
+				end
+			end
+		end
 	end
 end
 
 function Callback.keyreleased(self, key)
-	if self.pseudo.active then
-		self:bubble_event(self.pseudo.active, "on_key_released", key)
+	if self.pseudo.focus then
+		self:bubble_event(self.pseudo.focus, "on_key_released", key)
 	end
 
 	self.key_down[key] = nil
 end
 
 function Callback.textinput(self, text)
-	if self.pseudo.active then
-		self:bubble_event(self.pseudo.active, "on_text_input", text)
+	if self.pseudo.focus then
+		self:bubble_event(self.pseudo.focus, "on_text_input", text)
 	end
 end
 
@@ -204,14 +213,14 @@ function Callback.joystickadded(self, joystick)
 		self.gamepad_down[joystick] = {}
 	end
 
-	if self.pseudo.active then
-		self:bubble_event(self.pseudo.active, "on_joystick_added", joystick)
+	if self.pseudo.focus then
+		self:bubble_event(self.pseudo.focus, "on_joystick_added", joystick)
 	end
 end
 
 function Callback.joystickremoved(self, joystick)
-	if self.pseudo.active then
-		self:bubble_event(self.pseudo.active, "on_joystick_removed", joystick)
+	if self.pseudo.focus then
+		self:bubble_event(self.pseudo.focus, "on_joystick_removed", joystick)
 	end
 
 	self.joystick_down[joystick] = nil
@@ -222,49 +231,49 @@ function Callback.joystickremoved(self, joystick)
 end
 
 function Callback.joystickpressed(self, joystick, button)
-	if self.pseudo.active then
+	if self.pseudo.focus then
 		self.joystick_down[joystick].button[button] = true
-		self:bubble_event(self.pseudo.active, "on_joystick_pressed", joystick, button)
+		self:bubble_event(self.pseudo.focus, "on_joystick_pressed", joystick, button)
 	end
 end
 
 function Callback.joystickreleased(self, joystick, button)
-	if self.pseudo.active then
-		self:bubble_event(self.pseudo.active, "on_joystick_released", joystick, button)
+	if self.pseudo.focus then
+		self:bubble_event(self.pseudo.focus, "on_joystick_released", joystick, button)
 	end
 
 	self.joystick_down[joystick].button[button] = nil
 end
 
 function Callback.joystickaxis(self, joystick, axis, value)
-	if self.pseudo.active then
+	if self.pseudo.focus then
 		self.joystick_down[joystick].axis[axis] = value
 	end
 end
 
 function Callback.joystickhat(self, joystick, hat, direction)
-	if self.pseudo.active then
+	if self.pseudo.focus then
 		self.joystick_down[joystick].hat[hat] = direction
 	end
 end
 
 function Callback.gamepadpressed(self, joystick, button)
-	if self.pseudo.active then
+	if self.pseudo.focus then
 		self.gamepad_down[joystick][button] = true
-		self:bubble_event(self.pseudo.active, "on_gamepad_pressed", joystick, button)
+		self:bubble_event(self.pseudo.focus, "on_gamepad_pressed", joystick, button)
 	end
 end
 
 function Callback.gamepadreleased(self, joystick, button)
-	if self.pseudo.active then
-		self:bubble_event(self.pseudo.active, "on_gamepad_released", joystick, button)
+	if self.pseudo.focus then
+		self:bubble_event(self.pseudo.focus, "on_gamepad_released", joystick, button)
 	end
 
 	self.gamepad_down[joystick][button] = nil
 end
 
 function Callback.gamepadaxis(self, joystick, axis, value)
-	if self.pseudo.active then
+	if self.pseudo.focus then
 		self.gamepad_down[joystick][axis] = value
 	end
 end

@@ -27,7 +27,7 @@
 [ ] border_top_right_radius
 [ ] box_shadow
 
-# Basic Box Properties (13 / 21)
+# Basic Box Properties (14 / 21)
 
 [X] bottom
 [ ] clear
@@ -44,14 +44,12 @@
 [X] padding_left
 [X] padding_right
 [X] padding_top
-[!] position
+[X] position
 [X] right
 [X] top
 [X] visible
 [X] width
 [ ] vertical_align
-
-! relative and absolute work, fixed still need some work
 
 # Flexible Box Layout (9 / 21)
 
@@ -138,15 +136,15 @@
 [ ] transform_origin
 [ ] translate(x,y,z)
 
-# Basic User Interface Properties (1 / 8)
+# Basic User Interface Properties (5 / 8)
 
 [X] cursor
 [ ] ime_mode
-[ ] nav_down
+[X] nav_down
 [ ] nav_index
-[ ] nav_left
-[ ] nav_right
-[ ] nav_up
+[X] nav_left
+[X] nav_right
+[X] nav_up
 [ ] resize
 
 # Generated Content for Paged Media (0 / 1)
@@ -162,4 +160,4 @@
 [ ] mask
 [ ] mask_type
 
-# Total (45 / 120) [37.50%]
+# Total (50 / 120) [41.67%]
