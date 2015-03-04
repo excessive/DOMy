@@ -51,7 +51,7 @@
 [X] width
 [ ] vertical_align
 
-! relative works, absolute and fixed still need some work
+! relative and absolute work, fixed still need some work
 
 # Flexible Box Layout (9 / 21)
 

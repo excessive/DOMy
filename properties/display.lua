@@ -5,7 +5,7 @@ local Display = {}
 function Display.position_elements(elements, d, x, y, w, h)
 	if #elements == 0 then return end
 
-	local d  = d or "inline"
+	local d  = d or "child"
 	local x  = x or 0
 	local y  = y or 0
 	local nl = 0 -- new line
@@ -14,8 +14,8 @@ function Display.position_elements(elements, d, x, y, w, h)
 	local parent = {
 		x = x,
 		y = y,
-		w = w or love.graphics.getWidth()  - x,
-		h = h or love.graphics.getHeight() - y,
+		w = w or elements[1].gui.width  - x,
+		h = h or elements[1].gui.height - y,
 	}
 
 	for _, element in ipairs(elements) do
@@ -61,6 +61,23 @@ function Display.block(element, d, x, y, nl, parent)
 
 	if ep.max_height and ep.height > ep.max_height then
 		ep.height = ep.max_height
+	end
+
+	-- Auto margins
+	if ep.margin_top == "auto" then
+		ep.margin_top    = Display.calc_auto_margin(element, "y")
+	end
+
+	if ep.margin_right == "auto" then
+		ep.margin_right  = Display.calc_auto_margin(element, "x")
+	end
+
+	if ep.margin_bottom == "auto" then
+		ep.margin_bottom = Display.calc_auto_margin(element, "y")
+	end
+
+	if ep.margin_left == "auto" then
+		ep.margin_left   = Display.calc_auto_margin(element, "x")
 	end
 
 	-- Element position
@@ -174,6 +191,23 @@ function Display.inline(element, d, x, y, nl, parent)
 
 	if ep.max_height and ep.height > ep.max_height then
 		ep.height = ep.max_height
+	end
+
+	-- Auto margins
+	if ep.margin_top == "auto" then
+		ep.margin_top    = Display.calc_auto_margin(element, "y")
+	end
+
+	if ep.margin_right == "auto" then
+		ep.margin_right  = Display.calc_auto_margin(element, "x")
+	end
+
+	if ep.margin_bottom == "auto" then
+		ep.margin_bottom = Display.calc_auto_margin(element, "y")
+	end
+
+	if ep.margin_left == "auto" then
+		ep.margin_left   = Display.calc_auto_margin(element, "x")
 	end
 
 	-- Determine element position
@@ -347,6 +381,10 @@ function Display.absolute(element)
 	end
 end
 
+function Display.fixed(element)
+
+end
+
 --==[[ HELPER FUNCTIONS ]]==--
 
 -- https://love2d.org/wiki/Font%3agetWrap
@@ -417,6 +455,28 @@ function Display.get_relative(element)
 	else
 		Display.get_relative(element.parent)
 	end
+end
+
+function Display.calc_auto_margin(element, axis)
+	local ep = element.properties
+	local value
+
+	local px = 0
+	local py = 0
+	local pw = element.gui.width
+	local ph = element.gui.height
+
+	if element.parent then
+		px, py, pw, ph = get_content_box(element.parent)
+	end
+
+	if axis == "x" then
+		value = (pw - ep.width) / 2
+	elseif axis == "y" then
+		value = (ph - ep.height) / 2
+	end
+
+	return value
 end
 
 return Display
