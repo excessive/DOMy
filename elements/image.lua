@@ -10,13 +10,15 @@ Image:include(Element)
 function Image:init(element, parent, gui)
 	Element.init(self, element, parent, gui)
 
-	if not self.gui.cache[self.path] then
-		self.gui.cache[self.path] = love.graphics.newImage(self.path, gui.srgb and "srgb" or nil)
-	end
+	if self.path then
+		if not self.gui.cache[self.path] then
+			self.gui.cache[self.path] = love.graphics.newImage(self.path, gui.srgb and "srgb" or nil)
+		end
 
-	self.default_properties.image  = self.gui.cache[self.path]
-	self.default_properties.width  = self.gui.cache[self.path]:getWidth()
-	self.default_properties.height = self.gui.cache[self.path]:getHeight()
+		self.default_properties.image  = self.gui.cache[self.path]
+		self.default_properties.width  = self.gui.cache[self.path]:getWidth()
+		self.default_properties.height = self.gui.cache[self.path]:getHeight()
+	end
 end
 
 return Image

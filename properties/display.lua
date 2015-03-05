@@ -35,50 +35,11 @@ end
 function Display.block(element, d, x, y, nl, parent)
 	local ep  = element.properties
 
-	-- Determine width of element
-	if not ep.width then
-		Display.block_set_width(element, parent)
-	end
+	-- Check size of element
+	Display.check_size(element, parent)
 
-	-- Width within bounds
-	if ep.min_width and ep.width < ep.min_width then
-		ep.width = ep.min_width
-	end
-
-	if ep.max_width and ep.width > ep.max_width then
-		ep.width = ep.max_width
-	end
-
-	-- Determine height of element
-	if not ep.height then
-		Display.block_set_height(element, parent)
-	end
-
-	-- Height within bounds
-	if ep.min_height and ep.height < ep.min_height then
-		ep.height = ep.min_height
-	end
-
-	if ep.max_height and ep.height > ep.max_height then
-		ep.height = ep.max_height
-	end
-
-	-- Auto margins
-	if ep.margin_top == "auto" then
-		ep.margin_top    = Display.calc_auto_margin(element, "y")
-	end
-
-	if ep.margin_right == "auto" then
-		ep.margin_right  = Display.calc_auto_margin(element, "x")
-	end
-
-	if ep.margin_bottom == "auto" then
-		ep.margin_bottom = Display.calc_auto_margin(element, "y")
-	end
-
-	if ep.margin_left == "auto" then
-		ep.margin_left   = Display.calc_auto_margin(element, "x")
-	end
+	-- Check auto margins
+	Display.check_auto_margin(element)
 
 	-- Element position
 	if ep.position == "absolute" then
@@ -107,7 +68,7 @@ end
 
 function Display.block_set_width(element, parent)
 	local ep = element.properties
-	ep.width = parent.w - (ep.margin_left + ep.margin_right)
+	ep.width = (parent.w or parent.properties.width) - (ep.margin_left + ep.margin_right)
 
 	if element.parent then
 		local pp = element.parent.properties
@@ -165,50 +126,11 @@ end
 function Display.inline(element, d, x, y, nl, parent)
 	local ep  = element.properties
 
-	-- Determine width of element
-	if not ep.width then
-		Display.inline_set_width(element, parent)
-	end
+	-- Check size of element
+	Display.check_size(element, parent)
 
-	-- Width within bounds
-	if ep.min_width and ep.width < ep.min_width then
-		ep.width = ep.min_width
-	end
-
-	if ep.max_width and ep.width > ep.max_width then
-		ep.width = ep.max_width
-	end
-
-	-- Determine height of element
-	if not ep.height then
-		Display.inline_set_height(element, parent)
-	end
-
-	-- Height within bounds
-	if ep.min_height and ep.height < ep.min_height then
-		ep.height = ep.min_height
-	end
-
-	if ep.max_height and ep.height > ep.max_height then
-		ep.height = ep.max_height
-	end
-
-	-- Auto margins
-	if ep.margin_top == "auto" then
-		ep.margin_top    = Display.calc_auto_margin(element, "y")
-	end
-
-	if ep.margin_right == "auto" then
-		ep.margin_right  = Display.calc_auto_margin(element, "x")
-	end
-
-	if ep.margin_bottom == "auto" then
-		ep.margin_bottom = Display.calc_auto_margin(element, "y")
-	end
-
-	if ep.margin_left == "auto" then
-		ep.margin_left   = Display.calc_auto_margin(element, "x")
-	end
+	-- Check auto margins
+	Display.check_auto_margin(element)
 
 	-- Determine element position
 	if ep.position == "absolute" then
@@ -307,6 +229,8 @@ function Display.inline_set_height(element)
 		if not cp.width then
 			if cp.display == "inline" or cp.display == "inline_flex" then
 				Display.inline_set_width(child)
+			else
+				Display.block_set_width(child, element)
 			end
 		end
 
@@ -314,6 +238,8 @@ function Display.inline_set_height(element)
 		if not cp.height then
 			if cp.display == "inline" or cp.display == "inline_flex" then
 				Display.inline_set_height(child)
+			else
+				Display.block_set_height(child, element)
 			end
 		end
 	end
@@ -364,12 +290,20 @@ function Display.absolute(element)
 		cw, ch = love.graphics.getDimensions()
 	end
 
+	if not ep.left and not ep.right then
+		ep.left = 0
+	end
+
 	if ep.left then
 		element.position.x = cx + ep.left + ep.margin_left
 	elseif ep.right then
 		element.position.x = cx + cw - (ep.width + ep.right + ep.margin_right)
 	else
 		element.position.x = cx
+	end
+
+	if not ep.top and not ep.bottom then
+		ep.top = 0
 	end
 
 	if ep.top then
@@ -459,24 +393,80 @@ end
 
 function Display.calc_auto_margin(element, axis)
 	local ep = element.properties
-	local value
-
 	local px = 0
 	local py = 0
 	local pw = element.gui.width
 	local ph = element.gui.height
 
 	if element.parent then
-		px, py, pw, ph = get_content_box(element.parent)
+		px, py, pw, ph = Display.get_content_box(element.parent)
 	end
 
 	if axis == "x" then
-		value = (pw - ep.width) / 2
+		return (pw - ep.width) / 2
 	elseif axis == "y" then
-		value = (ph - ep.height) / 2
+		return (ph - ep.height) / 2
+	end
+end
+
+function Display.check_size(element, parent)
+	local ep = element.properties
+
+	-- Determine width of element
+	if not ep.width and (ep.display == "block" or ep.display == "flex") then
+		Display.block_set_width(element, parent)
 	end
 
-	return value
+	if not ep.width and (ep.display == "inline" or ep.display == "inline_flex") then
+		Display.inline_set_width(element, parent)
+	end
+
+	-- Width within bounds
+	if ep.min_width and ep.width < ep.min_width then
+		ep.width = ep.min_width
+	end
+
+	if ep.max_width and ep.width > ep.max_width then
+		ep.width = ep.max_width
+	end
+
+	-- Determine height of element
+	if not ep.height and (ep.display == "block" or ep.display == "flex") then
+		Display.block_set_height(element, parent)
+	end
+
+	if not ep.height and (ep.display == "inline" or ep.display == "inline_flex") then
+		Display.inline_set_height(element, parent)
+	end
+
+	-- Height within bounds
+	if ep.min_height and ep.height < ep.min_height then
+		ep.height = ep.min_height
+	end
+
+	if ep.max_height and ep.height > ep.max_height then
+		ep.height = ep.max_height
+	end
+end
+
+function Display.check_auto_margin(element)
+	local ep = element.properties
+
+	if ep.margin_top == "auto" then
+		ep.margin_top    = Display.calc_auto_margin(element, "y")
+	end
+
+	if ep.margin_right == "auto" then
+		ep.margin_right  = Display.calc_auto_margin(element, "x")
+	end
+
+	if ep.margin_bottom == "auto" then
+		ep.margin_bottom = Display.calc_auto_margin(element, "y")
+	end
+
+	if ep.margin_left == "auto" then
+		ep.margin_left   = Display.calc_auto_margin(element, "x")
+	end
 end
 
 return Display
