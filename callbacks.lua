@@ -47,6 +47,10 @@ function Callback.update(self, dt)
 		end
 	end
 
+	if self.pseudo.hover then
+		self:bubble_event(self.pseudo.hover, "on_mouse_over")
+	end
+
 	if self.pseudo.focus then
 		-- Loop through active keys
 		for key in pairs(self.key_down) do
@@ -55,7 +59,7 @@ function Callback.update(self, dt)
 
 		-- Loop through active mouse buttons
 		for button, element in pairs(self.mouse_down) do
-			if self.pseudo.hover == element then
+			if self.pseudo.focus == element then
 				self:bubble_event(self.pseudo.focus, "on_mouse_down", button)
 			end
 		end
@@ -212,10 +216,7 @@ function Callback.mousereleased(self, x, y, button)
 		self:bubble_event(pressed, "on_mouse_released", button)
 
 		if self.mouse_down[button] == pressed then
-			if button == "l" then
-				self:set_focus(pressed)
-			end
-
+			self:set_focus(pressed)
 			self:bubble_event(pressed, "on_mouse_clicked", button)
 		end
 	end
