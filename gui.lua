@@ -176,6 +176,8 @@ function GUI:import_markup(file)
 	if ok then
 		assert(check_syntax(err, true), string.format("File (%s) contains invalid markup.", file))
 		create_object(err, false)
+	else
+		print(err)
 	end
 end
 
@@ -346,6 +348,8 @@ function GUI:import_styles(file)
 		end
 
 		self:_apply_styles()
+	else
+		print(err)
 	end
 end
 
@@ -1168,6 +1172,10 @@ function GUI:_apply_styles()
 			or property == "nav_down"
 			or property == "nav_left" then
 				ep[property] = self:get_element_by_id(value)
+		elseif property == "overflow" then
+			if value == "scroll" then
+				element.on_mouse_scrolled = element.default_on_mouse_scrolled
+			end
 		end
 	end
 

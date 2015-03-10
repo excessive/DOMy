@@ -11,13 +11,13 @@ function Element:init(element, parent, gui)
 	self.value              = ""
 	self.parent             = parent or false
 	self.position           = cpml.vec2(0, 0)
-	self.scroll_size        = cpml.vec2(0, 0) -- dp scrollable
-	self.scroll_position    = cpml.vec2(0, 0) -- % scrolled
+	self.scroll_position    = cpml.vec2(0, 0) -- dp scrolled
 	self.children           = {}
 	self.default_properties = {
 		display  = "inline",
 		visible  = true,
 		position = "default",
+		overflow = "visible",
 
 		-- TOP, RIGHT, BOTTOM, LEFT
 		margin  = 0,
@@ -107,10 +107,7 @@ function Element:default_draw()
 
 		if parent then
 			local pp = parent.properties
-			local cx = parent.position.x + ox + pp.padding_left + pp.border_left
-			local cy = parent.position.y + oy + pp.padding_top  + pp.border_top
-			local cw = pp.width  - pp.padding_left - pp.border_left - pp.padding_right  - pp.border_right
-			local ch = pp.height - pp.padding_top  - pp.border_top  - pp.padding_bottom - pp.border_bottom
+			local cx, cy, cw, ch = parent:_get_content_area(ox, oy)
 
 			if sx < cx then
 				sx = cx
@@ -151,17 +148,10 @@ function Element:default_draw()
 	local ep = self.properties
 
 	-- Position & size of element
-	local ox, oy = self:_get_relative_position()
-	local x = self.position.x + ox
-	local y = self.position.y + oy
-	local w = ep.width
-	local h = ep.height
+	local x, y, w, h, ox, oy = self:_get_position()
 
 	-- Content start & end of element
-	local cx = x + ep.padding_left + ep.border_left
-	local cy = y + ep.padding_top  + ep.border_top
-	local cw = w - ep.padding_left - ep.border_left - ep.padding_right  - ep.border_right
-	local ch = h - ep.padding_top  - ep.border_top  - ep.padding_bottom - ep.border_bottom
+	local cx, cy, cw, ch = self:_get_content_area()
 
 	-- Set clip space to element bounds
 	love.graphics.setScissor(get_scissor_clip(self.parent, x, y, w, h, ox, oy))
@@ -263,11 +253,18 @@ function Element:default_draw()
 	end
 
 	-- Set clip space to content bounds
-	love.graphics.setScissor(get_scissor_clip(self.parent, cx, cy, cw, ch, ox, oy))
+	local overflow, parent = self:_get_overflow()
+
+	if overflow == "visible" then
+		love.graphics.setScissor()
+	elseif overflow == "hidden" or overflow == "scroll" then
+		love.graphics.setScissor(get_scissor_clip(self.parent, cx, cy, cw, ch, ox, oy))
+	end
 
 	-- Draw Text
 	if self.value then
 		love.graphics.push("all")
+
 		-- Set Text Color
 		if ep.text_color then
 			love.graphics.setColor(cc(ep.text_color))
@@ -301,13 +298,42 @@ function Element:default_draw()
 
 	-- DEBUG
 	if self.gui._debug then
+		love.graphics.push("all")
 		love.graphics.setColor(cc(255, 255, 0, 63))
 		love.graphics.rectangle("line", x-ep.margin_left, y-ep.margin_top, w+ep.margin_left+ep.margin_right, h+ep.margin_top+ep.margin_bottom)
 		love.graphics.setColor(cc(0, 255, 255, 63))
 		love.graphics.rectangle("line", cx, cy, cw, ch)
 		love.graphics.setColor(cc(255, 255, 255, 255))
+		love.graphics.pop()
 	end
 	-- DEBUG
+end
+
+function Element:default_on_mouse_scrolled(button)
+	if self:_get_overflow() ~= "scroll" then return end
+
+	local ep = self.properties
+	local cx, cy, cw, ch = self:_get_content_area()
+	local csw, csh       = self:_get_content_size()
+	local scroll_size_y  = -csh + ch
+
+	if ch >= csh then return end
+
+	if button == "wu" then
+		self.scroll_position.y = self.scroll_position.y - 30
+
+		if  self.scroll_position.y < scroll_size_y then
+			self.scroll_position.y = scroll_size_y
+		end
+	end
+
+	if button == "wd" then
+		self.scroll_position.y = self.scroll_position.y + 30
+
+		if  self.scroll_position.y > 0 then
+			self.scroll_position.y = 0
+		end
+	end
 end
 
 function Element:_get_sibling_position()
@@ -336,6 +362,54 @@ function Element._get_relative_position(element, ox, oy)
 	end
 
 	return Element._get_relative_position(element.parent, ox, oy)
+end
+
+function Element:_get_position()
+	local ox, oy = self:_get_relative_position()
+	local x = self.position.x + ox
+	local y = self.position.y + oy
+	local w = self.properties.width
+	local h = self.properties.height
+
+	return x, y, w, h, ox, oy
+end
+
+function Element:_get_content_area(ox, oy)
+	local x, y, w, h = self:_get_position()
+
+	local ep = self.properties
+	local cx = x + ep.padding_left + ep.border_left + (ox or 0)
+	local cy = y + ep.padding_top  + ep.border_top  + (oy or 0)
+	local cw = w - ep.padding_left - ep.border_left - ep.padding_right  - ep.border_right
+	local ch = h - ep.padding_top  - ep.border_top  - ep.padding_bottom - ep.border_bottom
+
+	return cx, cy, cw, ch
+end
+
+function Element:_get_content_size()
+	local w, h = 0, 0
+	for _, element in ipairs(self.children) do
+		local ep = element.properties
+
+		if ep.position == "default" or ep.position == "relative" then
+			local ew = ep.width + ep.margin_left + ep.margin_right
+			if w < ew then w = ew end
+
+			h = h + ep.height + ep.margin_top + ep.margin_bottom
+		end
+	end
+
+	return w, h
+end
+
+function Element._get_overflow(self)
+	if not self then return "visible" end
+
+	if self.properties.overflow ~= "visible" then
+		return self.properties.overflow, self
+	end
+
+	return Element._get_overflow(self.parent)
 end
 
 function Element:enable()

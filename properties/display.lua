@@ -45,8 +45,18 @@ function Display.block(element, d, x, y, nl, parent)
 	if ep.position == "absolute" then
 		Display.absolute(element)
 	else
-		element.position.x = parent.x + ep.margin_left
-		element.position.y = y        + ep.margin_top + nl
+		local sx, sy = 0, 0
+
+		if d == "child" then
+			local overflow, p = element:_get_overflow()
+			if overflow == "scroll" and p and p ~= element then
+				sx = p.scroll_position.x
+				sy = p.scroll_position.y
+			end
+		end
+
+		element.position.x = parent.x + sx + ep.margin_left
+		element.position.y = y        + sy + ep.margin_top + nl
 	end
 
 	-- If not a flexbox, propogate to children
@@ -140,8 +150,16 @@ function Display.inline(element, d, x, y, nl, parent)
 			element.position.x = parent.x + ep.margin_left
 			element.position.y = y        + ep.margin_top
 		elseif d == "child" then
-			element.position.x = parent.x + ep.margin_left
-			element.position.y = parent.y + ep.margin_top
+			local sx, sy = 0, 0
+			local overflow, p = element:_get_overflow()
+
+			if overflow == "scroll" and p and p ~= element then
+				sx = p.scroll_position.x
+				sy = p.scroll_position.y
+			end
+
+			element.position.x = parent.x + sx + ep.margin_left
+			element.position.y = parent.y + sy + ep.margin_top
 		elseif x + ep.width + ep.margin_left + ep.margin_right > parent.x + parent.w then
 			element.position.x = parent.x + ep.margin_left
 			element.position.y = y        + ep.margin_top + nl
