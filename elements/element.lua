@@ -253,13 +253,23 @@ function Element:default_draw()
 	end
 
 	-- Set clip space to content bounds
-	local overflow, parent = self:_get_overflow()
+	local overflow_x, overflow_y, parent = self:_get_overflow()
 
-	if overflow == "visible" then
-		love.graphics.setScissor()
-	elseif overflow == "hidden" or overflow == "scroll" then
-		love.graphics.setScissor(get_scissor_clip(self.parent, cx, cy, cw, ch, ox, oy))
+	local sx, sy = cw, ch
+
+	if overflow_x == "hidden" or overflow_x == "scroll" then
+		sw = self.gui.width - cx
 	end
+
+	if overflow_y == "hidden" or overflow_y == "scroll" then
+		sh = self.gui.height - cy
+	end
+
+	--if overflow_x == "visible" and overflow_y == "visible" then
+	--	love.graphics.setScissor()
+	--elseif overflow == "hidden" or overflow == "scroll" then
+		love.graphics.setScissor(get_scissor_clip(self.parent, cx, cy, sw, sh, ox, oy))
+	--end
 
 	-- Draw Text
 	if self.value then
@@ -310,7 +320,8 @@ function Element:default_draw()
 end
 
 function Element:default_on_mouse_scrolled(button)
-	if self:_get_overflow() ~= "scroll" then return end
+	local overflow_x, overflow_y, parent = self:_get_overflow()
+	if overflow_y ~= "scroll" then return end
 
 	local ep = self.properties
 	local cx, cy, cw, ch = self:_get_content_area()
@@ -403,10 +414,11 @@ function Element:_get_content_size()
 end
 
 function Element._get_overflow(self)
-	if not self then return "visible" end
+	if not self then return "visible", "visible" end
 
-	if self.properties.overflow ~= "visible" then
-		return self.properties.overflow, self
+	if self.properties.overflow_x ~= "visible"
+	or self.properties.overflow_y ~= "visible" then
+		return self.properties.overflow_x, self.properties.overflow_y, self
 	end
 
 	return Element._get_overflow(self.parent)

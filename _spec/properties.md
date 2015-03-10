@@ -27,7 +27,7 @@
 [ ] border_top_right_radius
 [ ] box_shadow
 
-# Basic Box Properties (15 / 21)
+# Basic Box Properties (17 / 21)
 
 [X] bottom
 [ ] clear
@@ -37,8 +37,8 @@
 [X] left
 [ ] opacity
 [X] overflow
-[ ] overflow_x
-[ ] overflow_y
+[X] overflow_x
+[X] overflow_y
 [X] padding
 [X] padding_bottom
 [X] padding_left
@@ -160,4 +160,4 @@
 [ ] mask
 [ ] mask_type
 
-# Total (51 / 120) [42.50%]
+# Total (53 / 120) [44.17%]

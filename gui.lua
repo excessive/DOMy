@@ -1173,6 +1173,9 @@ function GUI:_apply_styles()
 			or property == "nav_left" then
 				ep[property] = self:get_element_by_id(value)
 		elseif property == "overflow" then
+			ep.overflow_x = value
+			ep.overflow_y = value
+
 			if value == "scroll" then
 				element.on_mouse_scrolled = element.default_on_mouse_scrolled
 			end

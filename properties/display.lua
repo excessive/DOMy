@@ -48,9 +48,13 @@ function Display.block(element, d, x, y, nl, parent)
 		local sx, sy = 0, 0
 
 		if d == "child" then
-			local overflow, p = element:_get_overflow()
-			if overflow == "scroll" and p and p ~= element then
+			local overflow_x, overflow_y, p = element:_get_overflow()
+
+			if overflow_x == "scroll" and p and p ~= element then
 				sx = p.scroll_position.x
+			end
+
+			if overflow_y == "scroll" and p and p ~= element then
 				sy = p.scroll_position.y
 			end
 		end
@@ -151,10 +155,13 @@ function Display.inline(element, d, x, y, nl, parent)
 			element.position.y = y        + ep.margin_top
 		elseif d == "child" then
 			local sx, sy = 0, 0
-			local overflow, p = element:_get_overflow()
+			local overflow_x, overflow_y, p = element:_get_overflow()
 
-			if overflow == "scroll" and p and p ~= element then
+			if overflow_x == "scroll" and p and p ~= element then
 				sx = p.scroll_position.x
+			end
+
+			if overflow_y == "scroll" and p and p ~= element then
 				sy = p.scroll_position.y
 			end
 
