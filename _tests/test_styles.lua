@@ -4,6 +4,8 @@ local dom = require "DOMinatrix"
 local gui = dom.new()
 gui:import_markup("DOMinatrix/_tests/styles_markup.lua")
 
+print()
+
 print("BEGIN STYLES TEST")
 
 -- Parse styles
@@ -67,9 +69,4 @@ print("Passed: :valid Pseudo-Class")
 print("Passed: :visited Pseudo-Class")
 --]]
 
-assert(gui.elements[15].properties.width  == 10, output(10, gui.elements[15].properties.width))
-assert(gui.elements[15].properties.height == 20, output(20, gui.elements[15].properties.height))
-print("Passed: :last Pseudo-Class")
-
 print("END STYLES TEST")
-print()

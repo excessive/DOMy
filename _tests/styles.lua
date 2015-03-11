@@ -1,17 +1,17 @@
 local red = { 255, 0, 0, 255 }
 
 return {
-    { "element", {
+    { "inline", {
         width  = 50,
         height = 50,
     }},
 
-    { "element#four.red", {
+    { "inline#four.red", {
         width  = 400,
         height = 200,
     }},
 
-    { "element.root", {
+    { "inline.root", {
         display = "block",
         width   = 300,
         height  = 200,
@@ -39,18 +39,18 @@ return {
         text_color = red,
     }},
 
-    { "element#four", {
+    { "inline#four", {
         display = "inline",
         width   = 600,
         height  = 600,
     }},
 
-    { ".red:last", {
+    { ".red:last_child", {
         width  = 10,
         height = 10,
     }},
 
-    { ".red:last", {
+    { ".red:last_child", {
         height = 20,
         kek = "top",
     }},

@@ -36,7 +36,8 @@ All bundled tests pass. To verify tests, simply require the test file in main.lu
 
 * Finish adding styles
 * Finish adding default elements
-* Implement templating system
+* Implement templating/widget system
+* Implement theme system
 * Implement virtual input system
 * Implement smart draw system
 * Implement dp and sp units

@@ -3,6 +3,8 @@ local function output(exp, got) return string.format("'%s' expected, got '%s'", 
 local dom = require "DOMinatrix"
 local gui = dom.new()
 
+print()
+
 print("BEGIN MARKUP TEST")
 
 -- Parse Markup
@@ -40,4 +42,3 @@ assert(softcompare(gui.elements[15].value, 10), output("10",     gui.elements[15
 print("Passed: Parsed Markup")
 
 print("END MARKUP TEST")
-print()

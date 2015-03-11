@@ -4,6 +4,8 @@ local dom = require "DOMinatrix"
 local gui = dom.new()
 gui:import_markup("DOMinatrix/_tests/markup.lua")
 
+print()
+
 print("BEGIN LIBRARY TEST")
 
 -- ID Selector
@@ -67,4 +69,3 @@ assert(o.parent == false,        output("false", o.parent))
 print("Passed: New Root Element")
 
 print("END LIBRARY TEST")
-print()

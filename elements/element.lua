@@ -347,81 +347,8 @@ function Element:default_on_mouse_scrolled(button)
 	end
 end
 
-function Element:_get_sibling_position()
-	if self.parent then
-		for k, child in ipairs(self.parent.children) do
-			if child == self then
-				return k
-			end
-		end
-	end
-
-	return false
-end
-
-function Element._get_relative_position(element, ox, oy)
-	if not element then return ox, oy end
-
-	local ep = element.properties
-
-	ox = ox or 0
-	oy = oy or 0
-
-	if ep.position == "relative" then
-		ox = ox + (ep.left or 0) - (ep.right  or 0)
-		oy = oy + (ep.top  or 0) - (ep.bottom or 0)
-	end
-
-	return Element._get_relative_position(element.parent, ox, oy)
-end
-
-function Element:_get_position()
-	local ox, oy = self:_get_relative_position()
-	local x = self.position.x + ox
-	local y = self.position.y + oy
-	local w = self.properties.width
-	local h = self.properties.height
-
-	return x, y, w, h, ox, oy
-end
-
-function Element:_get_content_area(ox, oy)
-	local x, y, w, h = self:_get_position()
-
-	local ep = self.properties
-	local cx = x + ep.padding_left + ep.border_left + (ox or 0)
-	local cy = y + ep.padding_top  + ep.border_top  + (oy or 0)
-	local cw = w - ep.padding_left - ep.border_left - ep.padding_right  - ep.border_right
-	local ch = h - ep.padding_top  - ep.border_top  - ep.padding_bottom - ep.border_bottom
-
-	return cx, cy, cw, ch
-end
-
-function Element:_get_content_size()
-	local w, h = 0, 0
-	for _, element in ipairs(self.children) do
-		local ep = element.properties
-
-		if ep.position == "default" or ep.position == "relative" then
-			local ew = ep.width + ep.margin_left + ep.margin_right
-			if w < ew then w = ew end
-
-			h = h + ep.height + ep.margin_top + ep.margin_bottom
-		end
-	end
-
-	return w, h
-end
-
-function Element._get_overflow(self)
-	if not self then return "visible", "visible" end
-
-	if self.properties.overflow_x ~= "visible"
-	or self.properties.overflow_y ~= "visible" then
-		return self.properties.overflow_x, self.properties.overflow_y, self
-	end
-
-	return Element._get_overflow(self.parent)
+function Element_is_enabled()
+	return self.enabled
 end
 
 function Element:enable()
@@ -432,8 +359,30 @@ function Element:disable()
 	self.enabled = false
 end
 
-function Element_is_enabled()
-	return self.enabled
+function Element:has_class(class)
+	for _, c in ipairs(self.class) do
+		if c == class then
+			return true
+		end
+	end
+
+	return false
+end
+
+function Element:add_class(class)
+	if type(class) == "string" then
+		table.insert(self.class, class)
+	end
+end
+
+function Element:remove_class(class)
+	if type(class) == "string" then
+		for k, v in ipairs(self.class) do
+			if class == v then
+				table.remove(self.class, k)
+			end
+		end
+	end
 end
 
 function Element:has_property(property)
@@ -777,30 +726,81 @@ function Element:scroll_into_view()
 	-- Self should be wholy visible or if too large, the top should match parent's top
 end
 
-function Element:add_class(class)
-	if type(class) == "string" then
-		table.insert(self.class, class)
-	end
-end
-
-function Element:has_class(class)
-	for _, c in ipairs(self.class) do
-		if c == class then
-			return true
+function Element:_get_sibling_position()
+	if self.parent then
+		for k, child in ipairs(self.parent.children) do
+			if child == self then
+				return k
+			end
 		end
 	end
 
 	return false
 end
 
-function Element:remove_class(class)
-	if type(class) == "string" then
-		for k, v in ipairs(self.class) do
-			if class == v then
-				table.remove(self.class, k)
-			end
+function Element._get_relative_position(element, ox, oy)
+	if not element then return ox, oy end
+
+	local ep = element.properties
+
+	ox = ox or 0
+	oy = oy or 0
+
+	if ep.position == "relative" then
+		ox = ox + (ep.left or 0) - (ep.right  or 0)
+		oy = oy + (ep.top  or 0) - (ep.bottom or 0)
+	end
+
+	return Element._get_relative_position(element.parent, ox, oy)
+end
+
+function Element:_get_position()
+	local ox, oy = self:_get_relative_position()
+	local x = self.position.x + ox
+	local y = self.position.y + oy
+	local w = self.properties.width
+	local h = self.properties.height
+
+	return x, y, w, h, ox, oy
+end
+
+function Element:_get_content_area(ox, oy)
+	local x, y, w, h = self:_get_position()
+
+	local ep = self.properties
+	local cx = x + ep.padding_left + ep.border_left + (ox or 0)
+	local cy = y + ep.padding_top  + ep.border_top  + (oy or 0)
+	local cw = w - ep.padding_left - ep.border_left - ep.padding_right  - ep.border_right
+	local ch = h - ep.padding_top  - ep.border_top  - ep.padding_bottom - ep.border_bottom
+
+	return cx, cy, cw, ch
+end
+
+function Element:_get_content_size()
+	local w, h = 0, 0
+	for _, element in ipairs(self.children) do
+		local ep = element.properties
+
+		if ep.position == "default" or ep.position == "relative" then
+			local ew = ep.width + ep.margin_left + ep.margin_right
+			if w < ew then w = ew end
+
+			h = h + ep.height + ep.margin_top + ep.margin_bottom
 		end
 	end
+
+	return w, h
+end
+
+function Element._get_overflow(self)
+	if not self then return "visible", "visible" end
+
+	if self.properties.overflow_x ~= "visible"
+	or self.properties.overflow_y ~= "visible" then
+		return self.properties.overflow_x, self.properties.overflow_y, self
+	end
+
+	return Element._get_overflow(self.parent)
 end
 
 return Element

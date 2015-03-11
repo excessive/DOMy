@@ -4,6 +4,8 @@ local dom = require "DOMinatrix"
 local gui = dom.new()
 gui:import_markup("DOMinatrix/_tests/markup.lua")
 
+print()
+
 print("BEGIN ELEMENT TEST")
 
 local e = gui:get_element_by_id("five")
@@ -141,4 +143,3 @@ assert(e:get_property("kek") == nil, output("nil", e:get_property("kek")))
 print("Passed: Remove Property Values")
 
 print("END ELEMENT TEST")
-print()
