@@ -18,6 +18,7 @@ function Element:init(element, parent, gui)
 		visible  = true,
 		position = "default",
 		overflow = "visible",
+		opacity  = 1,
 
 		-- TOP, RIGHT, BOTTOM, LEFT
 		margin  = 0,
@@ -107,7 +108,7 @@ function Element:default_draw()
 
 		if parent then
 			local pp = parent.properties
-			local cx, cy, cw, ch = parent:_get_content_area(ox, oy)
+			local cx, cy, cw, ch = parent:_get_content_position(ox, oy)
 
 			if sx < cx then
 				sx = cx
@@ -132,6 +133,12 @@ function Element:default_draw()
 		return sx, sy, sw, sh
 	end
 
+	local function get_opacity(element, opacity)
+		if not element then return opacity end
+		local opacity = (opacity or 1) * element.properties.opacity
+		return get_opacity(element.parent, opacity)
+	end
+
 	local function set_properties(new_properties, properties)
 		if not new_properties then return properties end
 
@@ -147,11 +154,16 @@ function Element:default_draw()
 	local cc = self.gui.srgb and love.math.gammaToLinear or function(...) return ... end
 	local ep = self.properties
 
-	-- Position & size of element
+	-- Position start & end of element
 	local x, y, w, h, ox, oy = self:_get_position()
 
+	-- Border start & end of element
+	local bx, by, bw, bh = self:_get_border_position()
+
 	-- Content start & end of element
-	local cx, cy, cw, ch = self:_get_content_area()
+	local cx, cy, cw, ch = self:_get_content_position()
+
+	local opacity = get_opacity(self)
 
 	-- Set clip space to element bounds
 	love.graphics.setScissor(get_scissor_clip(self.parent, x, y, w, h, ox, oy))
@@ -159,57 +171,54 @@ function Element:default_draw()
 	-- Draw Background
 	if ep.background_color then
 		love.graphics.push("all")
-		love.graphics.setColor(cc(ep.background_color))
-		love.graphics.rectangle("fill", x, y, w, h)
+		local lr, lg, lb = cc(ep.background_color)
+		love.graphics.setColor(lr, lg, lb, (ep.background_color[4] or 255)*opacity)
+		love.graphics.rectangle("fill", bx, by, bw, bh)
 		love.graphics.pop()
 	end
 
 	-- Draw Background Image
 	if ep.background_image then
-		local bx, by = x, y
-		local bw, bh = ep.background_image:getDimensions()
+		local bix, biy = x, y
+		local biw, bih = ep.background_image:getDimensions()
 
 		-- Set Background Offset
 		if ep.background_position then
-			bx = bx + ep.background_position[1]
-			by = by + ep.background_position[2]
+			bix = bix + ep.background_position[1]
+			biy = biy + ep.background_position[2]
 		end
 
 		-- Set Background Size
 		if ep.background_size then
-			if ep.background_size[1] < bw then
+			if ep.background_size[1] < biw then
 				bw = ep.background_size[1]
 			end
 
-			if ep.background_size[2] < bh then
+			if ep.background_size[2] < bih then
 				bh = ep.background_size[2]
 			end
 		end
 
 		if ep.background_image_color then
 			love.graphics.push("all")
-			love.graphics.setColor(ep.background_image_color)
+			local lr, lg, lb = cc(ep.background_image_color)
+			love.graphics.setColor(lr, lg, lb, (ep.background_image_color[4] or 255)*opacity)
 		end
 
-		local quad = love.graphics.newQuad(0, 0, bw, bh, ep.background_image:getDimensions())
-		love.graphics.draw(ep.background_image, quad, bx, by)
+		local quad = love.graphics.newQuad(0, 0, biw, bih, ep.background_image:getDimensions())
+		love.graphics.draw(ep.background_image, quad, bix, biy)
 
 		if ep.background_image_color then
 			love.graphics.pop()
 		end
 	end
 
-	-- Draw Image
-	if ep.image then
-		love.graphics.draw(ep.image, x, y)
-	end
-
 	-- Draw Border (Top)
 	if ep.border_top > 0 then
-		local x = x + ep.border_top / 2
 		local y = y + ep.border_top / 2
 		love.graphics.push("all")
-		love.graphics.setColor(cc(ep.border_top_color))
+		local lr, lg, lb = cc(ep.border_top_color)
+		love.graphics.setColor(lr, lg, lb, (ep.border_top_color[4] or 255)*opacity)
 		love.graphics.setLineWidth(ep.border_top)
 		love.graphics.setLineStyle("rough")
 		love.graphics.line(x, y, x+w, y)
@@ -218,10 +227,10 @@ function Element:default_draw()
 
 	-- Draw Border (Right)
 	if ep.border_right > 0 then
-		local x = x - ep.border_top / 2
-		local y = y + ep.border_top / 2
+		local x = x - ep.border_right / 2
 		love.graphics.push("all")
-		love.graphics.setColor(cc(ep.border_right_color))
+		local lr, lg, lb = cc(ep.border_right_color)
+		love.graphics.setColor(lr, lg, lb, (ep.border_right_color[4] or 255)*opacity)
 		love.graphics.setLineWidth(ep.border_right)
 		love.graphics.setLineStyle("rough")
 		love.graphics.line(x+w, y, x+w, y+h)
@@ -230,10 +239,10 @@ function Element:default_draw()
 
 	-- Draw Border (Bottom)
 	if ep.border_bottom > 0 then
-		local x = x - ep.border_top / 2
-		local y = y - ep.border_top / 2
+		local y = y - ep.border_bottom / 2
 		love.graphics.push("all")
-		love.graphics.setColor(cc(ep.border_bottom_color))
+		local lr, lg, lb = cc(ep.border_bottom_color)
+		love.graphics.setColor(lr, lg, lb, (ep.border_bottom_color[4] or 255)*opacity)
 		love.graphics.setLineWidth(ep.border_bottom)
 		love.graphics.setLineStyle("rough")
 		love.graphics.line(x+w, y+h, x, y+h)
@@ -242,13 +251,24 @@ function Element:default_draw()
 
 	-- Draw Border (Left)
 	if ep.border_left > 0 then
-		local x = x + ep.border_top / 2
-		local y = y - ep.border_top / 2
+		local x = x + ep.border_left / 2
 		love.graphics.push("all")
-		love.graphics.setColor(cc(ep.border_left_color))
+		local lr, lg, lb = cc(ep.border_left_color)
+		love.graphics.setColor(lr, lg, lb, (ep.border_left_color[4] or 255)*opacity)
 		love.graphics.setLineWidth(ep.border_left)
 		love.graphics.setLineStyle("rough")
 		love.graphics.line(x, y+h, x, y)
+		love.graphics.pop()
+	end
+
+	-- Set clip space to border bounds
+	love.graphics.setScissor(get_scissor_clip(self.parent, bx, by, bw, bh, ox, oy))
+
+	-- Draw Image
+	if ep.image then
+		love.graphics.push("all")
+		love.graphics.setColor(255, 255, 255, 255*opacity)
+		love.graphics.draw(ep.image, x, y)
 		love.graphics.pop()
 	end
 
@@ -265,11 +285,8 @@ function Element:default_draw()
 		sh = self.gui.height - cy
 	end
 
-	--if overflow_x == "visible" and overflow_y == "visible" then
-	--	love.graphics.setScissor()
-	--elseif overflow == "hidden" or overflow == "scroll" then
-		love.graphics.setScissor(get_scissor_clip(self.parent, cx, cy, sw, sh, ox, oy))
-	--end
+	-- Set clip space to content bounds
+	love.graphics.setScissor(get_scissor_clip(self.parent, cx, cy, sw, sh, ox, oy))
 
 	-- Draw Text
 	if self.value then
@@ -277,7 +294,8 @@ function Element:default_draw()
 
 		-- Set Text Color
 		if ep.text_color then
-			love.graphics.setColor(cc(ep.text_color))
+			local lr, lg, lb = cc(ep.text_color)
+			love.graphics.setColor(lr, lg, lb, (ep.text_color[4] or 255)*opacity)
 		end
 
 		-- Set Font
@@ -293,7 +311,8 @@ function Element:default_draw()
 
 		if ep.text_shadow then
 			love.graphics.push("all")
-			love.graphics.setColor(cc(ep.text_shadow_color))
+			local lr, lg, lb = cc(ep.text_shadow_color)
+			love.graphics.setColor(lr, lg, lb, (ep.text_shadow_color[4] or 255)*opacity)
 			love.graphics.printf(tostring(self.value), cx + ep.text_shadow[1], text_offset + ep.text_shadow[2], cw, ep.text_align)
 			love.graphics.pop()
 		end
@@ -309,9 +328,9 @@ function Element:default_draw()
 	-- DEBUG
 	if self.gui._debug then
 		love.graphics.push("all")
-		love.graphics.setColor(cc(255, 255, 0, 63))
+		love.graphics.setColor(cc(255, 0, 0, 191))
 		love.graphics.rectangle("line", x-ep.margin_left, y-ep.margin_top, w+ep.margin_left+ep.margin_right, h+ep.margin_top+ep.margin_bottom)
-		love.graphics.setColor(cc(0, 255, 255, 63))
+		love.graphics.setColor(cc(0, 0, 255, 191))
 		love.graphics.rectangle("line", cx, cy, cw, ch)
 		love.graphics.setColor(cc(255, 255, 255, 255))
 		love.graphics.pop()
@@ -324,13 +343,13 @@ function Element:default_on_mouse_scrolled(button)
 	if overflow_y ~= "scroll" then return end
 
 	local ep = self.properties
-	local cx, cy, cw, ch = self:_get_content_area()
+	local cx, cy, cw, ch = self:_get_content_position()
 	local csw, csh       = self:_get_content_size()
 	local scroll_size_y  = -csh + ch
 
 	if ch >= csh then return end
 
-	if button == "wu" then
+	if button == "wd" then
 		self.scroll_position.y = self.scroll_position.y - 30
 
 		if  self.scroll_position.y < scroll_size_y then
@@ -338,7 +357,7 @@ function Element:default_on_mouse_scrolled(button)
 		end
 	end
 
-	if button == "wd" then
+	if button == "wu" then
 		self.scroll_position.y = self.scroll_position.y + 30
 
 		if  self.scroll_position.y > 0 then
@@ -764,14 +783,26 @@ function Element:_get_position()
 	return x, y, w, h, ox, oy
 end
 
-function Element:_get_content_area(ox, oy)
+function Element:_get_border_position(ox, oy)
 	local x, y, w, h = self:_get_position()
 
 	local ep = self.properties
-	local cx = x + ep.padding_left + ep.border_left + (ox or 0)
-	local cy = y + ep.padding_top  + ep.border_top  + (oy or 0)
-	local cw = w - ep.padding_left - ep.border_left - ep.padding_right  - ep.border_right
-	local ch = h - ep.padding_top  - ep.border_top  - ep.padding_bottom - ep.border_bottom
+	local bx = x + ep.border_left + (ox or 0)
+	local by = y + ep.border_top  + (oy or 0)
+	local bw = w - ep.border_left - ep.border_right
+	local bh = h - ep.border_top  - ep.border_bottom
+
+	return bx, by, bw, bh
+end
+
+function Element:_get_content_position(ox, oy)
+	local cx, cy, cw, ch = self:_get_border_position(ox, oy)
+
+	local ep = self.properties
+	local cx = cx + ep.padding_left
+	local cy = cy + ep.padding_top
+	local cw = cw - ep.padding_left - ep.padding_right
+	local ch = ch - ep.padding_top  - ep.padding_bottom
 
 	return cx, cy, cw, ch
 end

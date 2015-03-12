@@ -58,7 +58,7 @@
 [ ] border_top_right_radius
 [ ] box_shadow
 
-### Basic Box Properties (17 / 21)
+### Basic Box Properties (18 / 21)
 
 [X] bottom
 [ ] clear
@@ -66,7 +66,7 @@
 [ ] float
 [X] height
 [X] left
-[ ] opacity
+[X] opacity
 [X] overflow
 [X] overflow_x
 [X] overflow_y
@@ -215,7 +215,7 @@
 [X] mclick
 [X] rclick
 
-## Total Progress (74 / 141) [52.48%]
+## Total Progress (75 / 141) [53.19%]
 
 
 
@@ -275,4 +275,4 @@
 
 
 
-# Total (103 / 182) [56.59%]
+# Total (104 / 182) [57.14%]

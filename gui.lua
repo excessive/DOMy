@@ -377,16 +377,6 @@ function GUI:get_elements_by_query(query, elements)
 end
 
 function GUI:_apply_styles()
-	local function get_content_box(element)
-		local ep = element.properties
-		local x  = element.position.x + ep.padding_left + ep.border_left
-		local y  = element.position.y + ep.padding_top + ep.border_top
-		local w  = ep.width  - ep.padding_left - ep.border_left - ep.padding_right - ep.border_right
-		local h  = ep.height - ep.padding_top - ep.border_top - ep.padding_bottom - ep.border_bottom
-
-		return x, y, w, h
-	end
-
 	local function check_percent(element, value, axis)
 		if type(value) == "string" and value:sub(-1) == "%" then
 			value = tonumber(value:sub(1, -2)) / 100
@@ -398,7 +388,7 @@ function GUI:_apply_styles()
 				local ph = self.height
 
 				if element.parent then
-					px, py, pw, ph = get_content_box(element.parent)
+					px, py, pw, ph = element.parent:_get_content_position()
 				end
 
 				if axis == "x" then
