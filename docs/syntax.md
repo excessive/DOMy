@@ -12,7 +12,7 @@ DOMinatrix uses a custom syntax designed to be very easy to learn and use. Simil
 
 **Some table keys are reserved for specific data:**
 
-### [1]
+### `[1]`
 
 Type of element you want to declare
 
@@ -23,7 +23,7 @@ return {
 }
 ```
 
-### [2]
+### `[2]`
 
 Text value of element, or a nested child (if it is a table)
 
@@ -41,7 +41,7 @@ return {
 }
 ```
 
-### [3] -> [n]
+### `[3]` -> `[n]`
 
 Nested children of element
 
@@ -54,7 +54,7 @@ return {
 }
 ```
 
-### value
+### `value`
 
 Text value of element; takes presedence over `[2]`
 
@@ -64,7 +64,7 @@ return {
 }
 ```
 
-### id
+### `id`
 
 Assign a unique ID to element
 
@@ -74,7 +74,7 @@ return {
 }
 ```
 
-### class
+### `class`
 
 Assign any number of non-unique classes to element
 
@@ -120,7 +120,7 @@ Styles are the beauty of an interface, the skin on our bones. In MVC terms, styl
 
 ## Selectors
 
-### [none]
+### `[none]`
 
 Defines an element
 
@@ -128,7 +128,7 @@ Defines an element
 "text"
 ```
 
-### #
+### `#`
 
 Defines an ID
 
@@ -136,7 +136,7 @@ Defines an ID
 "#some_textbox"
 ```
 
-### .
+### `.`
 
 Defines a class
 
@@ -144,7 +144,7 @@ Defines a class
 ".red"
 ```
 
-### :
+### `:`
 
 Defines a pseudo class
 
@@ -152,7 +152,7 @@ Defines a pseudo class
 ":last_child"
 ```
 
-### [space]
+### `[space]`
 
 Defines a descendant
 
