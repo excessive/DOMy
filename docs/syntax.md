@@ -12,7 +12,9 @@ DOMinatrix uses a custom syntax designed to be very easy to learn and use. Simil
 
 **Some table keys are reserved for specific data:**
 
-* `[1]` Type of element you want to declare
+### [1]
+
+Type of element you want to declare
 
 ```lua
 
@@ -21,7 +23,9 @@ return {
 }
 ```
 
-* `[2]` Text value of element, or a nested child (if it is a table)
+### [2]
+
+Text value of element, or a nested child (if it is a table)
 
 ```lua
 return {
@@ -37,7 +41,9 @@ return {
 }
 ```
 
-* `[3] -> [n]` Nested children of element
+### [3] -> [n]
+
+Nested children of element
 
 ```lua
 return {
@@ -48,7 +54,9 @@ return {
 }
 ```
 
-* `value` Text value of element; takes presedence over `[2]`
+### value
+
+Text value of element; takes presedence over `[2]`
 
 ```lua
 return {
@@ -56,7 +64,9 @@ return {
 }
 ```
 
-* `id` Assign a unique ID to element
+### id
+
+Assign a unique ID to element
 
 ```lua
 return {
@@ -64,7 +74,9 @@ return {
 }
 ```
 
-* `class` Assign any number of non-unique classes to element
+### class
+
+Assign any number of non-unique classes to element
 
 ```lua
 return {
@@ -78,7 +90,9 @@ return {
 }
 ```
 
-* Assign any other named key to store custom data in element
+### Custom Data
+
+Assign any other named key to store custom data in element
 
 ```lua
 return {
@@ -102,37 +116,51 @@ return markup
 
 # Styles
 
-Styles are the beauty of an interface. In MVC terms, styles are the view. DOMinatrix Styles allow you to define individual style blocks based on CSS-like selectors and SCSS-like syntax. Here is a list of selectors:
+Styles are the beauty of an interface, the skin on our bones. In MVC terms, styles are the view. DOMinatrix Styles allow you to define individual style blocks based on CSS-like selectors and SCSS-like syntax.
 
-* `[none]` Defines an element
+## Selectors
+
+### [none]
+
+Defines an element
 
 ```lua
 "text"
 ```
 
-* `#` Defines an ID
+### #
+
+Defines an ID
 
 ```lua
 "#some_textbox"
 ```
 
-* `.` Defines a class
+### .
+
+Defines a class
 
 ```lua
 ".red"
 ```
 
-* `:` Defines a pseudo class
+### :
+
+Defines a pseudo class
 
 ```lua
 ":last_child"
 ```
 
-* `[space]` Defines a descendant
+### [space]
+
+Defines a descendant
 
 ```lua
 "block .red"
 ```
+
+## Style Rules
 
  To create a style definition, you must write a selector query and give it a list of properties:
 
