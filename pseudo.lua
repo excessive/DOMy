@@ -1,23 +1,3 @@
--- http://wiki.interfaceware.com/534.html
-local function string_split(s, d)
-	local magic = { "(", ")", ".", "%", "+", "-", "*", "?", "[", "^", "$" }
-	for _, v in ipairs(magic) do
-		if d == v then
-			d = "%"..d
-			break
-		end
-	end
-	local t, i, f, match = {}, 0, nil, '(.-)' .. d .. '()'
-	if string.find(s, d) == nil then return {s} end
-	for sub, j in string.gmatch(s, match) do
-		i = i + 1
-		t[i] = sub
-		f = j
-	end
-	if i ~= 0 then t[i+1] = string.sub(s, f) end
-	return t
-end
-
 local Pseudo = {}
 
 function Pseudo.checked(self, elements)

@@ -58,7 +58,7 @@
 [ ] border_top_right_radius
 [ ] box_shadow
 
-### Box Properties (18 / 21)
+### Basic Box Properties (18 / 21)
 
 [X] bottom
 [ ] clear
@@ -82,7 +82,7 @@
 [X] width
 [ ] vertical_align
 
-### Flex Properties (9 / 21)
+### Flexible Box Layout (9 / 21)
 
 [ ] align_content
 [ ] align_items
@@ -127,14 +127,19 @@
 [X] font_path
 [X] font_size
 
-### List Properties (0 / 4)
+### Table Properties (0 / 2)
+
+[ ] empty_cells
+[ ] table_layout
+
+### Lists and Counters Properties (0 / 4)
 
 [ ] list_style
 [ ] list_style_image
 [ ] list_style_position
 [ ] list_style_type
 
-### Animation Properties (0 / 10)
+### Animation and Transition Properties (0 / 15)
 
 [ ] @keyframes
 [ ] animation
@@ -146,9 +151,6 @@
 [ ] animation_name
 [ ] animation_timing_function
 [ ] animation_play_state
-
-### Transition Properties (0 / 5)
-
 [ ] transition
 [ ] transition_property
 [ ] transition_duration
@@ -165,7 +167,7 @@
 [ ] transform_origin
 [ ] translate(x,y,z)
 
-### User Interface Properties (5 / 8)
+### Basic User Interface Properties (5 / 8)
 
 [X] cursor
 [ ] ime_mode
@@ -189,13 +191,7 @@
 [ ] mask
 [ ] mask_type
 
-## Total Progress (75 / 118) [63.56%]
-
-
-
-
-
-## Pseudo Selectors (21 / 21)
+### Pseudo Classes (21 / 21)
 
 [X] checked
 [X] disabled
@@ -219,7 +215,7 @@
 [X] mclick
 [X] rclick
 
-## Total Progress (21 / 21) [100%]
+## Total Progress (75 / 141) [53.19%]
 
 
 
@@ -279,4 +275,4 @@
 
 
 
-# Total (104 / 180) [57.78%]
+# Total (104 / 182) [57.14%]
