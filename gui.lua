@@ -2,26 +2,6 @@ local path     = (...):gsub('%.[^%.]+$', '') .. "."
 local elements = {}
 local GUI      = {}
 
--- http://wiki.interfaceware.com/534.html
-local function string_split(s, d)
-	local magic = { "(", ")", ".", "%", "+", "-", "*", "?", "[", "^", "$" }
-	for _, v in ipairs(magic) do
-		if d == v then
-			d = "%"..d
-			break
-		end
-	end
-	local t, i, f, match = {}, 0, nil, '(.-)' .. d .. '()'
-	if string.find(s, d) == nil then return {s} end
-	for sub, j in string.gmatch(s, match) do
-		i = i + 1
-		t[i] = sub
-		f = j
-	end
-	if i ~= 0 then t[i+1] = string.sub(s, f) end
-	return t
-end
-
 function GUI:init(width, height)
 	-- Load default elements
 	local element_path  = path:gsub("%.", "/") .. "elements/"
@@ -81,7 +61,7 @@ function GUI:init(width, height)
 	-- Prepare pseudo checks
 	local Pseudo = require(path.."pseudo")
 	for k in pairs(Pseudo) do
-		self["check_pseudo_"..k] = Pseudo[k]
+		self["_check_pseudo_"..k] = Pseudo[k]
 	end
 end
 
@@ -215,7 +195,7 @@ function GUI:disable_navigation()
 	self.navigation = false
 end
 
-function GUI:get_elements_by_bounding(x, y)
+function GUI:get_elements_by_bound(x, y)
 	local filter = {}
 
 	for _, element in ipairs(self.elements) do
@@ -328,9 +308,9 @@ function GUI:get_elements_by_query(query, elements)
 				local selector, value = pseudo:match("([^%(%s]+)%(([^%)]*)%)")
 
 				if selector then
-					section[k] = self["check_pseudo_"..selector](self, section[k], value)
+					section[k] = self["_check_pseudo_"..selector](self, section[k], value)
 				else
-					section[k] = self["check_pseudo_"..pseudo](self, section[k])
+					section[k] = self["_check_pseudo_"..pseudo](self, section[k])
 				end
 			end
 		end

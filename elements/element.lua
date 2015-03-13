@@ -275,7 +275,7 @@ function Element:default_draw()
 	-- Set clip space to content bounds
 	local overflow_x, overflow_y, parent = self:_get_overflow()
 
-	local sx, sy = cw, ch
+	local sw, sh = cw, ch
 
 	if overflow_x == "hidden" or overflow_x == "scroll" then
 		sw = self.gui.width - cx
@@ -366,7 +366,7 @@ function Element:default_on_mouse_scrolled(button)
 	end
 end
 
-function Element_is_enabled()
+function Element:is_enabled()
 	return self.enabled
 end
 
