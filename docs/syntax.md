@@ -128,7 +128,7 @@ Defines an element
 "text"
 ```
 
-### #
+### &#35;
 
 Defines an ID
 
