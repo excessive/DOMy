@@ -1,4 +1,5 @@
 local path     = (...):gsub('%.[^%.]+$', '') .. "."
+local initial  = require(path.."properties.initial")
 local elements = {}
 local GUI      = {}
 
@@ -584,6 +585,10 @@ function GUI:_apply_styles()
 		element.properties = {}
 
 		for property, value in pairs(element.default_properties) do
+			if value == "initial" then
+				value = initial[property] or value
+			end
+
 			set_property(element, property, value)
 		end
 	end
@@ -594,6 +599,10 @@ function GUI:_apply_styles()
 
 		for _, element in ipairs(filter) do
 			for property, value in pairs(style.properties) do
+				if value == "initial" then
+					value = initial[property] or value
+				end
+
 				set_property(element, property, value)
 			end
 		end
@@ -602,6 +611,10 @@ function GUI:_apply_styles()
 	-- Apply custom properties
 	for _, element in ipairs(self.elements) do
 		for property, value in pairs(element.custom_properties) do
+			if value == "initial" then
+				value = initial[property] or value
+			end
+
 			set_property(element, property, value)
 		end
 	end
