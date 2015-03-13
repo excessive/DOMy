@@ -1,0 +1,32 @@
+site_name: DOMinatrix Documentation
+repo_url: https://github.com/excessive/DOMinatrix
+theme: readthedocs
+docs_dir: docs
+pages:
+- [index.md, Introduction]
+- [getting-started.md, Getting Started]
+- [syntax.md, Syntax]
+- [selectors.md, Selectors]
+- [elements/base.md, Elements, Base Elements]
+- [elements/block.md, Elements, Block Elements]
+- [elements/inline.md, Elements, Inline Elements]
+- [widgets.md, Widgets]
+- [properties/background.md, Properties, Background Properties]
+- [properties/border.md, Properties, Border Properties]
+- [properties/box.md, Properties, Box Properties]
+- [properties/flex.md, Properties, Flex Properties]
+- [properties/list.md, Properties, List Properties]
+- [properties/font.md, Properties, Font Properties]
+- [properties/text.md, Properties, Text Properties]
+- [properties/animation.md, Properties, Animation Properties]
+- [properties/transition.md, Properties, Transition Properties]
+- [properties/transform.md, Properties, Transform Properties]
+- [properties/user-interface.md, Properties, User Interface Properties]
+- [scripting/element.md, Scripting API, Element API]
+- [scripting/gui.md, Scripting API, GUI API]
+- [events/element.md, Events, Element Events]
+- [events/keyboard.md, Events, Keyboard Events]
+- [events/mouse.md, Events, Mouse Events]
+- [events/joystick.md, Events, Joystick Events]
+- [events/gamepad.md, Events, Gamepad Events]
+- [events/touch.md, Events, Touch Events]
