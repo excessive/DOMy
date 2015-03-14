@@ -357,7 +357,23 @@ function GUI:get_elements_by_query(query, elements)
 	return filter
 end
 
-function GUI:_apply_styles()
+function GUI:set_styles()
+	for _, element in ipairs(self.elements) do
+		for k in pairs(element.styles) do
+			element.styles[k] = nil
+		end
+	end
+
+	for _, style in ipairs(self.styles) do
+		local filter = self:get_elements_by_query(style.query)
+
+		for _, element in ipairs(filter) do
+			table.insert(element.styles, style.properties)
+		end
+	end
+end
+
+function GUI:apply_styles()
 	local function check_percent(element, value, axis)
 		if type(value) == "string" and value:sub(-1) == "%" then
 			value = tonumber(value:sub(1, -2)) / 100
@@ -536,9 +552,10 @@ function GUI:_apply_styles()
 
 			ep.background_image = self:get_cache(value)
 		elseif property == "font_path" then
-			local font_size = element.custom_properties.font_size or
-				ep.font_size or
-				element.default_properties.font_size
+			local font_size = (element.custom_properties.font_size ~= "inherit" and element.custom_properties.font_size)
+				or (ep.font_size ~= "inherit" and ep.font_size)
+				or (element.default_properties.font_size ~= "inherit" and element.default_properties.font_size)
+				or initial.font_size
 
 			if not self:get_cache(value..font_size) then
 				if value == "default" then
@@ -550,9 +567,10 @@ function GUI:_apply_styles()
 
 			ep.font = self:get_cache(value..font_size)
 		elseif property == "font_size" then
-			local font_path = element.custom_properties.font_path or
-				ep.font_path or
-				element.default_properties.font_path
+			local font_path = (element.custom_properties.font_path ~= "inherit" and element.custom_properties.font_path)
+				or (ep.font_path ~= "inherit" and ep.font_path)
+				or (element.default_properties.font_path ~= "inherit" and element.default_properties.font_path)
+				or "default"
 
 			if not self:get_cache(font_path..value) then
 				if font_path == "default" then
@@ -580,43 +598,56 @@ function GUI:_apply_styles()
 		end
 	end
 
-	-- Apply default properties
-	for _, element in ipairs(self.elements) do
-		element.properties = {}
-
-		for property, value in pairs(element.default_properties) do
+	local function loop_elements(element)
+		local function check_value(element, property, value)
 			if value == "initial" then
 				value = initial[property] or value
 			end
 
+			if value == "inherit" then
+				if element.parent then
+					value = element.parent.properties[property] or nil
+				end
+			end
+
+			return value
+		end
+
+		for k in pairs(element.properties) do
+			element.properties[k] = nil
+		end
+
+		-- Apply default properties
+		for property, value in pairs(element.default_properties) do
+			value = check_value(element, property, value)
 			set_property(element, property, value)
 		end
-	end
 
-	-- Apply query properties
-	for _, style in ipairs(self.styles) do
-		local filter = self:get_elements_by_query(style.query)
-
-		for _, element in ipairs(filter) do
-			for property, value in pairs(style.properties) do
-				if value == "initial" then
-					value = initial[property] or value
-				end
-
+		-- Apply query properties
+		for _, style in ipairs(element.styles) do
+			for property, value in pairs(style) do
+				value = check_value(element, property, value)
 				set_property(element, property, value)
 			end
 		end
-	end
 
-	-- Apply custom properties
-	for _, element in ipairs(self.elements) do
+		-- Apply custom properties
 		for property, value in pairs(element.custom_properties) do
-			if value == "initial" then
-				value = initial[property] or value
-			end
-
+			value = check_value(element, property, value)
 			set_property(element, property, value)
 		end
+
+		-- Apply styles to children
+		if #element.children > 0 then
+			for _, e in ipairs(element.children) do
+				loop_elements(e)
+			end
+		end
+	end
+
+	-- Apply styles in draw order
+	for _, element in ipairs(self.draw_order) do
+		loop_elements(element)
 	end
 end
 

@@ -13,6 +13,7 @@ function Element:init(element, parent, gui)
 	self.position           = cpml.vec2(0, 0)
 	self.scroll_position    = cpml.vec2(0, 0) -- dp scrolled
 	self.children           = {}
+	self.styles             = {}
 	self.default_properties = {
 		display  = "inline",
 		visible  = true,

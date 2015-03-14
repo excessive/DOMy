@@ -226,7 +226,7 @@ function Import.styles(self, file)
 			end
 		end
 
-		self:_apply_styles()
+		self:set_styles()
 	else
 		print(err)
 	end
