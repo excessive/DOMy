@@ -104,6 +104,14 @@ Filters elements that are the last child of their parent that is of the selected
 
 # not(selector)
 
+Filters elements that are not within a given selector query.
+
+```lua
+{ text:not("text:first_child"), {
+	font_size = 14
+}}
+```
+
 # nth_child(n)
 
 Filters elements that are the nth child of their parent and `n` is an integer.
