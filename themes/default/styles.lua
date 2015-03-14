@@ -1,6 +1,7 @@
 return {
 	{ "button", {
 		background_color  = { 78, 189, 255, 255 },
+		border_radius     = 4,
 		text_color        = { 19, 86, 128, 255 },
 		text_align        = "center",
 		line_height       = 2,

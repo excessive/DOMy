@@ -129,9 +129,7 @@ function Display.block_set_height(element, parent)
 
 	-- If element has a value and no children
 	if ep.height == epp and element.value then
-		local width, lines = ep.font:getWrap(element.value, ep.width - ep.border_left - ep.border_right - ep.padding_left - ep.padding_right)
-		local height       = ep.font:getHeight()
-		ep.height          = ep.height + (height * lines * ep.line_height)
+		Display.check_text_size(element)
 	end
 end
 
@@ -279,9 +277,7 @@ function Display.inline_set_height(element)
 
 	-- If element has a value and no children
 	if ep.height == epp and element.value then
-		local width, lines = ep.font:getWrap(element.value, ep.width - ep.border_left - ep.border_right - ep.padding_left - ep.padding_right)
-		local height       = ep.font:getHeight()
-		ep.height          = ep.height + (height * lines * ep.line_height)
+		Display.check_text_size(element)
 	end
 end
 
@@ -492,6 +488,25 @@ function Display.check_auto_margin(element)
 	if ep.margin_left == "auto" then
 		ep.margin_left   = Display.calc_auto_margin(element, "x")
 	end
+end
+
+function Display.check_text_size(element)
+	local ep    = element.properties
+	local value = tostring(element.value)
+
+	-- Make sure text is in correct state
+	if ep.text_transform == "uppercase" then
+		value = value:upper()
+	elseif ep.text_transform == "lowercase" then
+		value = value:lower()
+	elseif ep.text_transform == "capitalize" then
+		value = value:lower():gsub("(%a)([%w_']*)", function(a,b) return a:upper()..b:lower() end)
+	end
+
+	-- Check size of text block
+	local width, lines = ep.font:getWrap(value, ep.width - ep.border_left - ep.border_right - ep.padding_left - ep.padding_right)
+	local height       = ep.font:getHeight()
+	ep.height          = ep.height + (height * lines * ep.line_height)
 end
 
 return Display

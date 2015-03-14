@@ -106,7 +106,7 @@
 [X] min_width
 [ ] order
 
-### Text Properties (5 / 13)
+### Text Properties (6 / 13)
 
 [ ] direction
 [X] line_height
@@ -119,7 +119,7 @@
 [ ] text_orientation
 [X] text_shadow
 [X] text_shadow_color
-[ ] text_transform
+[X] text_transform
 [ ] white_space
 
 ### Font Properties (2 / 2)
@@ -189,7 +189,7 @@
 [ ] mask
 [ ] mask_type
 
-## Total Progress (80 / 118) [67.80%]
+## Total Progress (81 / 118) [68.64%]
 
 
 
@@ -279,4 +279,4 @@
 
 
 
-# Total (109 / 180) [60.56%]
+# Total (110 / 180) [61.11%]
