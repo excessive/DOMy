@@ -11,7 +11,7 @@ local gui = dom.new()
 
 ## Size Matters
 
-`dom.new()` is the only function within the DOMinatrix core. This initialization function takes three optional arguments: width, height, and quirks_mode. Passing in a width and height value allows you to customize the area of your GUI. This will affect how elements are sized and positioned.
+`dom.new()` is the only function within the DOMinatrix core. This initialization function takes three optional arguments: `width`, `height`, and `quirks_mode`. Passing in a `width` and `height` value allows you to customize the area of your GUI. This will affect how elements are sized and positioned.
 
 ```lua
 local dom = require "DOMinatrix"

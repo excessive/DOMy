@@ -58,8 +58,6 @@ return {
 
 Text value of element; takes presedence over `[2]`:
 
-
-
 ```lua
 return {
 	{ "text", "Hello, World!", value="Goodbye, World!" },
