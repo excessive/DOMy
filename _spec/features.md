@@ -39,23 +39,23 @@
 [ ] background_repeat
 [X] background_size
 
-### Border Properties (10 / 16)
+### Border Properties (15 / 16)
 
 [X] border
 [X] border_bottom
 [X] border_bottom_color
-[ ] border_bottom_left_radius
-[ ] border_bottom_right_radius
+[X] border_bottom_left_radius
+[X] border_bottom_right_radius
 [X] border_color
 [X] border_left
 [X] border_left_color
-[ ] border_radius
+[X] border_radius
 [X] border_right
 [X] border_right_color
 [X] border_top
 [X] border_top_color
-[ ] border_top_left_radius
-[ ] border_top_right_radius
+[X] border_top_left_radius
+[X] border_top_right_radius
 [ ] box_shadow
 
 ### Box Properties (18 / 21)
@@ -189,7 +189,7 @@
 [ ] mask
 [ ] mask_type
 
-## Total Progress (75 / 118) [63.56%]
+## Total Progress (80 / 118) [67.80%]
 
 
 
@@ -279,4 +279,4 @@
 
 
 
-# Total (104 / 180) [57.78%]
+# Total (109 / 180) [60.56%]

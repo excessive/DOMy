@@ -480,7 +480,7 @@ function GUI:apply_styles()
 		local bottom = "border_bottom_right_radius"
 		local left   = "border_bottom_left_radius"
 
-		if type(value[1]) == "number" then
+		if type(value) == "number" then
 			ep[top]    = value
 			ep[right]  = value
 			ep[bottom] = value

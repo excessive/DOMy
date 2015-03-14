@@ -134,6 +134,31 @@ function Element:default_draw()
 		return sx, sy, sw, sh
 	end
 
+	-- https://gist.github.com/gvx/9072860
+	local function get_stencil_clip(x, y, w, h, precision, corners)
+		local polygon = {}
+
+		-- true if on x/y, false if on w/h; TL, TR, BR, BL
+		local xs = { true, false, false, true  }
+		local ys = { true, true,  false, false }
+
+		-- Loop through each corner and calculate point sbased on [r]adius!
+		for i, r in ipairs(corners) do
+			if r == 0 then
+				table.insert(polygon, xs[i] and x or x+w)
+				table.insert(polygon, ys[i] and y or y+h)
+			else
+				for j = 0, precision do
+					local angle = (j / precision + (i - 3)) * math.pi / 2
+					table.insert(polygon, (xs[i] and x+r or x+w-r) + r * math.cos(angle))
+					table.insert(polygon, (ys[i] and y+r or y+h-r) + r * math.sin(angle))
+				end
+			end
+		end
+
+		return polygon
+	end
+
 	local function get_opacity(element, opacity)
 		if not element then return opacity end
 		local opacity = (opacity or 1) * element.properties.opacity
@@ -168,6 +193,24 @@ function Element:default_draw()
 
 	-- Set clip space to element bounds
 	love.graphics.setScissor(get_scissor_clip(self.parent, x, y, w, h, ox, oy))
+
+	-- Set Border Radius stencil
+	if ep.border_top_left_radius
+	or ep.border_top_right_radius
+	or ep.border_bottom_right_radius
+	or ep.border_bottom_left_radius then
+		local function stencil()
+			local corners = {
+				ep.border_top_left_radius     or 0,
+				ep.border_top_right_radius    or 0,
+				ep.border_bottom_right_radius or 0,
+				ep.border_bottom_left_radius  or 0,
+			}
+			local polygon = get_stencil_clip(x, y, w, h, 25, corners)
+			love.graphics.polygon("fill", polygon)
+		end
+		love.graphics.setStencil(stencil)
+	end
 
 	-- Draw Background
 	if ep.background_color then
@@ -325,6 +368,7 @@ function Element:default_draw()
 
 	-- Reset clip space
 	love.graphics.setScissor()
+	love.graphics.setStencil()
 
 	-- DEBUG
 	if self.gui._debug then
