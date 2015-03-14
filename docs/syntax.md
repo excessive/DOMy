@@ -14,7 +14,7 @@ DOMinatrix uses a custom syntax designed to be very easy to learn and use. Simil
 
 ### [1]
 
-Type of element you want to declare
+Type of element you want to declare:
 
 ```lua
 
@@ -25,7 +25,7 @@ return {
 
 ### [2]
 
-Text value of element, or a nested child (if it is a table)
+Text value of element, or a nested child (if it is a table):
 
 ```lua
 return {
@@ -43,7 +43,7 @@ return {
 
 ### [3] -> [n]
 
-Nested children of element
+Nested children of element:
 
 ```lua
 return {
@@ -56,7 +56,7 @@ return {
 
 ### value
 
-Text value of element; takes presedence over `[2]`
+Text value of element; takes presedence over `[2]`:
 
 ```lua
 return {
@@ -66,7 +66,7 @@ return {
 
 ### id
 
-Assign a unique ID to element
+Assign a unique ID to element:
 
 ```lua
 return {
@@ -76,7 +76,7 @@ return {
 
 ### class
 
-Assign any number of non-unique classes to element
+Assign any number of non-unique classes to element:
 
 ```lua
 return {
@@ -92,7 +92,7 @@ return {
 
 ### Custom Data
 
-Assign any other named key to store custom data in element
+Assign any other named key to store custom data in element:
 
 ```lua
 return {
@@ -122,7 +122,7 @@ Styles are the beauty of an interface, the skin on our bones. In MVC terms, styl
 
 ### [none]
 
-Defines an element
+Defines an element:
 
 ```lua
 "text"
@@ -130,7 +130,7 @@ Defines an element
 
 ### &#35;
 
-Defines an ID
+Defines an ID:
 
 ```lua
 "#some_textbox"
@@ -138,7 +138,7 @@ Defines an ID
 
 ### .
 
-Defines a class
+Defines a class:
 
 ```lua
 ".red"
@@ -146,7 +146,7 @@ Defines a class
 
 ### :
 
-Defines a pseudo class
+Defines a pseudo class:
 
 ```lua
 ":last_child"
@@ -154,7 +154,7 @@ Defines a pseudo class
 
 ### [space]
 
-Defines a descendant
+Defines a descendant:
 
 ```lua
 "block .red"
@@ -204,3 +204,15 @@ return {
 ```
 
 # Scripting
+
+Scripts are the working horse if an interface, the muscles under the skin that makes everything tick. In MVC terms, scripts are the controller.
+
+## Scripting Rules
+
+There is really only one rule for the scripting API which is that all GUI API calls must begin with `gui:`:
+
+```lua
+local element = gui:get_element_by_id("some_id")
+```
+
+The scripting API allows you nearly full use of the Lua and LÖVE APIs, giving you a rich environment to write scripts and customize your interface to your liking.

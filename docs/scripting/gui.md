@@ -1,5 +1,7 @@
 # GUI:add_navigation_key(direction, ...)
 
+# GUI:apply_styles()
+
 # GUI:bubble_event(element, event, ...)
 
 # GUI:disable_navigation()
@@ -41,5 +43,7 @@
 # GUI:set_cache(path, data)
 
 # GUI:set_focus(element)
+
+# GUI:set_styles()
 
 # GUI:toggle_navigation()
