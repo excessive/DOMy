@@ -52,12 +52,12 @@ Filters elements that are the first child of their parent.
 }}
 ```
 
-# first_of_type
+# first_of_type(type)
 
 Filters elements that are the first child of their parent that is of the selected type.
 
 ```lua
-{ text:first_of_type, {
+{ block:first_of_type("text"), {
 	font_size = 18
 }}
 ```
@@ -92,12 +92,12 @@ Filters elements that are the last child of their parent.
 }}
 ```
 
-# last_of_type
+# last_of_type(type)
 
 Filters elements that are the last child of their parent that is of the selected type.
 
 ```lua
-{ text:last_of_type, {
+{ block:last_of_type(type), {
 	font_size = 8
 }}
 ```
@@ -132,22 +132,22 @@ Filters elements that are the nth last child of their parent and `n` is an integ
 }}
 ```
 
-# nth_last_of_type(n)
+# nth_last_of_type(type, n)
 
 Filters elements that are the nth last child of their parent that is of the selected type and `n` is an integer.
 
 ```lua
-{ text:nth_last_of_type(3), {
+{ inline:nth_last_of_type("text", 3), {
 	font_size = 10
 }}
 ```
 
-# nth_of_type(n)
+# nth_of_type(type, n)
 
 Filters elements that are the nth child of their parent that is of the selected type and `n` is an integer.
 
 ```lua
-{ text:nth_of_type(5), {
+{ inline:nth_of_type("text", 5), {
 	font_size = 14
 }}
 ```
@@ -162,12 +162,12 @@ Filters elements that are the only child of their parent.
 }}
 ```
 
-# only_of_type
+# only_of_type(type)
 
 Filters elements that are the only child of their parent that is of the selected type.
 
 ```lua
-{ text:only_of_type, {
+{ block:only_of_type("text"), {
 	font_size = 14
 }}
 ```
