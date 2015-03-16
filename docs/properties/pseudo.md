@@ -5,7 +5,7 @@ A Pseudo Class is a special or dynamic state of an element. Pseudo Classes can b
 Filters `check_list`, `radio_list`, and `multi_list` items that are selected.
 
 ```lua
-{ item:checked, {
+{ "item:checked", {
 	text_color = { 0, 255, 0, 255 },
 }}
 ```
@@ -15,7 +15,7 @@ Filters `check_list`, `radio_list`, and `multi_list` items that are selected.
 Filters elements with the `enabled` attribute set to `false`.
 
 ```lua
-{ button:disabled, {
+{ "button:disabled", {
 	background_color = { 200, 200, 200, 255 },
 	text_color = { 220, 220, 220, 255 },
 }}
@@ -26,7 +26,7 @@ Filters elements with the `enabled` attribute set to `false`.
 Filters elements with no children.
 
 ```lua
-{ block:empty, {
+{ "block:empty", {
 	visible = false,
 }}
 ```
@@ -36,7 +36,7 @@ Filters elements with no children.
 Filters elements with the `enabled` attribute set to `true`.
 
 ```lua
-{ button:enabled, {
+{ "button:enabled", {
 	background_color = { 78, 189, 255, 255 },
 	text_color = { 19, 86, 128, 255 },
 }}
@@ -47,7 +47,7 @@ Filters elements with the `enabled` attribute set to `true`.
 Filters elements that are the first child of their parent.
 
 ```lua
-{ text:first_child, {
+{ "text:first_child", {
 	font_size = 18
 }}
 ```
@@ -57,7 +57,7 @@ Filters elements that are the first child of their parent.
 Filters elements that are the first child of their parent that is of the selected type.
 
 ```lua
-{ block:first_of_type("text"), {
+{ "block:first_of_type(text)", {
 	font_size = 18
 }}
 ```
@@ -67,7 +67,7 @@ Filters elements that are the first child of their parent that is of the selecte
 Filters element that is the current active/focused element.
 
 ```lua
-{ button:focus, {
+{ "button:focus", {
 	background_color = { 189, 78, 255, 255 },
 }}
 ```
@@ -77,7 +77,7 @@ Filters element that is the current active/focused element.
 Filters element that is currently being hovered over.
 
 ```lua
-{ button:hover, {
+{ "button:hover", {
 	background_color = { 122, 206, 253, 255 },
 }}
 ```
@@ -87,7 +87,7 @@ Filters element that is currently being hovered over.
 Filters elements that are the last child of their parent.
 
 ```lua
-{ text:last_child, {
+{ "text:last_child", {
 	font_size = 8
 }}
 ```
@@ -97,7 +97,7 @@ Filters elements that are the last child of their parent.
 Filters elements that are the last child of their parent that is of the selected type.
 
 ```lua
-{ block:last_of_type(type), {
+{ "block:last_of_type(text)", {
 	font_size = 8
 }}
 ```
@@ -107,7 +107,7 @@ Filters elements that are the last child of their parent that is of the selected
 Filters elements that are not within a given selector query.
 
 ```lua
-{ text:not("text:first_child"), {
+{ "text:not(text:first_child)", {
 	font_size = 14
 }}
 ```
@@ -117,7 +117,7 @@ Filters elements that are not within a given selector query.
 Filters elements that are the nth child of their parent and `n` is an integer.
 
 ```lua
-{ text:nth_child(7), {
+{ "text:nth_child(7)", {
 	font_size = 14
 }}
 ```
@@ -127,7 +127,7 @@ Filters elements that are the nth child of their parent and `n` is an integer.
 Filters elements that are the nth last child of their parent and `n` is an integer.
 
 ```lua
-{ text:nth_last_child(5), {
+{ "text:nth_last_child(5)", {
 	font_size = 12
 }}
 ```
@@ -137,7 +137,7 @@ Filters elements that are the nth last child of their parent and `n` is an integ
 Filters elements that are the nth last child of their parent that is of the selected type and `n` is an integer.
 
 ```lua
-{ inline:nth_last_of_type("text", 3), {
+{ "inline:nth_last_of_type(text, 3)", {
 	font_size = 10
 }}
 ```
@@ -147,7 +147,7 @@ Filters elements that are the nth last child of their parent that is of the sele
 Filters elements that are the nth child of their parent that is of the selected type and `n` is an integer.
 
 ```lua
-{ inline:nth_of_type("text", 5), {
+{ "inline:nth_of_type(text, 5)", {
 	font_size = 14
 }}
 ```
@@ -157,7 +157,7 @@ Filters elements that are the nth child of their parent that is of the selected 
 Filters elements that are the only child of their parent.
 
 ```lua
-{ text:only_child, {
+{ "text:only_child", {
 	font_size = 8
 }}
 ```
@@ -167,7 +167,7 @@ Filters elements that are the only child of their parent.
 Filters elements that are the only child of their parent that is of the selected type.
 
 ```lua
-{ block:only_of_type("text"), {
+{ "block:only_of_type(text)", {
 	font_size = 14
 }}
 ```
@@ -177,7 +177,7 @@ Filters elements that are the only child of their parent that is of the selected
 Filters all elements that have no parents.
 
 ```lua
-{ block:root, {
+{ "block:root", {
 	visible = false
 }}
 ```
@@ -187,7 +187,7 @@ Filters all elements that have no parents.
 Filters elements that are currently being clicked by the `left` mouse button.
 
 ```lua
-{ button:lclick, {
+{ "button:lclick", {
 	background_color = { 33, 174, 254, 255 }
 }}
 ```
@@ -197,7 +197,7 @@ Filters elements that are currently being clicked by the `left` mouse button.
 Filters elements that are currently being clicked by the `middle` mouse button.
 
 ```lua
-{ button:mclick, {
+{ "button:mclick", {
 	background_color = { 33, 174, 254, 255 }
 }}
 ```
@@ -207,7 +207,7 @@ Filters elements that are currently being clicked by the `middle` mouse button.
 Filters elements that are currently being clicked by the `right` mouse button.
 
 ```lua
-{ button:rclick, {
+{ "button:rclick", {
 	background_color = { 33, 174, 254, 255 }
 }}
 ```
