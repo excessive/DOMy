@@ -1,4 +1,6 @@
 local Import = {}
+local path    = (...):gsub('%.[^%.]+$', '')
+local cpml    = require(path..".thirdparty.cpml")
 
 function Import.markup(self, file)
 	-- This function will return true if every key is a properly formatted table
@@ -127,6 +129,20 @@ function Import.styles(self, file)
 	for _, v in ipairs(global) do
 		env[v] = _G[v]
 	end
+
+	-- Bring in various CPML functions
+	env.alpha      = cpml.color.alpha
+	env.clamp      = cpml.utils.clamp
+	env.darken     = cpml.color.darken
+	env.hsv        = cpml.color.from_hsv
+	env.hsva       = cpml.color.from_hsva
+	env.hue        = cpml.color.hue
+	env.invert     = cpml.color.invert
+	env.lighten    = cpml.color.lighten
+	env.mul        = cpml.color.mul
+	env.opacity    = cpml.color.opacity
+	env.saturation = cpml.color.saturation
+	env.value      = cpml.color.value
 
 	-- Import styles from another file
 	env.import = function(file, styles)
