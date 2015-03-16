@@ -3,7 +3,7 @@
 **Currently not implemented.**
 
 Value   | Description
-------- / -----------
+--------/------------
 initial | Resets value to default
 inherit | Uses the immediate parent's value (or nil)
 
@@ -18,7 +18,7 @@ inherit | Uses the immediate parent's value (or nil)
 A table with four sequential keys representing red, green, blue, and alpha.
 
 Value   | Description
-------- / -----------
+--------/------------
 initial | { 255, 255, 255, 255 }
 inherit | Uses the immediate parent's value (or nil)
 
@@ -33,7 +33,7 @@ inherit | Uses the immediate parent's value (or nil)
 A table with four sequential keys representing red, green, blue, and alpha.
 
 Value   | Description
-------- / -----------
+--------/------------
 initial | { 255, 255, 255, 255 }
 inherit | Uses the immediate parent's value (or nil)
 
@@ -48,7 +48,7 @@ inherit | Uses the immediate parent's value (or nil)
 A path string pointing to an image file.
 
 Value   | Description
-------- / -----------
+--------/------------
 inherit | Uses the immediate parent's value (or nil)
 
 ```lua
@@ -62,7 +62,7 @@ inherit | Uses the immediate parent's value (or nil)
 A vec2 representing the offset of the background image.
 
 Value   | Description
-------- / -----------
+--------/------------
 initial | { 0, 0 }
 inherit | Uses the immediate parent's value (or nil)
 
@@ -77,7 +77,7 @@ inherit | Uses the immediate parent's value (or nil)
 **Currently not implemented.**
 
 Value   | Description
-------- / -----------
+--------/------------
 inherit | Uses the immediate parent's value (or nil)
 
 ```lua
@@ -91,7 +91,7 @@ inherit | Uses the immediate parent's value (or nil)
 A vec2 representing the size of the background image.
 
 Value   | Description
-------- / -----------
+--------/------------
 inherit | Uses the immediate parent's value (or nil)
 
 ```lua
