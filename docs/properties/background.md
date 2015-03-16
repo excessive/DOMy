@@ -15,7 +15,7 @@ inherit | Uses the immediate parent's value (or nil)
 
 # background_color
 
-A table with four sequential keys representing red, green, blue, and alpha.
+A table of integers representing the RGBA values of the border.
 
 Value   | Description
 --------|------------
@@ -30,7 +30,7 @@ inherit | Uses the immediate parent's value (or nil)
 
 # background_image_color
 
-A table with four sequential keys representing red, green, blue, and alpha.
+A table of integers representing the RGBA values of the border.
 
 Value   | Description
 --------|------------
@@ -59,7 +59,7 @@ inherit | Uses the immediate parent's value (or nil)
 
 # background_position
 
-A vec2 representing the offset of the background image.
+A vec2 (x, y) representing the offset of the background image.
 
 Value   | Description
 --------|------------
@@ -88,7 +88,7 @@ inherit | Uses the immediate parent's value (or nil)
 
 # background_size
 
-A vec2 representing the size of the background image.
+A vec2 (x, y) representing the size of the background image.
 
 Value   | Description
 --------|------------
