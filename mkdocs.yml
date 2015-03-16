@@ -1,8 +1,7 @@
 site_name: DOMinatrix Documentation
 repo_url: https://github.com/excessive/DOMinatrix
-theme: readthedocs
+theme: slate
 docs_dir: docs
-markdown_extensions: [tables]
 pages:
 - [index.md, Introduction]
 - [getting-started.md, Getting Started]
