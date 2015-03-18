@@ -12,16 +12,16 @@
 * [ ] radio_list
 * [x] text
 
-### Inline Elements (3 / 6)
+### Inline Elements (4 / 6)
 
 * [x] button
 * [x] image
 * [x] inline
-* [ ] input
+* [x] input
 * [ ] progress
 * [ ] slider
 
-## Total Progress (5 / 13) [38.46%]
+## Total Progress (6 / 13) [46.15%]
 
 
 
@@ -279,4 +279,4 @@
 
 
 
-# Total (110 / 180) [61.11%]
+# Total (111 / 180) [61.67%]
