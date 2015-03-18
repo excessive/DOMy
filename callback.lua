@@ -48,7 +48,8 @@ function Callback.update(self, dt)
 	end
 
 	if self.pseudo.hover then
-		self:bubble_event(self.pseudo.hover, "on_mouse_over")
+		local mx, my = love.mouse.getPosition()
+		self:bubble_event(self.pseudo.hover, "on_mouse_over", mx, my)
 	end
 
 	if self.pseudo.focus then
@@ -60,7 +61,8 @@ function Callback.update(self, dt)
 		-- Loop through active mouse buttons
 		for button, element in pairs(self.mouse_down) do
 			if self.pseudo.focus == element then
-				self:bubble_event(self.pseudo.focus, "on_mouse_down", button)
+				local mx, my = love.mouse.getPosition()
+				self:bubble_event(self.pseudo.focus, "on_mouse_down", button, mx, my)
 			end
 		end
 
@@ -180,7 +182,7 @@ function Callback.mousepressed(self, x, y, button)
 			self:bubble_event(pressed, "on_mouse_scrolled", button)
 		else
 			self.mouse_down[button] = pressed
-			self:bubble_event(pressed, "on_mouse_pressed", button)
+			self:bubble_event(pressed, "on_mouse_pressed", button, x, y)
 		end
 	else
 		if button ~= "wu" and button ~= "wd" then
@@ -213,11 +215,11 @@ function Callback.mousereleased(self, x, y, button)
 	end
 
 	if pressed then
-		self:bubble_event(pressed, "on_mouse_released", button)
+		self:bubble_event(pressed, "on_mouse_released", button, x, y)
 
 		if self.mouse_down[button] == pressed then
 			self:set_focus(pressed)
-			self:bubble_event(pressed, "on_mouse_clicked", button)
+			self:bubble_event(pressed, "on_mouse_clicked", button, x, y)
 		end
 	end
 

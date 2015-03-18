@@ -20,8 +20,8 @@ function Text:init(element, parent, gui)
 	self.default_properties.text_shadow = "inherit"
 
 	-- Color
-	self.default_properties.text_color        = "interit"
-	self.default_properties.text_shadow_color = "interit"
+	self.default_properties.text_color        = "inherit"
+	self.default_properties.text_shadow_color = "inherit"
 end
 
 return Text

@@ -651,4 +651,32 @@ function GUI:apply_styles()
 	end
 end
 
+function GUI:_font_getWrap(font, text, width)
+	local lines      = {}
+	local act_width  = 0
+	local line_width = 0
+
+	for word in text:gmatch("%S+") do
+		local w = font:getWidth(" " .. word)
+
+		if line_width + w > width or line_width == 0 then
+			table.insert(lines, word)
+			line_width = font:getWidth(word)
+		else
+			lines[#lines] = lines[#lines] .. " " .. word
+			line_width = line_width + w
+		end
+	end
+
+	for _, line in ipairs(lines) do
+		local w = font:getWidth(line)
+
+		if w > act_width then
+			act_width = w
+		end
+	end
+
+	return act_width, lines
+end
+
 return GUI
