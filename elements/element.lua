@@ -71,8 +71,10 @@ function Element:init(element, parent, gui)
 		self.class = element.class
 	end
 
-	self.update = self.default_update
-	self.draw   = self.default_draw
+	self.update         = self.default_update
+	self.draw           = self.default_draw
+	self.on_focus       = self.default_on_focus
+	self.on_focus_leave = self.default_on_focus_leave
 end
 
 function Element:default_update(dt)
@@ -396,6 +398,14 @@ function Element:default_draw()
 		love.graphics.pop()
 	end
 	-- DEBUG
+end
+
+function Element:default_on_focus()
+	self.focus = true
+end
+
+function Element:default_on_focus_leave()
+	self.focus = false
 end
 
 function Element:default_on_mouse_scrolled(button)

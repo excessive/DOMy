@@ -22,6 +22,34 @@ function Input:init(element, parent, gui)
 	self.on_mouse_clicked = self.default_on_mouse_clicked
 end
 
+function Input:custom_draw()
+	self:default_draw()
+
+	if not self.focus then return end
+
+	local ep = self.properties
+
+	local cx, cy, cw, ch = self:_get_content_position()
+	local height         = ep.font:getHeight() * ep.font:getLineHeight()
+	local width, lines   = self.gui:_font_getWrap(ep.font, self.value, cw)
+
+	local index, x, y = self:get_cursor_position(1)
+	--print(index, x, y)
+
+	local str = lines[y] or ""
+
+	if str then
+		local sx    = cx + ep.font:getWidth(str:sub(1,x))
+		local sy1   = cy + height * (y-1)
+		local sy2   = cy + height * y
+
+		love.graphics.push("all")
+		love.graphics.setColor(255, 255, 0, 255)
+		love.graphics.line(sx, sy1, sx, sy2)
+		love.graphics.pop()
+	end
+end
+
 function Input:default_on_key_pressed(key)
 	local isDown = love.keyboard.isDown
 	local ep = self.properties
@@ -147,32 +175,6 @@ function Input:get_cursor_position(cursor)
 	end
 
 	return self.cursor[cursor], x, y
-end
-
-function Input:custom_draw()
-	self:default_draw()
-
-	local ep = self.properties
-
-	local cx, cy, cw, ch = self:_get_content_position()
-	local height         = ep.font:getHeight() * ep.font:getLineHeight()
-	local width, lines   = self.gui:_font_getWrap(ep.font, self.value, cw)
-
-	local index, x, y = self:get_cursor_position(1)
-	--print(index, x, y)
-
-	local str = lines[y] or ""
-
-	if str then
-		local sx    = cx + ep.font:getWidth(str:sub(1,x))
-		local sy1   = cy + height * (y-1)
-		local sy2   = cy + height * y
-
-		love.graphics.push("all")
-		love.graphics.setColor(255, 255, 0, 255)
-		love.graphics.line(sx, sy1, sx, sy2)
-		love.graphics.pop()
-	end
 end
 
 return Input
