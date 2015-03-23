@@ -323,11 +323,11 @@ function Element:default_draw()
 
 	local sw, sh = cw, ch
 
-	if overflow_x == "hidden" or overflow_x == "scroll" then
+	if overflow_x == "visible" then
 		sw = self.gui.width - cx
 	end
 
-	if overflow_y == "hidden" or overflow_y == "scroll" then
+	if overflow_y == "visible" then
 		sh = self.gui.height - cy
 	end
 
@@ -368,17 +368,27 @@ function Element:default_draw()
 			value = value:lower():gsub("(%a)([%w_']*)", function(a,b) return a:upper()..b:lower() end)
 		end
 
+		-- Overflow Text
+		local overflow = cw
+
+		if ep.overflow_y == "hidden" or ep.overflow_y == "scroll" then
+			overflow = ep.font:getWidth(self.value)
+		end
+
+		local scrollx = cx + self.scroll_position.x
+		--local scrolly = cy + self.scroll_position.y
+
 		-- Set Text Shadow
 		if ep.text_shadow then
 			love.graphics.push("all")
 			local lr, lg, lb = cc(ep.text_shadow_color)
 			love.graphics.setColor(lr, lg, lb, (ep.text_shadow_color[4] or 255)*opacity)
-			love.graphics.printf(value, cx + ep.text_shadow[1], text_offset + ep.text_shadow[2], cw, ep.text_align)
+			love.graphics.printf(value, scrollx + ep.text_shadow[1], text_offset + ep.text_shadow[2], (overflow >= 0 and overflow or 0), ep.text_align)
 			love.graphics.pop()
 		end
 
 		-- Print text
-		love.graphics.printf(value, cx, text_offset, (cw >= 0 and cw or 0), ep.text_align)
+		love.graphics.printf(value, scrollx, text_offset, (overflow >= 0 and overflow or 0), ep.text_align)
 		ep.font:setLineHeight(line_height)
 		love.graphics.pop()
 	end
@@ -798,12 +808,21 @@ end
 function Element:is_binding(x, y)
 	if not self.visible then return end
 
-	local ex = self.position.x
-	local ey = self.position.y
-	local ew = self.properties.width
-	local eh = self.properties.height
+	local ex, ey, ew, eh = self:_get_position()
 
 	if ex <= x and ex + ew >= x and ey <= y and ey + eh >= y then
+		return true
+	end
+
+	return false
+end
+
+function Element:is_content_binding(x, y)
+	if not self.visible then return end
+
+	local cx, cy, cw, ch = self:_get_content_position()
+
+	if cx <= x and cx + cw >= x and cy <= y and cy + ch >= y then
 		return true
 	end
 

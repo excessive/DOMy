@@ -130,6 +130,8 @@ function GUI:get_focus()
 end
 
 function GUI:set_focus(element)
+	love.keyboard.setKeyRepeat(true)
+
 	if self.pseudo.focus then
 		self:bubble_event(self.pseudo.focus, "on_focus_leave")
 	end
@@ -147,6 +149,8 @@ function GUI:remove_focus()
 	end
 
 	self.pseudo.focus = false
+
+	love.keyboard.setKeyRepeat(true)
 end
 
 function GUI:get_cache(path)
@@ -668,7 +672,7 @@ function GUI:_font_getWrap(font, text, width)
 		end
 	end
 
-	for _, line in ipairs(lines) do
+	for k, line in ipairs(lines) do
 		local w = font:getWidth(line)
 
 		if w > act_width then

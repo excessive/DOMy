@@ -503,8 +503,16 @@ function Display.check_text_size(element)
 		value = value:lower():gsub("(%a)([%w_']*)", function(a,b) return a:upper()..b:lower() end)
 	end
 
+	-- Check Overflow
+	local overflow = ep.width - ep.border_left - ep.border_right - ep.padding_left - ep.padding_right
+
+	if ep.overflow_y == "hidden" or ep.overflow_y == "scroll" then
+		overflow = element.gui.width - overflow
+	end
+
 	-- Check size of text block
-	local width, lines = ep.font:getWrap(value, ep.width - ep.border_left - ep.border_right - ep.padding_left - ep.padding_right)
+	local width, lines = ep.font:getWrap(value, overflow)
+	if lines == 0 then lines = 1 end
 	local height       = ep.font:getHeight()
 	ep.height          = ep.height + (height * lines * ep.line_height)
 end

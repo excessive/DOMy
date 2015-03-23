@@ -9,8 +9,8 @@ Input:include(Text)
 function Input:init(element, parent, gui)
 	Text.init(self, element, parent, gui)
 
-	-- List of cursors
-	self.cursor = {}
+	-- Text cursor
+	self.cursor = 0
 
 	-- Display
 	self.default_properties.display = "block"
@@ -32,65 +32,57 @@ function Input:custom_draw()
 	local cx, cy, cw, ch = self:_get_content_position()
 	local height         = ep.font:getHeight() * ep.font:getLineHeight()
 	local width, lines   = self.gui:_font_getWrap(ep.font, self.value, cw)
-
-	local index, x, y = self:get_cursor_position(1)
-	--print(index, x, y)
+	local index, x, y    = self:get_cursor_position()
+	if y == 0 then y = 1 end
 
 	local str = lines[y] or ""
+	local sx  = cx + ep.font:getWidth(str:sub(1,x))
+	local sy1 = cy + height * (y-1)
+	local sy2 = cy + height * y
 
-	if str then
-		local sx    = cx + ep.font:getWidth(str:sub(1,x))
-		local sy1   = cy + height * (y-1)
-		local sy2   = cy + height * y
-
-		love.graphics.push("all")
-		love.graphics.setColor(255, 255, 0, 255)
-		love.graphics.line(sx, sy1, sx, sy2)
-		love.graphics.pop()
-	end
+	love.graphics.push("all")
+	love.graphics.setColor(255, 255, 0, 255)
+	love.graphics.line(sx, sy1, sx, sy2)
+	love.graphics.pop()
 end
 
 function Input:default_on_key_pressed(key)
 	local isDown = love.keyboard.isDown
-	local ep = self.properties
+	local ep     = self.properties
 
 	local cx, cy, cw, ch = self:_get_content_position()
 	local height         = ep.font:getHeight() * ep.font:getLineHeight()
 	local width, lines   = self.gui:_font_getWrap(ep.font, self.value, cw)
-
-	local index, x, y = self:get_cursor_position(1)
+	local index, x, y    = self:get_cursor_position()
 
 	local str = lines[y] or ""
-	local sx  = ep.font:getWidth(str:sub(1,x))
-	local sy  = height * (y-1)
 
 	if key == "backspace" and index > 0 then
 		local value1 = self.value:sub(1, index-1)
 		local value2 = self.value:sub(index+1, -1)
-		self.value = value1..value2
-		self.cursor[1] = self.cursor[1] - 1
+		self.value   = value1..value2
+		self.cursor  = self.cursor - 1
 	end
 
 	if key == "delete" and index < #self.value then
 		local value1 = self.value:sub(1, index)
 		local value2 = self.value:sub(index+2, -1)
-		self.value = value1..value2
+		self.value   = value1..value2
 	end
 
-	if key == "up" then
-
-	end
-
-	if key == "down" then
-
+	if key == "return" then
+		local value1 = self.value:sub(1, index)
+		local value2 = self.value:sub(index+1, -1)
+		self.value   = value1 .. "\n" .. value2
+		self.cursor  = self.cursor + 1
 	end
 
 	if key == "left" and index > 0 then
-		self.cursor[1] = self.cursor[1] - 1
+		self.cursor = self.cursor - 1
 	end
 
 	if key == "right" and index < #self.value then
-		self.cursor[1] = self.cursor[1] + 1
+		self.cursor = self.cursor + 1
 	end
 
 	if key == "x" and (isDown("lctrl") or isDown("rctrl")) then
@@ -105,13 +97,17 @@ function Input:default_on_key_pressed(key)
 		local value1 = self.value:sub(1, index)
 		local paste  = love.system.getClipboardText()
 		local value2 = self.value:sub(index+1, -1)
-		self.value = value1..paste..value2
-		self.cursor[1] = self.cursor[1] + #paste
+		self.value   = value1..paste..value2
+		self.cursor  = self.cursor + #paste
 	end
 end
 
 function Input:default_on_text_input(text)
-	self.value = self.value .. text
+	local index, x, y = self:get_cursor_position()
+	local value1      = self.value:sub(1, index)
+	local value2      = self.value:sub(index+1, -1)
+	self.value        = value1 .. text .. value2
+	self.cursor       = self.cursor + 1
 end
 
 function Input:default_on_mouse_clicked(button, x, y)
@@ -121,7 +117,11 @@ function Input:default_on_mouse_clicked(button, x, y)
 end
 
 function Input:set_cursor_position(x, y)
-	if self.value == "" then self.cursor[1] = 0 end
+	if self.value == "" then
+		self.cursor = 0
+		return
+	end
+
 	local ep = self.properties
 
 	local cx, cy, cw, ch = self:_get_content_position()
@@ -143,23 +143,21 @@ function Input:set_cursor_position(x, y)
 		local s = str:sub(1, i)
 
 		if ep.font:getWidth(s) > mx then
-			self.cursor[1] = index + i - 1
+			self.cursor = index + i - 1
 			break
 		else
-			self.cursor[1] = index + i
+			self.cursor = index + i
 		end
 	end
 end
 
-function Input:get_cursor_position(cursor)
-	if not self.cursor[cursor] then return 0, 0, 1 end
-
+function Input:get_cursor_position()
 	local ep = self.properties
 
 	local cx, cy, cw, ch = self:_get_content_position()
 	local height         = ep.font:getHeight() * ep.font:getLineHeight()
 	local width, lines   = self.gui:_font_getWrap(ep.font, self.value, cw)
-	local index, x, y    = self.cursor[cursor], 0, 0
+	local index, x, y    = self.cursor, 0, 0
 
 	local count = index
 
@@ -174,7 +172,7 @@ function Input:get_cursor_position(cursor)
 		end
 	end
 
-	return self.cursor[cursor], x, y
+	return self.cursor, x, y
 end
 
 return Input
