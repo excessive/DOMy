@@ -20,12 +20,10 @@ function Display.position_elements(elements, d, x, y, w, h)
 
 	for _, element in ipairs(elements) do
 		element.visible = Display.get_visible(element)
-		if element.visible then
-			local ep  = element.properties
+		local ep  = element.properties
 
-			if Display[ep.display] then
-				d, x, y, nl = Display[ep.display](element, d, x, y, nl, parent)
-			end
+		if Display[ep.display] then
+			d, x, y, nl = Display[ep.display](element, d, x, y, nl, parent)
 		end
 	end
 end

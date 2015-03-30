@@ -103,6 +103,8 @@ function Input:default_on_key_pressed(key)
 end
 
 function Input:default_on_text_input(text)
+	if not self.visible then return end
+
 	local index  = self:get_cursor_position()
 	local value1 = self.value:sub(1, index)
 	local value2 = self.value:sub(index+1, -1)
