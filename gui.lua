@@ -2,6 +2,7 @@ local path     = (...):gsub('%.[^%.]+$', '') .. "."
 local initial  = require(path.."properties.initial")
 local patchy   = require(path.."thirdparty.patchy")
 local elements = {}
+local widgets  = {}
 local GUI      = {}
 
 function GUI:init(width, height)
@@ -65,6 +66,10 @@ function GUI:init(width, height)
 	for k in pairs(Pseudo) do
 		self["_check_pseudo_"..k] = Pseudo[k]
 	end
+
+	-- Add default widgets
+	local widget_path  = path:gsub("%.", "/") .. "widgets/"
+	self:add_widget_directory(widget_path)
 end
 
 function GUI:get_callbacks()
@@ -112,6 +117,12 @@ function GUI:new_element(element, parent, position)
 	end
 
 	return object
+end
+
+function GUI:new_widget(widget)
+	return widgets[widget]()
+	--self:import_styles(path.."/"..widget.."/styles.lua")
+	--self:import_scripts(path.."/"..widget.."/scripts.lua")
 end
 
 function GUI:bubble_event(element, event, ...)
@@ -199,6 +210,36 @@ end
 
 function GUI:disable_navigation()
 	self.navigation = false
+end
+
+function GUI:add_widget_directory(path)
+	-- add directory
+	local folders = love.filesystem.getDirectoryItems(path)
+
+	-- add associated widgets
+	for _, widget in ipairs(folders) do
+		widgets[widget] = love.filesystem.load(path..widget.."/markup.lua")
+	end
+end
+
+function GUI:get_elements()
+	local e = {}
+
+	for k in pairs(elements) do
+		table.insert(e, k)
+	end
+
+	return e
+end
+
+function GUI:get_widgets()
+	local w = {}
+
+	for k in pairs(widgets) do
+		table.insert(w, k)
+	end
+
+	return w
 end
 
 function GUI:get_elements_by_bound(x, y)

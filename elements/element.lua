@@ -228,7 +228,7 @@ function Element:default_draw()
 		local bix, biy = x, y
 		local biw, bih
 
-		-- If not a 9patch image
+		-- If 9patch image
 		if ep.background_image.type == "9patch" then
 			biw, bih = w, h
 		else
@@ -258,7 +258,7 @@ function Element:default_draw()
 			love.graphics.setColor(lr, lg, lb, (ep.background_image_color[4] or 255)*opacity)
 		end
 
-		-- If not a 9patch image
+		-- If 9patch image
 		if ep.background_image.type == "9patch" then
 			ep.background_image:draw(bix, biy, biw, bih)
 		else

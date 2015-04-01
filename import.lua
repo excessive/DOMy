@@ -32,12 +32,32 @@ function Import.markup(self, file)
 	end
 
 	-- Loops through the markup to generate element objects
-	-- Assign parent and child relationships when necessary
 	local function create_object(t, parent)
 		for k, v in ipairs(t) do
 			if type(v) == "table" then
-				local object = self:new_element(v, parent)
-				create_object(v, object)
+				local is_element = false
+
+				-- Check to see if valid element
+				for _, e in ipairs(self:get_elements()) do
+					if v[1] == e then
+						is_element = true
+						local object = self:new_element(v, parent)
+						create_object(v, object)
+						break
+					end
+				end
+
+				-- If not element, check for valid widget
+				if not is_element then
+					for _, w in ipairs(self:get_widgets()) do
+						if v[1] == w then
+							t[k] = self:new_widget(w)
+							local object = self:new_element(t[k], parent)
+							create_object(t[k], object)
+							break
+						end
+					end
+				end
 			end
 		end
 	end

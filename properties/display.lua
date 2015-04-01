@@ -80,12 +80,7 @@ end
 
 function Display.block_set_width(element, parent)
 	local ep = element.properties
-	ep.width = (parent.w or parent.properties.width) - (ep.margin_left + ep.margin_right)
-
-	if element.parent then
-		local pp = element.parent.properties
-		ep.width = ep.width - pp.padding_left - pp.border_left
-	end
+	ep.width = parent.w - (ep.margin_left + ep.margin_right)
 end
 
 function Display.block_set_height(element, parent)
