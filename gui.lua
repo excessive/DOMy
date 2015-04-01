@@ -1,5 +1,6 @@
 local path     = (...):gsub('%.[^%.]+$', '') .. "."
 local initial  = require(path.."properties.initial")
+local patchy   = require(path.."thirdparty.patchy")
 local elements = {}
 local GUI      = {}
 
@@ -551,7 +552,11 @@ function GUI:apply_styles()
 				check_vec2(element, property, value)
 		elseif property == "background_path" then
 			if not self:get_cache(value) then
-				self:set_cache(value, love.graphics.newImage(value))
+				if value:sub(-5) == "9.png" then
+					self:set_cache(value, patchy.load(value))
+				else
+					self:set_cache(value, love.graphics.newImage(value))
+				end
 			end
 
 			ep.background_image = self:get_cache(value)

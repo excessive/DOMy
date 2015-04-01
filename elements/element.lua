@@ -226,7 +226,14 @@ function Element:default_draw()
 	-- Draw Background Image
 	if ep.background_image then
 		local bix, biy = x, y
-		local biw, bih = ep.background_image:getDimensions()
+		local biw, bih
+
+		-- If not a 9patch image
+		if ep.background_image.type == "9patch" then
+			biw, bih = w, h
+		else
+			biw, bih = ep.background_image:getDimensions()
+		end
 
 		-- Set Background Offset
 		if ep.background_position then
@@ -251,8 +258,13 @@ function Element:default_draw()
 			love.graphics.setColor(lr, lg, lb, (ep.background_image_color[4] or 255)*opacity)
 		end
 
-		local quad = love.graphics.newQuad(0, 0, biw, bih, ep.background_image:getDimensions())
-		love.graphics.draw(ep.background_image, quad, bix, biy)
+		-- If not a 9patch image
+		if ep.background_image.type == "9patch" then
+			ep.background_image:draw(bix, biy, biw, bih)
+		else
+			local quad = love.graphics.newQuad(0, 0, biw, bih, ep.background_image:getDimensions())
+			love.graphics.draw(ep.background_image, quad, bix, biy)
+		end
 
 		if ep.background_image_color then
 			love.graphics.pop()
