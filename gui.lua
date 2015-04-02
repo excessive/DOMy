@@ -242,6 +242,42 @@ function GUI:get_widgets()
 	return w
 end
 
+function GUI:process_widget(data, widget)
+	local function loop(element)
+		-- loop through children
+		for k, child in ipairs(element) do
+			if type(child) == "table" then
+				-- apply data as needed
+				for i, property in pairs(data) do
+					if child.class == element.class.."_"..i then
+						-- If a collection of elements
+						if type(property) == "table" and type(property[1]) ~= "string" then
+							for _, p in ipairs(property) do
+								table.insert(child, p)
+							end
+						else
+							table.insert(child, property)
+						end
+					end
+				end
+
+				-- recursive loop
+				loop(child)
+			end
+		end
+	end
+
+	local container = self:new_widget(widget)
+
+	if data.id then
+		container.id = data.id
+	end
+
+	loop(container)
+
+	return container
+end
+
 function GUI:get_elements_by_bound(x, y)
 	local filter = {}
 

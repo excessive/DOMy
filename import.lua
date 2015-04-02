@@ -51,7 +51,7 @@ function Import.markup(self, file)
 				if not is_element then
 					for _, w in ipairs(self:get_widgets()) do
 						if v[1] == w then
-							t[k] = self:new_widget(w)
+							t[k] = self:process_widget(v, w)
 							local object = self:new_element(t[k], parent)
 							create_object(t[k], object)
 							break
