@@ -78,7 +78,7 @@ function Import.markup(self, file)
 		assert(check_syntax(err, true), string.format("File (%s) contains invalid markup.", file))
 		create_object(err, false)
 	else
-		print(err)
+		error(err)
 	end
 end
 
@@ -264,7 +264,7 @@ function Import.styles(self, file)
 
 		self:set_styles()
 	else
-		print(err)
+		error(err)
 	end
 end
 
@@ -292,7 +292,7 @@ function Import.scripts(self, file)
 	local ok, err = pcall(scripts)
 
 	if not ok then
-		print(err)
+		error(err)
 	end
 end
 

@@ -121,8 +121,6 @@ end
 
 function GUI:new_widget(widget)
 	return widgets[widget]()
-	--self:import_styles(path.."/"..widget.."/styles.lua")
-	--self:import_scripts(path.."/"..widget.."/scripts.lua")
 end
 
 function GUI:bubble_event(element, event, ...)
@@ -218,7 +216,12 @@ function GUI:add_widget_directory(path)
 
 	-- add associated widgets
 	for _, widget in ipairs(folders) do
-		widgets[widget] = love.filesystem.load(path..widget.."/markup.lua")
+		if love.filesystem.isDirectory(path..widget) then
+			widgets[widget] = love.filesystem.load(path..widget.."/markup.lua")
+
+			self:import_styles(path..widget.."/styles.lua")
+			--self:import_scripts(path..widget.."/scripts.lua")
+		end
 	end
 end
 
