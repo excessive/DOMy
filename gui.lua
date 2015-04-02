@@ -453,7 +453,9 @@ function GUI:set_styles()
 		local filter = self:get_elements_by_query(style.query)
 
 		for _, element in ipairs(filter) do
-			table.insert(element.styles, style.properties)
+			if element then
+				table.insert(element.styles, style.properties)
+			end
 		end
 	end
 end
