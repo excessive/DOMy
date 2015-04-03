@@ -72,6 +72,15 @@ function GUI:init(width, height)
 	self:add_widget_directory(widget_path)
 end
 
+function GUI:register_function(name, func)
+	if not self[name] then
+		self[name] = func
+		return true
+	end
+
+	error(string.format("\"%s\" already defined.", name))
+end
+
 function GUI:get_callbacks()
 	return {
 		"update",
