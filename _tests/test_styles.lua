@@ -1,15 +1,15 @@
 local function softcompare(a,b) return tonumber(a) == tonumber(b) end
 local function output(exp, got) return string.format("'%s' expected, got '%s'", exp, got) end
-local dom = require "DOMinatrix"
+local dom = require "DOMy"
 local gui = dom.new()
-gui:import_markup("DOMinatrix/_tests/styles_markup.lua")
+gui:import_markup("DOMy/_tests/styles_markup.lua")
 
 print()
 
 print("BEGIN STYLES TEST")
 
 -- Parse styles
-gui:import_styles("DOMinatrix/_tests/styles.lua")
+gui:import_styles("DOMy/_tests/styles.lua")
 
 assert(gui.elements[2].properties.width  == 50, output(50, gui.elements[2].properties.width))
 assert(gui.elements[2].properties.height == 50, output(50, gui.elements[2].properties.height))

@@ -1,4 +1,4 @@
-local dom = require "DOMinatrix"
+local dom = require "DOMy"
 
 print("BEGIN MARKUP BENCHMARK")
 

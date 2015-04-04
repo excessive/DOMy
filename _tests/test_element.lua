@@ -1,8 +1,8 @@
 local function softcompare(a,b) return tonumber(a) == tonumber(b) end
 local function output(exp, got) return string.format("'%s' expected, got '%s'", exp, got) end
-local dom = require "DOMinatrix"
+local dom = require "DOMy"
 local gui = dom.new()
-gui:import_markup("DOMinatrix/_tests/markup.lua")
+gui:import_markup("DOMy/_tests/markup.lua")
 
 print()
 

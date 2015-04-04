@@ -1,4 +1,4 @@
-# DOMinatrix Preliminary Specification Sheet
+# DOMy Preliminary Specification Sheet
 
 **All objects have the following specification:**
 

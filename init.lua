@@ -1,6 +1,6 @@
 --[[
 ------------------------------------------------------------------------------
-DOMinatrix is licensed under the MIT Open Source License.
+DOMy is licensed under the MIT Open Source License.
 (http://www.opensource.org/licenses/mit-license.html)
 ------------------------------------------------------------------------------
 
@@ -26,10 +26,10 @@ THE SOFTWARE.
 ]]--
 
 local DOM = {
-	_LICENSE = "DOMinatrix is distributed under the terms of the MIT license. See LICENSE.md.",
-	_URL = "https://github.com/karai17/DOMinatrix",
+	_LICENSE = "DOMy is distributed under the terms of the MIT license. See LICENSE.md.",
+	_URL = "https://github.com/excessive/DOMy",
 	_VERSION = "0.0.0",
-	_DESCRIPTION = "DOMinatrix is a DOM-like GUI library designed for the *awesome* LÖVE framework."
+	_DESCRIPTION = "DOMy is a DOM-like GUI library designed for the *awesome* LÖVE framework."
 }
 
 local path = ... .. "." -- lol
@@ -38,7 +38,7 @@ function DOM.new(width, height, quirks_mode)
 	local gui = setmetatable({}, { __index = require(path .. "gui") })
 	if not quirks_mode then
 		local major, minor, rev = love.getVersion()
-		assert(major == 0 and minor == 9 and rev >= 2, "DOMinatrix requires LÖVE 0.9.2 or higher (if you are absolutely sure of what you are doing, use DOM.new(nil, nil, true) to skip this check).")
+		assert(major == 0 and minor == 9 and rev >= 2, "DOMy requires LÖVE 0.9.2 or higher (if you are absolutely sure of what you are doing, use DOM.new(nil, nil, true) to skip this check).")
 	end
 	gui:init(width, height)
 	return gui

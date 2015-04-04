@@ -1,8 +1,8 @@
-# DOMinatrix
+# DOMy
 
-DOMinatrix is a DOM-like GUI framework designed for the \*awesome\* LÖVE framework. DOMinatrix is currently under heavy development and is in no way ready to be used by anyone. If you are currently in need of a GUI system, there are several others out there or you can build your own.
+DOMy is a DOM-like GUI framework designed for the \*awesome\* LÖVE framework.
 
-If you would like to be a part of the development of DOMinatrix, you are welcome to join discussions in the issue tracker, open your own issues, create feature requests, et cetera. We are not currently accepting pull requests until DOMinatrix has an official release.
+We are currently looking for people to start beta testing DOMy! If you would like to test our API for comfort and help find bugs, that would be awesome! We are not currently accepting pull requests until DOMy has an official release.
 
 All bundled tests pass. To verify tests, simply require the test file in main.lua and run it. Test verification is printed to the console.
 
@@ -10,11 +10,13 @@ All bundled tests pass. To verify tests, simply require the test file in main.lu
 ## Current Features
 
 * UI instances
+* Markup API
+* Style API
+* Script API
 * Import Files
 	* Markup
 	* Styles
 	* Scripts
-* Script API
 * Elements
 	* block
 	* button
@@ -30,13 +32,14 @@ All bundled tests pass. To verify tests, simply require the test file in main.lu
 	* %
 * Draw GUI
 * Event System
+* Widget System
 
 
 ## TODO
 
 * Finish adding styles
 * Finish adding default elements
-* Implement templating/widget system
+* Add default widgets
 * Implement theme system
 * Implement virtual input system
 * Implement smart draw system
@@ -57,20 +60,20 @@ All sequential keys after value is determined MUST be valid element tables and w
 
 ```lua
 return {
-	{ "element", value="1" },
-	{ "element", value="2",
-		{ "element", value="2>1", class={ "child" } },
-		{ "element", value="2>2", class={ "child" },
-			{ "element", value="2>2>1", class={ "grandchild" } },
-			{ "element", value="2>2>2", class={ "grandchild" } },
-			{ "element", value="2>2>3", class={ "grandchild" } },
+	{ "inline", value="1" },
+	{ "inline", value="2",
+		{ "inline", value="2>1", class={ "child" } },
+		{ "inline", value="2>2", class={ "child" },
+			{ "inline", value="2>2>1", class={ "grandchild" } },
+			{ "inline", value="2>2>2", class={ "grandchild" } },
+			{ "inline", value="2>2>3", class={ "grandchild" } },
 		},
-		{ "element", value="2>3", class={ "child" } },
+		{ "inline", value="2>3", class={ "child" } },
 	},
-	{ "element", value="3" },
-	{ "element", value="4", id="four" },
-	{ "element", value="5" },
-	{ "element", value="6" },
+	{ "inline", value="3" },
+	{ "inline", value="4", id="four" },
+	{ "inline", value="5" },
+	{ "inline", value="6" },
 }
 ```
 
@@ -93,8 +96,8 @@ The order in which the style blocks are written determines the order in which th
 
 ```lua
 return {
-	-- All elements with the "element" type
-	{ "element", {
+	-- All elements with the "inline" type
+	{ "inline", {
 		display = "block",
 	}},
 
@@ -108,9 +111,9 @@ return {
 		display = "inline",
 	}},
 
-	-- All elements with the "element" type
+	-- All elements with the "inline" type
 	-- All elements with the "child" class
-	{ "element", ".child", {
+	{ "inline", ".child", {
 		-- All elements with the "grandchild" class that are descended of an element with the "child" class
 		-- All elements with the "grandchild" class that are descended of an element with the "element" type
 		{ ".grandchild", {
@@ -130,8 +133,8 @@ return {
 		display = "block",
 	}},
 
-	-- The first (only!) element with the "four" id and the "element" type
-	{ "element#four", {
+	-- The first (only!) element with the "four" id and the "inline" type
+	{ "inline#four", {
 		display = "block",
 	}},
 }

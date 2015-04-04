@@ -1,6 +1,6 @@
 local function softcompare(a,b) return tonumber(a) == tonumber(b) end
 local function output(exp, got) return string.format("'%s' expected, got '%s'", exp, got) end
-local dom = require "DOMinatrix"
+local dom = require "DOMy"
 local gui = dom.new()
 
 print()
@@ -8,7 +8,7 @@ print()
 print("BEGIN MARKUP TEST")
 
 -- Parse Markup
-gui:import_markup("DOMinatrix/_tests/markup.lua")
+gui:import_markup("DOMy/_tests/markup.lua")
 assert(gui.elements[1].id     == nil,           output("nil",    gui.elements[1].id))
 assert(softcompare(gui.elements[1].value, 1),   output("1",      gui.elements[1].value))
 assert(gui.elements[2].id     == "two",         output("two",    gui.elements[2].id))

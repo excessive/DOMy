@@ -1,4 +1,4 @@
-# DOMinatrix
+# DOMy
 
 This code is licensed under the [**MIT Open Source License**][MIT].
 
