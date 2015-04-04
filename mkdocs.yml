@@ -1,5 +1,5 @@
-site_name: DOMinatrix Documentation
-repo_url: https://github.com/excessive/DOMinatrix
+site_name: DOMy Documentation
+repo_url: https://github.com/excessive/DOMy
 theme: slate
 docs_dir: docs
 pages:

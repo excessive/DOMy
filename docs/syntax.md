@@ -1,12 +1,12 @@
 # Syntax
 
-DOMinatrix supports a Model-View-Control (MVC) paradigm right out of the box by allowing users to separate their user interface into external files. These files support their own syntax and API while remaining as valid Lua.
+DOMy supports a Model-View-Control (MVC) paradigm right out of the box by allowing users to separate their user interface into external files. These files support their own syntax and API while remaining as valid Lua.
 
 # Markup
 
 Markup is the framework of a user interface. IN MVC terms, markup is the model. The model is used structure the interface and nothing more. This is the skeleton that we will put the skin and muscles on.
 
-DOMinatrix uses a custom syntax designed to be very easy to learn and use. Similar (sort of) to HTML tags, DOMinatrix Markup is a group of nested tables that describe the data objects we want to create, and where to create them. The end result must be a table containing your markup.
+DOMy uses a custom syntax designed to be very easy to learn and use. Similar (sort of) to HTML tags, DOMy Markup is a group of nested tables that describe the data objects we want to create, and where to create them. The end result must be a table containing your markup.
 
 ## Markup Rules
 
@@ -116,7 +116,7 @@ return markup
 
 # Styles
 
-Styles are the beauty of an interface, the skin on our bones. In MVC terms, styles are the view. DOMinatrix Styles allow you to define individual style blocks based on CSS-like selectors and SCSS-like syntax.
+Styles are the beauty of an interface, the skin on our bones. In MVC terms, styles are the view. DOMy Styles allow you to define individual style blocks based on CSS-like selectors and SCSS-like syntax.
 
 ## Selectors
 
