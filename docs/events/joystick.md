@@ -1,3 +1,5 @@
+<link type="text/css" rel="stylesheet" href="../style.css" />
+
 # Element:on_joystick_added(joystick)
 
 # Element:on_joystick_axis(joystick, axis, value)

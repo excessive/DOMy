@@ -1,3 +1,5 @@
+<link type="text/css" rel="stylesheet" href="../style.css" />
+
 # block
 
 # check_list

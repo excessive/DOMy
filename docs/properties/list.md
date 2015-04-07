@@ -1,3 +1,5 @@
+<link type="text/css" rel="stylesheet" href="../style.css" />
+
 # list_style
 
 # list_style_image

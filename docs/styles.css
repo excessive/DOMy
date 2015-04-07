@@ -1,0 +1,18 @@
+table {
+	border: 1px solid black;
+	width: 400px;
+}
+
+th {
+	text-align: left;
+}
+
+tr:first-child {
+	width: 100px;
+	border-left: none !important;
+}
+
+td {
+	border-top: 1px solid black;
+	border-left: 1px solid black;
+}

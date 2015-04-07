@@ -1,3 +1,5 @@
+<link type="text/css" rel="stylesheet" href="../style.css" />
+
 # Element:on_mouse_clicked(button)
 
 # Element:on_mouse_down(button)

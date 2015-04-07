@@ -1,3 +1,5 @@
+<link type="text/css" rel="stylesheet" href="style.css" />
+
 # Syntax
 
 DOMy supports a Model-View-Control (MVC) paradigm right out of the box by allowing users to separate their user interface into external files. These files support their own syntax and API while remaining as valid Lua.

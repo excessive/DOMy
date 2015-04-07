@@ -1,3 +1,5 @@
+<link type="text/css" rel="stylesheet" href="../style.css" />
+
 A Pseudo Class is a special or dynamic state of an element. Pseudo Classes can be used to style elements when certain occurrences happen, such as if the element is being hovered over, or is the current element with focus.
 
 # checked

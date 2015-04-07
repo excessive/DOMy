@@ -1,3 +1,5 @@
+<link type="text/css" rel="stylesheet" href="../style.css" />
+
 # bottom
 
 If `position` is set to `relative`, `bottom` moves the element towards the bottom by an integral value. If `position` is set to `absolute` or `fixed`, `bottom` offsets the element from the bottom by an integral value.

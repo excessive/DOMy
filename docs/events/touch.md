@@ -1,3 +1,5 @@
+<link type="text/css" rel="stylesheet" href="../style.css" />
+
 # Element:on_touch_gestured()
 
 # Element:on_touch_moved()

@@ -1,3 +1,5 @@
+<link type="text/css" rel="stylesheet" href="../style.css" />
+
 # border
 
 The size of the border. The value can be an integer (all sides are the same size), a table of two (top and bottom, right and left), or a table of four (top, right, bottom, left).

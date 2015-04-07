@@ -1,3 +1,5 @@
+<link type="text/css" rel="stylesheet" href="style.css" />
+
 # DOMy
 
 DOMy is a DOM-like GUI framework designed for the \*awesome\* [LÖVE][LOVE] framework. DOMy is designed to be easy to learn and powerful to use. Design with Model-View-Control (MVC) in mind, DOMy allows you to organize your user interface into any number of files based on functionality, or conglomerated into one large file not for the faint of heart. DOMy sports its own custom markup syntax, style sheet syntax, and scripting API (all valid Lua!) that is comparable to modern web standards such as HTML and SCSS.
