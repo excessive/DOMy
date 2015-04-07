@@ -1,4 +1,4 @@
-<link type="text/css" rel="stylesheet" href="../style.css" />
+<link type="text/css" rel="stylesheet" href="../../style.css" />
 
 # Element:add_child(element, position)
 

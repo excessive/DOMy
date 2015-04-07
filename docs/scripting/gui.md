@@ -1,4 +1,4 @@
-<link type="text/css" rel="stylesheet" href="../style.css" />
+<link type="text/css" rel="stylesheet" href="../../style.css" />
 
 # GUI:add_navigation_key(direction, ...)
 
