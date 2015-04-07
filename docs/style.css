@@ -15,11 +15,6 @@ th:first-child {
 
 tr:first-child {
 	border-left: none !important;
-	width: 30%;
-}
-
-tr:last-child {
-	width: 70%;
 }
 
 td {
