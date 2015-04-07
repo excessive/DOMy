@@ -220,6 +220,10 @@ function GUI:disable_navigation()
 end
 
 function GUI:add_widget_directory(path)
+	if path:sub(-1) ~= "/" then
+		path = path .. "/"
+	end
+
 	-- add directory
 	local folders = love.filesystem.getDirectoryItems(path)
 
