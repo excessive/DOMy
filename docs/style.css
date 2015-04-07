@@ -1,18 +1,24 @@
 table {
-	border: 1px solid black;
-	width: 400px;
+	background: #f8f8f8;
+	border: 1px solid #e1e4e5;
+	display: block;
 }
 
-th {
+th, td {
 	text-align: left;
+	padding: 0.5em;
+}
+
+th:first-child {
+	border-right: 1px solid #e1e4e5;
 }
 
 tr:first-child {
-	width: 100px;
 	border-left: none !important;
+	width: 200px;
 }
 
 td {
-	border-top: 1px solid black;
-	border-left: 1px solid black;
+	border-top: 1px solid #e1e4e5;
+	border-left: 1px solid #e1e4e5;
 }
