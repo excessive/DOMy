@@ -1,6 +1,6 @@
 site_name: DOMy Documentation
 repo_url: https://github.com/excessive/DOMy
-theme: slate
+theme: readthedocs
 docs_dir: docs
 pages:
 - [index.md, Introduction]
@@ -30,3 +30,4 @@ pages:
 - [events/joystick.md, Events, Joystick Events]
 - [events/gamepad.md, Events, Gamepad Events]
 - [events/touch.md, Events, Touch Events]
+- [styles.css]
