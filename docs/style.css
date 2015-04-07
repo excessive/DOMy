@@ -4,6 +4,10 @@ table {
 	display: block;
 }
 
+thead, tbody {
+	width: 100%;
+}
+
 th, td {
 	text-align: left;
 	padding: 0.5em;
@@ -11,10 +15,6 @@ th, td {
 
 th:first-child {
 	border-right: 1px solid #e1e4e5;
-}
-
-tr {
-	width: 100%;
 }
 
 tr:first-child {
