@@ -1,10 +1,6 @@
 table {
 	background: #f8f8f8;
 	border: 1px solid #e1e4e5;
-	display: block;
-}
-
-thead, tbody {
 	width: 100%;
 }
 
