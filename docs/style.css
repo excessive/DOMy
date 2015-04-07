@@ -13,6 +13,10 @@ th:first-child {
 	border-right: 1px solid #e1e4e5;
 }
 
+tr {
+	width: 100%;
+}
+
 tr:first-child {
 	border-left: none !important;
 	width: 200px;
