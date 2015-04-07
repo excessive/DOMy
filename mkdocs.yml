@@ -30,4 +30,4 @@ pages:
 - [events/joystick.md, Events, Joystick Events]
 - [events/gamepad.md, Events, Gamepad Events]
 - [events/touch.md, Events, Touch Events]
-- [styles.css]
+- [style.css]
