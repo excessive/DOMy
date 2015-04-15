@@ -1,5 +1,5 @@
 local nine = {
-	_VERSION     = 'patchy.lua v1.0.0',
+	_VERSION     = 'patchy.lua v1.1.1',
 	_DESCRIPTION = 'Simple 9patch library for LÖVE',
 	_URL         = 'https://github.com/excessive/patchy/tree/master/patchy.lua',
 	_LICENSE     = [[
@@ -34,6 +34,7 @@ local function vertical(state, x, w, sx, row, first)
 
 		if w and w > 0 and h and h > 0 then
 			area.quad = love.graphics.newQuad(x, y, w, h, state.dimensions.w, state.dimensions.h)
+			area.id   = state.batch:add(area.quad)
 		end
 
 		area.x   = x   -- start x
@@ -141,6 +142,23 @@ local function get_content_box(p, x, y, w, h)
 end
 
 local function draw(p, x, y, w, h)
+	local skip_update = false
+
+	-- If all args match previous draw, no need to update the batch.
+	if p.last_args then
+		local ox, oy, ow, oh = unpack(p.last_args)
+		if x == ox and y == oy and w == ow and h == oh then
+			skip_update = true
+		else
+			p.last_args[1] = x
+			p.last_args[2] = y
+			p.last_args[3] = w
+			p.last_args[4] = h
+		end
+	else
+		p.last_args = { x, y, w, h }
+	end
+
 	-- Box Size
 	x = (x or 0)
 	y = (y or 0)
@@ -150,29 +168,33 @@ local function draw(p, x, y, w, h)
 	-- Content Box
 	local cx, cy, cw, ch = get_content_box(p, x, y, w, h)
 
-	-- Divide size by scale area
-	local pax, pay = x, y
-	local sax, say = w / p.dynamic.x, h / p.dynamic.y
+	if not skip_update then
+		-- Divide size by scale area
+		local pax, pay = x, y
+		local sax, say = w / p.dynamic.x, h / p.dynamic.y
 
-	local row, col = 1, 1
-	for i=1, #p.areas do
-		if p.areas[i].row > row then
-			row = p.areas[i].row
-			pax = pax + p.areas[i - 1].w * (p.areas[i - 1].sx and sax or 1)
-		end
+		local row, col = 1, 1
+		for i=1, #p.areas do
+			if p.areas[i].row > row then
+				row = p.areas[i].row
+				pax = pax + p.areas[i - 1].w * (p.areas[i - 1].sx and sax or 1)
+			end
 
-		if p.areas[i].col > col then
-			col = p.areas[i].col
-			pay = pay + p.areas[i - 1].h * (p.areas[i - 1].sy and say or 1)
-		elseif p.areas[i].col == 1 then
-			col = p.areas[i].col
-			pay = y
-		end
+			if p.areas[i].col > col then
+				col = p.areas[i].col
+				pay = pay + p.areas[i - 1].h * (p.areas[i - 1].sy and say or 1)
+			elseif p.areas[i].col == 1 then
+				col = p.areas[i].col
+				pay = y
+			end
 
-		if p.areas[i].quad then
-			love.graphics.draw(p.image, p.areas[i].quad, pax, pay, 0, p.areas[i].sx and sax or 1, p.areas[i].sy and say or 1)
+			if p.areas[i].id then
+				p.batch:set(p.areas[i].id, p.areas[i].quad, pax, pay, 0, p.areas[i].sx and sax or 1, p.areas[i].sy and say or 1)
+			end
 		end
 	end
+
+	love.graphics.draw(p.batch)
 
 	if debug_draw then
 		love.graphics.setColor(255, 0, 0, 255)
@@ -198,6 +220,7 @@ local function process(patch)
 	local state = {
 		type       = "9patch",
 		image      = image,
+		batch      = patch.batch,
 		pad        = patch.pad,
 		scale_x    = patch.scale_x,
 		scale_y    = patch.scale_y,
@@ -355,12 +378,14 @@ function nine.load(img)
 	asset:paste(data, 0, 0, 1, 1, w, h)
 
 	local srgb = select(3, love.window.getMode()).srgb
+	local image = love.graphics.newImage(asset, srgb and "srgb" or nil)
 
 	-- Dear Positive,
 	-- ??????????????????????????
 	-- Sincerely, me.
 	local patch = {
-		image   = love.graphics.newImage(asset, srgb and "srgb" or nil),
+		image   = image,
+		batch   = love.graphics.newSpriteBatch(image, 25),
 		pad     = pad,
 		scale_x = scale_x,
 		scale_y = scale_y,

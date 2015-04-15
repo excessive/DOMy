@@ -1,7 +1,26 @@
 local path    = (...):gsub('%.[^%.]+$', '')
 local Class   = require(path..".thirdparty.hump.class")
 local cpml    = require(path..".thirdparty.cpml")
+local lume    = require(path..".thirdparty.lume")
 local Element = Class {}
+
+local function get_opacity(element, opacity)
+	if not element then return opacity end
+	local opacity = (opacity or 1) * element.properties.opacity
+	return get_opacity(element.parent, opacity)
+end
+
+local function set_properties(new_properties, properties)
+	if not new_properties then return properties end
+
+	local properties = properties or {}
+
+	for k in pairs(new_properties) do
+		properties[k] = new_properties[k]
+	end
+
+	return properties
+end
 
 function Element:init(element, parent, gui)
 	self.gui                = gui
@@ -12,6 +31,12 @@ function Element:init(element, parent, gui)
 	self.parent             = parent or false
 	self.position           = cpml.vec2(0, 0)
 	self.scroll_position    = cpml.vec2(0, 0) -- dp scrolled
+	self.element_position   = {}
+	self.border_position    = {}
+	self.content_position   = {}
+	self.offset             = {}
+	self.scissor            = {}
+	self.stencil            = {}
 	self.children           = {}
 	self.styles             = {}
 	self.default_properties = {
@@ -78,7 +103,50 @@ function Element:init(element, parent, gui)
 end
 
 function Element:default_update(dt)
+	local ep = self.properties
 
+	self:_set_position()
+
+	-- Position start & end of element
+	local x, y, w, h, ox, oy = self:_get_position("element")
+
+	-- Border start & end of element
+	local bx, by, bw, bh = self:_get_position("border")
+
+	-- Content start & end of element
+	local cx, cy, cw, ch = self:_get_position("content")
+
+	local sw, sh = cw, ch
+
+	if overflow_x == "visible" then
+		sw = self.gui.width - cx
+	end
+
+	if overflow_y == "visible" then
+		sh = self.gui.height - cy
+	end
+
+	local opacity = get_opacity(self)
+
+	-- If we have a border radius, set this to true
+	local stencil_set = false
+
+	-- Set clip space to element bounds
+	self:_set_scissor("element", self.parent,  x,  y,  w,  h, ox, oy)
+	self:_set_scissor("border",  self.parent, bx, by, bw, bh, ox, oy)
+	self:_set_scissor("content", self.parent, cx, cy, sw, sh, ox, oy)
+
+	-- Set Border Radius stencil
+	if ep.border_top_left_radius
+	or ep.border_top_right_radius
+	or ep.border_bottom_right_radius
+	or ep.border_bottom_left_radius then
+		local tl = ep.border_top_left_radius     or 0
+		local tr = ep.border_top_right_radius    or 0
+		local br = ep.border_bottom_right_radius or 0
+		local bl = ep.border_bottom_left_radius  or 0
+		self:_set_stencil(x, y, w, h, 25, tl, tr, br, bl)
+	end
 end
 
 function Element:default_draw()
@@ -106,121 +174,40 @@ function Element:default_draw()
 
 	--]]
 
-	local function get_scissor_clip(parent, x, y, w, h, ox, oy)
-		local sx, sy, sw, sh = x, y, w, h
-
-		if parent then
-			local pp = parent.properties
-			local cx, cy, cw, ch = parent:_get_content_position(ox, oy)
-
-			if sx < cx then
-				sx = cx
-			end
-
-			if sy < cy then
-				sy = cy
-			end
-
-			if sx + sw - cx > cw then
-				sw = sw - ((sx + sw) - (cx + cw))
-			end
-
-			if sy + sh - cy > ch then
-				sh = sh - ((sy + sh) - (cy + ch))
-			end
-		end
-
-		if sw < 0 then sw = 0 end
-		if sh < 0 then sh = 0 end
-
-		return sx, sy, sw, sh
-	end
-
-	-- https://gist.github.com/gvx/9072860
-	local function get_stencil_clip(x, y, w, h, precision, corners)
-		local polygon = {}
-
-		-- true if on x/y, false if on w/h; TL, TR, BR, BL
-		local xs = { true, false, false, true  }
-		local ys = { true, true,  false, false }
-
-		-- Loop through each corner and calculate point sbased on [r]adius!
-		for i, r in ipairs(corners) do
-			if r == 0 then
-				table.insert(polygon, xs[i] and x or x+w)
-				table.insert(polygon, ys[i] and y or y+h)
-			else
-				for j = 0, precision do
-					local angle = (j / precision + (i - 3)) * math.pi / 2
-					table.insert(polygon, (xs[i] and x+r or x+w-r) + r * math.cos(angle))
-					table.insert(polygon, (ys[i] and y+r or y+h-r) + r * math.sin(angle))
-				end
-			end
-		end
-
-		return polygon
-	end
-
-	local function get_opacity(element, opacity)
-		if not element then return opacity end
-		local opacity = (opacity or 1) * element.properties.opacity
-		return get_opacity(element.parent, opacity)
-	end
-
-	local function set_properties(new_properties, properties)
-		if not new_properties then return properties end
-
-		local properties = properties or {}
-
-		for k in pairs(new_properties) do
-			properties[k] = new_properties[k]
-		end
-
-		return properties
-	end
-
 	local cc = self.gui.srgb and love.math.gammaToLinear or function(...) return ... end
 	local ep = self.properties
 
 	-- Position start & end of element
-	local x, y, w, h, ox, oy = self:_get_position()
+	local x, y, w, h, ox, oy = self:_get_position("element")
 
 	-- Border start & end of element
-	local bx, by, bw, bh = self:_get_border_position()
+	local bx, by, bw, bh = self:_get_position("border")
 
 	-- Content start & end of element
-	local cx, cy, cw, ch = self:_get_content_position()
+	local cx, cy, cw, ch = self:_get_position("content")
 
 	local opacity = get_opacity(self)
 
+	-- If we have a border radius, set this to true
+	local stencil_set = false
+
 	-- Set clip space to element bounds
-	love.graphics.setScissor(get_scissor_clip(self.parent, x, y, w, h, ox, oy))
+	love.graphics.setScissor(self:_get_scissor("element"))
 
 	-- Set Border Radius stencil
 	if ep.border_top_left_radius
 	or ep.border_top_right_radius
 	or ep.border_bottom_right_radius
 	or ep.border_bottom_left_radius then
-		local function stencil()
-			local corners = {
-				ep.border_top_left_radius     or 0,
-				ep.border_top_right_radius    or 0,
-				ep.border_bottom_right_radius or 0,
-				ep.border_bottom_left_radius  or 0,
-			}
-			local polygon = get_stencil_clip(x, y, w, h, 25, corners)
-			love.graphics.polygon("fill", polygon)
-		end
-		love.graphics.setStencil(stencil)
+		love.graphics.setStencil(self:_get_stencil())
+		stencil_set = true
 	end
 
 	-- Draw Background
 	if ep.background_color then
-		love.graphics.push("all")
 		local lr, lg, lb = cc(ep.background_color)
 		love.graphics.setColor(lr, lg, lb, (ep.background_color[4] or 255)*opacity)
 		love.graphics.rectangle("fill", bx, by, bw, bh)
-		love.graphics.pop()
 	end
 
 	-- Draw Background Image
@@ -253,7 +240,6 @@ function Element:default_draw()
 		end
 
 		if ep.background_image_color then
-			love.graphics.push("all")
 			local lr, lg, lb = cc(ep.background_image_color)
 			love.graphics.setColor(lr, lg, lb, (ep.background_image_color[4] or 255)*opacity)
 		end
@@ -262,102 +248,65 @@ function Element:default_draw()
 		if ep.background_image.type == "9patch" then
 			ep.background_image:draw(bix, biy, biw, bih)
 		else
-			local quad = love.graphics.newQuad(0, 0, biw, bih, ep.background_image:getDimensions())
-			love.graphics.draw(ep.background_image, quad, bix, biy)
-		end
-
-		if ep.background_image_color then
-			love.graphics.pop()
+			love.graphics.draw(ep.background_image, bix, biy)
 		end
 	end
 
 	-- Draw Border (Top)
 	if ep.border_top > 0 then
 		local y = y + ep.border_top / 2
-		love.graphics.push("all")
 		local lr, lg, lb = cc(ep.border_top_color)
 		love.graphics.setColor(lr, lg, lb, (ep.border_top_color[4] or 255)*opacity)
 		love.graphics.setLineWidth(ep.border_top)
-		love.graphics.setLineStyle("rough")
 		love.graphics.line(x, y, x+w, y)
-		love.graphics.pop()
 	end
 
 	-- Draw Border (Right)
 	if ep.border_right > 0 then
 		local x = x - ep.border_right / 2
-		love.graphics.push("all")
 		local lr, lg, lb = cc(ep.border_right_color)
 		love.graphics.setColor(lr, lg, lb, (ep.border_right_color[4] or 255)*opacity)
 		love.graphics.setLineWidth(ep.border_right)
-		love.graphics.setLineStyle("rough")
 		love.graphics.line(x+w, y, x+w, y+h)
-		love.graphics.pop()
 	end
 
 	-- Draw Border (Bottom)
 	if ep.border_bottom > 0 then
 		local y = y - ep.border_bottom / 2
-		love.graphics.push("all")
 		local lr, lg, lb = cc(ep.border_bottom_color)
 		love.graphics.setColor(lr, lg, lb, (ep.border_bottom_color[4] or 255)*opacity)
 		love.graphics.setLineWidth(ep.border_bottom)
-		love.graphics.setLineStyle("rough")
 		love.graphics.line(x+w, y+h, x, y+h)
-		love.graphics.pop()
 	end
 
 	-- Draw Border (Left)
 	if ep.border_left > 0 then
 		local x = x + ep.border_left / 2
-		love.graphics.push("all")
 		local lr, lg, lb = cc(ep.border_left_color)
 		love.graphics.setColor(lr, lg, lb, (ep.border_left_color[4] or 255)*opacity)
 		love.graphics.setLineWidth(ep.border_left)
-		love.graphics.setLineStyle("rough")
 		love.graphics.line(x, y+h, x, y)
-		love.graphics.pop()
 	end
-
-	-- Set clip space to border bounds
-	love.graphics.setScissor(get_scissor_clip(self.parent, bx, by, bw, bh, ox, oy))
 
 	-- Draw Image
 	if ep.image then
-		love.graphics.push("all")
+		-- Set clip space to border bounds
+		love.graphics.setScissor(self:_get_scissor("border"))
+
 		love.graphics.setColor(255, 255, 255, 255*opacity)
 		love.graphics.draw(ep.image, x, y)
-		love.graphics.pop()
 	end
 
 	-- Set clip space to content bounds
 	local overflow_x, overflow_y, parent = self:_get_overflow()
 
-	local sw, sh = cw, ch
-
-	if overflow_x == "visible" then
-		sw = self.gui.width - cx
-	end
-
-	if overflow_y == "visible" then
-		sh = self.gui.height - cy
-	end
-
-	-- Set clip space to content bounds
-	love.graphics.setScissor(get_scissor_clip(self.parent, cx, cy, sw, sh, ox, oy))
-
 	-- Draw Text
 	if self.value then
-		love.graphics.push("all")
+		-- Set clip space to content bounds
+		love.graphics.setScissor(self:_get_scissor("content"))
 
 		-- Set Manipulatable Text
 		local value = tostring(self.value)
-
-		-- Set Text Color
-		if ep.text_color then
-			local lr, lg, lb = cc(ep.text_color)
-			love.graphics.setColor(lr, lg, lb, (ep.text_color[4] or 255)*opacity)
-		end
 
 		-- Set Font
 		if ep.font then
@@ -392,34 +341,39 @@ function Element:default_draw()
 
 		-- Set Text Shadow
 		if ep.text_shadow then
-			love.graphics.push("all")
 			local lr, lg, lb = cc(ep.text_shadow_color)
 			love.graphics.setColor(lr, lg, lb, (ep.text_shadow_color[4] or 255)*opacity)
 			love.graphics.printf(value, scrollx + ep.text_shadow[1], text_offset + ep.text_shadow[2], (overflow >= 0 and overflow or 0), ep.text_align)
-			love.graphics.pop()
+		end
+
+		-- Set Text Color
+		if ep.text_color then
+			local lr, lg, lb = cc(ep.text_color)
+			love.graphics.setColor(lr, lg, lb, (ep.text_color[4] or 255)*opacity)
 		end
 
 		-- Print text
 		love.graphics.printf(value, scrollx, text_offset, (overflow >= 0 and overflow or 0), ep.text_align)
 		ep.font:setLineHeight(line_height)
-		love.graphics.pop()
 	end
 
-	-- Reset clip space
-	love.graphics.setScissor()
-	love.graphics.setStencil()
+	-- Reset Stencil
+	if stencil_set then
+		love.graphics.setStencil()
+	end
 
 	-- DEBUG
 	if self.gui._debug then
-		love.graphics.push("all")
+		love.graphics.setScissor()
 		love.graphics.setColor(cc(255, 0, 0, 191))
 		love.graphics.rectangle("line", x-ep.margin_left, y-ep.margin_top, w+ep.margin_left+ep.margin_right, h+ep.margin_top+ep.margin_bottom)
 		love.graphics.setColor(cc(0, 0, 255, 191))
 		love.graphics.rectangle("line", cx, cy, cw, ch)
 		love.graphics.setColor(cc(255, 255, 255, 255))
-		love.graphics.pop()
 	end
 	-- DEBUG
+
+	love.graphics.setColor(255, 255, 255, 255)
 end
 
 function Element:default_on_focus()
@@ -820,7 +774,7 @@ end
 function Element:is_binding(x, y)
 	if not self.visible then return end
 
-	local ex, ey, ew, eh = self:_get_position()
+	local ex, ey, ew, eh = self:_get_position("element")
 
 	if ex <= x and ex + ew >= x and ey <= y and ey + eh >= y then
 		return true
@@ -832,7 +786,7 @@ end
 function Element:is_content_binding(x, y)
 	if not self.visible then return end
 
-	local cx, cy, cw, ch = self:_get_content_position()
+	local cx, cy, cw, ch = self:_get_position("content")
 
 	if cx <= x and cx + cw >= x and cy <= y and cy + ch >= y then
 		return true
@@ -874,38 +828,30 @@ function Element._get_relative_position(element, ox, oy)
 	return Element._get_relative_position(element.parent, ox, oy)
 end
 
-function Element:_get_position()
-	local ox, oy = self:_get_relative_position()
-	local x = self.position.x + ox
-	local y = self.position.y + oy
-	local w = self.properties.width
-	local h = self.properties.height
+function Element:_set_position()
+	local ep = self.properties
 
-	return x, y, w, h, ox, oy
+	self.offset.x, self.offset.y = self:_get_relative_position()
+
+	self.element_position.x = self.position.x + self.offset.x
+	self.element_position.y = self.position.y + self.offset.y
+	self.element_position.w = self.properties.width
+	self.element_position.h = self.properties.height
+
+	self.border_position.x = self.element_position.x + ep.border_left + (ox or 0)
+	self.border_position.y = self.element_position.y + ep.border_top  + (oy or 0)
+	self.border_position.w = self.element_position.w - ep.border_left - ep.border_right
+	self.border_position.h = self.element_position.h - ep.border_top  - ep.border_bottom
+
+	self.content_position.x = self.border_position.x + ep.padding_left
+	self.content_position.y = self.border_position.y + ep.padding_top
+	self.content_position.w = self.border_position.w - ep.padding_left - ep.padding_right
+	self.content_position.h = self.border_position.h - ep.padding_top  - ep.padding_bottom
 end
 
-function Element:_get_border_position(ox, oy)
-	local x, y, w, h = self:_get_position()
-
-	local ep = self.properties
-	local bx = x + ep.border_left + (ox or 0)
-	local by = y + ep.border_top  + (oy or 0)
-	local bw = w - ep.border_left - ep.border_right
-	local bh = h - ep.border_top  - ep.border_bottom
-
-	return bx, by, bw, bh
-end
-
-function Element:_get_content_position(ox, oy)
-	local cx, cy, cw, ch = self:_get_border_position(ox, oy)
-
-	local ep = self.properties
-	local cx = cx + ep.padding_left
-	local cy = cy + ep.padding_top
-	local cw = cw - ep.padding_left - ep.padding_right
-	local ch = ch - ep.padding_top  - ep.padding_bottom
-
-	return cx, cy, cw, ch
+function Element:_get_position(layer)
+	layer = layer .. "_position"
+	return self[layer].x, self[layer].y, self[layer].w, self[layer].h, self.offset.x, self.offset.y
 end
 
 function Element:_get_content_size()
@@ -934,5 +880,78 @@ function Element._get_overflow(self)
 
 	return Element._get_overflow(self.parent)
 end
+
+function Element:_get_scissor(layer)
+	assert(self.scissor[layer], "Scissor layer \"" .. layer .. "\" hasn't been set yet.")
+	return self.scissor[layer].x, self.scissor[layer].y, self.scissor[layer].w, self.scissor[layer].h
+end
+
+function Element:_set_scissor(layer, parent, x, y, w, h, ox, oy)
+	local sx, sy, sw, sh = x, y, w, h
+
+	if parent then
+		local pp = parent.properties
+		local cx, cy, cw, ch = parent:_get_position("content")
+
+		if sx < cx then
+			sx = cx
+		end
+
+		if sy < cy then
+			sy = cy
+		end
+
+		if sx + sw - cx > cw then
+			sw = sw - ((sx + sw) - (cx + cw))
+		end
+
+		if sy + sh - cy > ch then
+			sh = sh - ((sy + sh) - (cy + ch))
+		end
+	end
+
+	if sw < 0 then sw = 0 end
+	if sh < 0 then sh = 0 end
+
+	if not self.scissor[layer] then self.scissor[layer] = {} end
+
+	self.scissor[layer].x = sx
+	self.scissor[layer].y = sy
+	self.scissor[layer].w = sw
+	self.scissor[layer].h = sh
+end
+
+function Element:_get_stencil()
+	return function() love.graphics.polygon("fill", self.stencil) end
+end
+
+-- https://gist.github.com/gvx/9072860
+-- memoize caches results from a function given a specific set of args
+-- get_stencil_clip does a bunch of heavy math to gather a list of vertices
+-- and benefits significantly from caching
+Element._set_stencil = lume.memoize(function (self, x, y, w, h, precision, tl, tr, br, bl)
+	local corners = { tl, tr, br, bl }
+	local polygon = {}
+
+	-- true if on x/y, false if on w/h; TL, TR, BR, BL
+	local xs = { true, false, false, true  }
+	local ys = { true, true,  false, false }
+
+	-- Loop through each corner and calculate points based on [r]adius!
+	for i, r in ipairs(corners) do
+		if r == 0 then
+			table.insert(polygon, xs[i] and x or x+w)
+			table.insert(polygon, ys[i] and y or y+h)
+		else
+			for j = 0, precision do
+				local angle = (j / precision + (i - 3)) * math.pi / 2
+				table.insert(polygon, (xs[i] and x+r or x+w-r) + r * math.cos(angle))
+				table.insert(polygon, (ys[i] and y+r or y+h-r) + r * math.sin(angle))
+			end
+		end
+	end
+
+	self.stencil = polygon
+end)
 
 return Element

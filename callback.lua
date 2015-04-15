@@ -105,10 +105,16 @@ function Callback.draw(self)
 		end
 	end
 
+	-- Straight lines, yo
+	love.graphics.setLineStyle("rough")
+
 	-- All root objects
 	for _, element in ipairs(self.draw_order) do
 		draw_element(element)
 	end
+
+	-- Reset scissor after all elements are drawn
+	love.graphics.setScissor()
 end
 
 function Callback.keypressed(self, key, isrepeat)
@@ -304,8 +310,10 @@ end
 function Callback.resize(self, w, h)
 	self.width  = w or self.width  or love.graphics.getWidth()
 	self.height = h or self.height or love.graphics.getHeight()
+
 	self:set_styles()
 	self:apply_styles()
+
 	Display.position_elements(self.draw_order, nil, 0, 0, self.width, self.height)
 end
 

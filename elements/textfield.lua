@@ -16,13 +16,13 @@ function Input:init(element, parent, gui)
 	self.default_properties.display = "block"
 
 	-- Callbacks
-	self.draw             = self.custom_draw
+	self.draw             = self.textfield_draw
 	self.on_key_pressed   = self.default_on_key_pressed
 	self.on_text_input    = self.default_on_text_input
 	self.on_mouse_clicked = self.default_on_mouse_clicked
 end
 
-function Input:custom_draw()
+function Input:textfield_draw()
 	self:default_draw()
 
 	if not self.focus then return end
