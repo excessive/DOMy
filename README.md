@@ -6,6 +6,7 @@ We are currently looking for people to start beta testing DOMy! If you would lik
 
 All bundled tests pass. To verify tests, simply require the test file in main.lua and run it. Test verification is printed to the console.
 
+[![Build Status](https://travis-ci.org/excessive/DOMy.svg)](https://travis-ci.org/excessive/DOMy)
 
 ## Current Features
 
