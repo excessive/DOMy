@@ -25,6 +25,8 @@ end
 function Element:init(element, parent, gui)
 	self.gui                = gui
 	self.focus              = false
+	self.hover              = false
+	self.entered            = false
 	self.enabled            = true
 	self.type               = element[1]
 	self.value              = ""
@@ -776,6 +778,14 @@ function Element:is_binding(x, y)
 
 	local ex, ey, ew, eh = self:_get_position("element")
 
+	-- Delay for 1 frame
+	if  not ex or
+		not ey or
+		not ew or
+		not eh then
+		return false
+	end
+
 	if ex <= x and ex + ew >= x and ey <= y and ey + eh >= y then
 		return true
 	end
@@ -787,6 +797,14 @@ function Element:is_content_binding(x, y)
 	if not self.visible then return end
 
 	local cx, cy, cw, ch = self:_get_position("content")
+
+	-- Delay for 1 frame
+	if  not cx or
+		not cy or
+		not cw or
+		not ch then
+		return false
+	end
 
 	if cx <= x and cx + cw >= x and cy <= y and cy + ch >= y then
 		return true

@@ -1,6 +1,7 @@
 local path     = (...):gsub('%.[^%.]+$', '') .. "."
 local initial  = require(path.."properties.initial")
 local patchy   = require(path.."thirdparty.patchy")
+local lume     = require(path.."thirdparty.lume")
 local elements = {}
 local widgets  = {}
 local GUI      = {}
@@ -81,6 +82,35 @@ function GUI:register_function(name, func)
 	error(string.format("\"%s\" already defined.", name))
 end
 
+function GUI:register_callbacks(state, reject)
+	-- If no state added, default to love global
+	if not state then state = love end
+
+	-- Grab all DOMy callbacks
+	local callbacks = self:get_callbacks()
+
+	-- Specify callbacks we do not want to register
+	if reject and type(reject) == "table" then
+		callbacks = lume.reject(callbacks, function(v)
+			for _, cb in ipairs(reject) do
+				if v == cb then
+					return true
+				end
+			end
+			return false
+		end)
+	end
+
+	-- Register remaining callbacks if not already registered
+	for _, cb in ipairs(callbacks) do
+		if not state[cb] then
+			state[cb] = function(ignore_me, ...)
+				self[cb](self, ...)
+			end
+		end
+	end
+end
+
 function GUI:get_callbacks()
 	return {
 		"update",
@@ -90,6 +120,7 @@ function GUI:get_callbacks()
 		"textinput",
 		"mousepressed",
 		"mousereleased",
+		"mousemoved",
 		"joystickadded",
 		"joystickremoved",
 		"joystickpressed",
@@ -133,13 +164,35 @@ function GUI:new_widget(widget)
 end
 
 function GUI:bubble_event(element, event, ...)
-	if element[event] then
-		if ... then
-			element[event](element, unpack({ ... }))
+	local bubble = true
+
+	-- We only want to execute this once. If a child is entered, do not execute again
+	if event == "on_mouse_enter" then
+		if element.entered then
+			bubble = false
 		else
-			element[event](element)
+			element.entered = true
 		end
-	elseif element.parent then
+	end
+
+	-- If a child is left, we may not have left the parent!
+	if event == "on_mouse_leave" then
+		if element.entered and not element:is_binding(love.mouse.getPosition()) then
+			element.entered = false
+		else
+			bubble = false
+		end
+	end
+
+	if bubble and element[event] then
+		if ... then
+			bubble = element[event](element, unpack({ ... }))
+		else
+			bubble = element[event](element)
+		end
+	end
+
+	if bubble and element.parent then
 		self:bubble_event(element.parent, event, ...)
 	end
 end

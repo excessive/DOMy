@@ -505,9 +505,15 @@ function Display.check_text_size(element)
 
 	-- Check size of text block
 	local width, lines = ep.font:getWrap(value, overflow)
-	if lines == 0 then lines = 1 end
 	local height       = ep.font:getHeight()
-	ep.height          = ep.height + (height * lines * ep.line_height)
+
+	if type(lines) == "table" then
+		if #lines == 0 then table.insert(lines, "") end
+		ep.height = ep.height + (height * #lines * ep.line_height)
+	else -- legacy support for 0.9.x
+		if lines == 0 then lines = 1 end
+		ep.height = ep.height + (height * lines * ep.line_height)
+	end
 end
 
 return Display

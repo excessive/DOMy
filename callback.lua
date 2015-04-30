@@ -7,46 +7,6 @@ function Callback.update(self, dt)
 		element:update(dt)
 	end
 
-	local hover  = false
-	local mx, my = love.mouse.getPosition()
-
-	local function check_binding(elements)
-		for _, element in ipairs(elements) do
-			if element:is_binding(mx, my) then
-				hover = element
-				check_binding(element.children)
-
-				break
-			end
-		end
-	end
-
-	local i = #self.draw_order
-	while i >= 1 do
-		local element = self.draw_order[i]
-		check_binding({ element })
-
-		i = i - 1
-		if hover then break end
-	end
-
-	if self.pseudo.hover ~= hover then
-		if self.pseudo.hover then
-			self:bubble_event(self.pseudo.hover, "on_mouse_leave")
-			love.mouse.setCursor()
-		end
-
-		self.pseudo.hover = hover
-
-		if self.pseudo.hover then
-			self:bubble_event(self.pseudo.hover, "on_mouse_enter")
-
-			if self.pseudo.hover.properties.cursor then
-				love.mouse.setCursor(self.pseudo.hover.properties.cursor)
-			end
-		end
-	end
-
 	if self.pseudo.hover then
 		local mx, my = love.mouse.getPosition()
 		self:bubble_event(self.pseudo.hover, "on_mouse_over", mx, my)
@@ -89,6 +49,7 @@ function Callback.update(self, dt)
 		end
 	end
 
+	-- !!! THIS IS ONLY TEMPORARY UNTIL WE GET A BETTER UPDATE SYSTEM IN PLACE !!!
 	self:resize()
 end
 
@@ -230,6 +191,48 @@ function Callback.mousereleased(self, x, y, button)
 	end
 
 	self.mouse_down[button] = nil
+end
+
+function Callback.mousemoved(self, x, y, dx, dy)
+	local hover  = false
+
+	local function check_binding(elements)
+		for _, element in ipairs(elements) do
+			if element:is_binding(x, y) then
+				hover = element
+				check_binding(element.children)
+				element.hover = true
+			else
+				element.hover = false
+			end
+		end
+	end
+
+	local i = #self.draw_order
+	while i >= 1 do
+		local element = self.draw_order[i]
+		check_binding({ element })
+
+		i = i - 1
+		if hover then break end
+	end
+
+	if self.pseudo.hover ~= hover then
+		if self.pseudo.hover then
+			self:bubble_event(self.pseudo.hover, "on_mouse_leave")
+			love.mouse.setCursor()
+		end
+
+		self.pseudo.hover = hover
+
+		if self.pseudo.hover then
+			self:bubble_event(self.pseudo.hover, "on_mouse_enter")
+
+			if self.pseudo.hover.properties.cursor then
+				love.mouse.setCursor(self.pseudo.hover.properties.cursor)
+			end
+		end
+	end
 end
 
 function Callback.joystickadded(self, joystick)

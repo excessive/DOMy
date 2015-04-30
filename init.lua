@@ -38,7 +38,12 @@ function DOM.new(width, height, quirks_mode)
 	local gui = setmetatable({}, { __index = require(path .. "gui") })
 	if not quirks_mode then
 		local major, minor, rev = love.getVersion()
-		assert(major == 0 and minor == 9 and rev >= 2, "DOMy requires LÖVE 0.9.2 or higher (if you are absolutely sure of what you are doing, use DOM.new(nil, nil, true) to skip this check).")
+		local err = "DOMy requires LÖVE 0.9.2 or higher (if you are absolutely sure of what you are doing, use DOM.new(nil, nil, true) to skip this check)."
+		if major == 0 and minor < 9 then
+			error(err)
+		elseif major == 0 and minor == 9 then
+			assert(rev >= 2, err)
+		end
 	end
 	gui:init(width, height)
 	return gui
