@@ -853,11 +853,11 @@ function Element:_set_position()
 
 	self.element_position.x = self.position.x + self.offset.x
 	self.element_position.y = self.position.y + self.offset.y
-	self.element_position.w = self.properties.width
-	self.element_position.h = self.properties.height
+	self.element_position.w = ep.width
+	self.element_position.h = ep.height
 
-	self.border_position.x = self.element_position.x + ep.border_left + (ox or 0)
-	self.border_position.y = self.element_position.y + ep.border_top  + (oy or 0)
+	self.border_position.x = self.element_position.x + ep.border_left + (self.offset.x or 0)
+	self.border_position.y = self.element_position.y + ep.border_top  + (self.offset.y or 0)
 	self.border_position.w = self.element_position.w - ep.border_left - ep.border_right
 	self.border_position.h = self.element_position.h - ep.border_top  - ep.border_bottom
 
@@ -971,5 +971,308 @@ Element._set_stencil = lume.memoize(function (self, x, y, w, h, precision, tl, t
 
 	self.stencil = polygon
 end)
+
+function Element:apply_styles()
+	local ep = self.properties
+
+	local function check_percent(value, axis)
+		if type(value) == "string" and value:sub(-1) == "%" then
+			value = tonumber(value:sub(1, -2)) / 100
+
+			if value then
+				local px = 0
+				local py = 0
+				local pw = self.width
+				local ph = self.height
+
+				if element.parent then
+					px, py, pw, ph = self.parent:_get_content_position()
+				end
+
+				if axis == "x" then
+					value = value * pw
+				elseif axis == "y" then
+					value = value * ph
+				end
+			end
+		end
+
+		return value
+	end
+
+	local function check_property(property, value, axis)
+		ep[property] = check_percent(value, axis)
+	end
+
+	local function check_vec2(property, value)
+		ep[property] = {
+			check_percent(value[1], "x"),
+			check_percent(value[2], "y"),
+		}
+	end
+
+	-- Expand margin/border/padding to longform
+	local function expand_box(property, value)
+		local top    = string.format("%s_top",    property)
+		local right  = string.format("%s_right",  property)
+		local bottom = string.format("%s_bottom", property)
+		local left   = string.format("%s_left",   property)
+
+		if type(value) == "number" or type(value) == "string" then
+			ep[top]    = check_percent(value, "y")
+			ep[right]  = check_percent(value, "x")
+			ep[bottom] = check_percent(value, "y")
+			ep[left]   = check_percent(value, "x")
+		elseif #value == 1 then
+			ep[top]    = check_percent(value[1], "y")
+			ep[right]  = check_percent(value[1], "x")
+			ep[bottom] = check_percent(value[1], "y")
+			ep[left]   = check_percent(value[1], "x")
+		elseif #value == 2 then
+			ep[top]    = check_percent(value[1], "y")
+			ep[right]  = check_percent(value[2], "x")
+			ep[bottom] = check_percent(value[1], "y")
+			ep[left]   = check_percent(value[2], "x")
+		else
+			ep[top]    = check_percent(value[1], "y")
+			ep[right]  = check_percent(value[2], "x")
+			ep[bottom] = check_percent(value[3], "y")
+			ep[left]   = check_percent(value[4], "x")
+		end
+	end
+
+	-- Expand border_color to longform
+	local function expand_border_color(value)
+		local top    = "border_top_color"
+		local right  = "border_right_color"
+		local bottom = "border_bottom_color"
+		local left   = "border_left_color"
+
+		if type(value[1]) == "number" then
+			ep[top]    = value
+			ep[right]  = value
+			ep[bottom] = value
+			ep[left]   = value
+		elseif #value == 1 then
+			ep[top]    = value[1]
+			ep[right]  = value[1]
+			ep[bottom] = value[1]
+			ep[left]   = value[1]
+		elseif #value == 2 then
+			ep[top]    = value[1]
+			ep[right]  = value[2]
+			ep[bottom] = value[1]
+			ep[left]   = value[2]
+		else
+			ep[top]    = value[1]
+			ep[right]  = value[2]
+			ep[bottom] = value[3]
+			ep[left]   = value[4]
+		end
+	end
+
+	-- Expand border_radius to longform
+	local function expand_border_radius(element, value)
+		local top    = "border_top_left_radius"
+		local right  = "border_top_right_radius"
+		local bottom = "border_bottom_right_radius"
+		local left   = "border_bottom_left_radius"
+
+		if type(value) == "number" then
+			ep[top]    = value
+			ep[right]  = value
+			ep[bottom] = value
+			ep[left]   = value
+		elseif #value == 1 then
+			ep[top]    = value[1]
+			ep[right]  = value[1]
+			ep[bottom] = value[1]
+			ep[left]   = value[1]
+		elseif #value == 2 then
+			ep[top]    = value[1]
+			ep[right]  = value[2]
+			ep[bottom] = value[1]
+			ep[left]   = value[2]
+		else
+			ep[top]    = value[1]
+			ep[right]  = value[2]
+			ep[bottom] = value[3]
+			ep[left]   = value[4]
+		end
+	end
+
+	-- Check all properties for special cases
+	local function set_property(property, value)
+		ep[property] = value
+
+		if property == "margin"  or
+		   property == "border"  or
+		   property == "padding" then
+			expand_box(property, value)
+		elseif property == "border_color" then
+			expand_border_color(value)
+		elseif property == "border_radius" then
+			expand_border_radius(value)
+		elseif property == "top"
+			or property == "bottom"
+			or property == "margin_top"
+			or property == "margin_bottom"
+			or property == "border_top"
+			or property == "border_bottom"
+			or property == "padding_top"
+			or property == "padding_bottom"
+			or property == "height"
+			or property == "min_height"
+			or property == "max_height" then
+				check_property(property, value, "y")
+		elseif property == "right"
+			or property == "left"
+			or property == "margin_right"
+			or property == "margin_left"
+			or property == "border_right"
+			or property == "border_left"
+			or property == "padding_right"
+			or property == "padding_left"
+			or property == "width"
+			or property == "min_width"
+			or property == "max_width" then
+				check_property(property, value, "x")
+		elseif property == "background_position"
+			or property == "background_size" then
+				check_vec2(property, value)
+		elseif property == "background_path" then
+			if not self.gui:get_cache(value) then
+				if value:sub(-5) == "9.png" then
+					self.gui:set_cache(value, patchy.load(value))
+				else
+					self.gui:set_cache(value, love.graphics.newImage(value))
+				end
+			end
+
+			ep.background_image = self.gui:get_cache(value)
+		elseif property == "font_path" then
+			local font_size = (self.custom_properties.font_size ~= "inherit" and self.custom_properties.font_size)
+				or (ep.font_size ~= "inherit" and ep.font_size)
+				or (self.default_properties.font_size ~= "inherit" and self.default_properties.font_size)
+				or initial.font_size
+
+			if not self.gui:get_cache(value..font_size) then
+				if value == "default" then
+					self.gui:set_cache(value..font_size, love.graphics.newFont(font_size))
+				else
+					self.gui:set_cache(value..font_size, love.graphics.newFont(value, font_size))
+				end
+			end
+
+			ep.font = self.gui:get_cache(value..font_size)
+		elseif property == "font_size" then
+			local font_path = (self.custom_properties.font_path ~= "inherit" and self.custom_properties.font_path)
+				or (ep.font_path ~= "inherit" and ep.font_path)
+				or (self.default_properties.font_path ~= "inherit" and self.default_properties.font_path)
+				or "default"
+
+			if not self.gui:get_cache(font_path..value) then
+				if font_path == "default" then
+					self.gui:set_cache(font_path..value, love.graphics.newFont(value))
+				else
+					self.gui:set_cache(font_path..value, love.graphics.newFont(font_path, value))
+				end
+			end
+
+			ep.font = self.gui:get_cache(font_path..value)
+		elseif property == "cursor" then
+			ep.cursor = love.mouse.getSystemCursor(value)
+		elseif property == "nav_up"
+			or property == "nav_right"
+			or property == "nav_down"
+			or property == "nav_left" then
+				ep[property] = self.gui:get_element_by_id(value)
+		elseif property == "overflow" then
+			ep.overflow_x = value
+			ep.overflow_y = value
+
+			if value == "scroll" then
+				self.on_mouse_scrolled = self.default_on_mouse_scrolled
+			end
+		end
+	end
+
+	local function check_value(property, value)
+		if value == "initial" then
+			value = initial[property] or value
+		end
+
+		if value == "inherit" then
+			if self.parent then
+				value = self.parent.properties[property] or nil
+			end
+		end
+
+		return value
+	end
+
+	for k in pairs(self.properties) do
+		self.properties[k] = nil
+	end
+
+	-- We need to gather up all the styles and order them
+	local function priority_styles(styles)
+		local list = {
+			"width",
+			"height",
+			"margin",
+			"margin_top",
+			"margin_right",
+			"margin_bottom",
+			"margin_left",
+			"border",
+			"border_top",
+			"border_right",
+			"border_bottom",
+			"border_left",
+			"padding",
+			"padding_top",
+			"padding_right",
+			"padding_bottom",
+			"padding_left",
+		}
+
+		for k = #list, 1, -1 do
+			if styles[list[k]] then
+				local value = check_value(list[k], styles[list[k]])
+				set_property(list[k], value)
+			else
+				table.remove(list, k)
+			end
+		end
+
+		for property, value in pairs(styles) do
+			local found = false
+
+			for k, style in ipairs(list) do
+				if property == style then
+					found = true
+					break
+				end
+			end
+
+			if not found then
+				value = check_value(property, value)
+				set_property(property, value)
+			end
+		end
+	end
+
+	-- Apply default properties
+	priority_styles(self.default_properties)
+
+	-- Apply query properties
+	for _, style in ipairs(self.styles) do
+		priority_styles(style)
+	end
+
+	-- Apply custom properties
+	priority_styles(self.custom_properties)
+end
 
 return Element

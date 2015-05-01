@@ -1,5 +1,5 @@
 local path     = (...):gsub('%.[^%.]+$', '') .. "."
-local initial  = require(path.."properties.initial")
+local Display  = require(path.."properties.display")
 local patchy   = require(path.."thirdparty.patchy")
 local lume     = require(path.."thirdparty.lume")
 local elements = {}
@@ -155,6 +155,33 @@ function GUI:new_element(element, parent, position)
 		-- Otherwise, add it to the draw stack
 		table.insert(self.draw_order, object)
 	end
+
+	-- Apply any styles associated with element
+	object:apply_styles()
+
+	-- Apply position
+	local ep = object.properties
+	local d  = ep.display
+	local x  = 0
+	local y  = 0
+	local w  = self.width  - x
+	local h  = self.height - y
+
+	if self.parent then
+		d = "child"
+		x, y, w, h = self.parent:_get_position("content")
+	end
+
+	-- Parent box
+	local parent = {
+		x = x,
+		y = y,
+		w = w,
+		h = h,
+	}
+
+	object.visible = Display.get_visible(object)
+	Display[ep.display](object, d, x, y, 0, parent)
 
 	return object
 end
@@ -532,272 +559,8 @@ function GUI:set_styles()
 end
 
 function GUI:apply_styles()
-	local function check_percent(element, value, axis)
-		if type(value) == "string" and value:sub(-1) == "%" then
-			value = tonumber(value:sub(1, -2)) / 100
-
-			if value then
-				local px = 0
-				local py = 0
-				local pw = self.width
-				local ph = self.height
-
-				if element.parent then
-					px, py, pw, ph = element.parent:_get_content_position()
-				end
-
-				if axis == "x" then
-					value = value * pw
-				elseif axis == "y" then
-					value = value * ph
-				end
-			end
-		end
-
-		return value
-	end
-
-	local function check_property(element, property, value, axis)
-		element.properties[property] = check_percent(element, value, axis)
-	end
-
-	local function check_vec2(element, property, value)
-		element.properties[property] = {
-			check_percent(element, value[1], "x"),
-			check_percent(element, value[2], "y"),
-		}
-	end
-
-	-- Expand margin/border/padding to longform
-	local function expand_box(element, property, value)
-		local ep     = element.properties
-		local top    = string.format("%s_top",    property)
-		local right  = string.format("%s_right",  property)
-		local bottom = string.format("%s_bottom", property)
-		local left   = string.format("%s_left",   property)
-
-		if type(value) == "number" or type(value) == "string" then
-			ep[top]    = check_percent(element, value, "y")
-			ep[right]  = check_percent(element, value, "x")
-			ep[bottom] = check_percent(element, value, "y")
-			ep[left]   = check_percent(element, value, "x")
-		elseif #value == 1 then
-			ep[top]    = check_percent(element, value[1], "y")
-			ep[right]  = check_percent(element, value[1], "x")
-			ep[bottom] = check_percent(element, value[1], "y")
-			ep[left]   = check_percent(element, value[1], "x")
-		elseif #value == 2 then
-			ep[top]    = check_percent(element, value[1], "y")
-			ep[right]  = check_percent(element, value[2], "x")
-			ep[bottom] = check_percent(element, value[1], "y")
-			ep[left]   = check_percent(element, value[2], "x")
-		else
-			ep[top]    = check_percent(element, value[1], "y")
-			ep[right]  = check_percent(element, value[2], "x")
-			ep[bottom] = check_percent(element, value[3], "y")
-			ep[left]   = check_percent(element, value[4], "x")
-		end
-	end
-
-	-- Expand border_color to longform
-	local function expand_border_color(element, value)
-		local ep     = element.properties
-		local top    = "border_top_color"
-		local right  = "border_right_color"
-		local bottom = "border_bottom_color"
-		local left   = "border_left_color"
-
-		if type(value[1]) == "number" then
-			ep[top]    = value
-			ep[right]  = value
-			ep[bottom] = value
-			ep[left]   = value
-		elseif #value == 1 then
-			ep[top]    = value[1]
-			ep[right]  = value[1]
-			ep[bottom] = value[1]
-			ep[left]   = value[1]
-		elseif #value == 2 then
-			ep[top]    = value[1]
-			ep[right]  = value[2]
-			ep[bottom] = value[1]
-			ep[left]   = value[2]
-		else
-			ep[top]    = value[1]
-			ep[right]  = value[2]
-			ep[bottom] = value[3]
-			ep[left]   = value[4]
-		end
-	end
-
-	-- Expand border_radius to longform
-	local function expand_border_radius(element, value)
-		local ep     = element.properties
-		local top    = "border_top_left_radius"
-		local right  = "border_top_right_radius"
-		local bottom = "border_bottom_right_radius"
-		local left   = "border_bottom_left_radius"
-
-		if type(value) == "number" then
-			ep[top]    = value
-			ep[right]  = value
-			ep[bottom] = value
-			ep[left]   = value
-		elseif #value == 1 then
-			ep[top]    = value[1]
-			ep[right]  = value[1]
-			ep[bottom] = value[1]
-			ep[left]   = value[1]
-		elseif #value == 2 then
-			ep[top]    = value[1]
-			ep[right]  = value[2]
-			ep[bottom] = value[1]
-			ep[left]   = value[2]
-		else
-			ep[top]    = value[1]
-			ep[right]  = value[2]
-			ep[bottom] = value[3]
-			ep[left]   = value[4]
-		end
-	end
-
-	-- Check all properties for special cases
-	local function set_property(element, property, value)
-		if not element then return end
-
-		local ep = element.properties
-		ep[property] = value
-
-		if property == "margin"  or
-		   property == "border"  or
-		   property == "padding" then
-			expand_box(element, property, value)
-		elseif property == "border_color" then
-			expand_border_color(element, value)
-		elseif property == "border_radius" then
-			expand_border_radius(element, value)
-		elseif property == "top"
-			or property == "bottom"
-			or property == "margin_top"
-			or property == "margin_bottom"
-			or property == "border_top"
-			or property == "border_bottom"
-			or property == "padding_top"
-			or property == "padding_bottom"
-			or property == "height"
-			or property == "min_height"
-			or property == "max_height" then
-				check_property(element, property, value, "y")
-		elseif property == "right"
-			or property == "left"
-			or property == "margin_right"
-			or property == "margin_left"
-			or property == "border_right"
-			or property == "border_left"
-			or property == "padding_right"
-			or property == "padding_left"
-			or property == "width"
-			or property == "min_width"
-			or property == "max_width" then
-				check_property(element, property, value, "x")
-		elseif property == "background_position"
-			or property == "background_size" then
-				check_vec2(element, property, value)
-		elseif property == "background_path" then
-			if not self:get_cache(value) then
-				if value:sub(-5) == "9.png" then
-					self:set_cache(value, patchy.load(value))
-				else
-					self:set_cache(value, love.graphics.newImage(value))
-				end
-			end
-
-			ep.background_image = self:get_cache(value)
-		elseif property == "font_path" then
-			local font_size = (element.custom_properties.font_size ~= "inherit" and element.custom_properties.font_size)
-				or (ep.font_size ~= "inherit" and ep.font_size)
-				or (element.default_properties.font_size ~= "inherit" and element.default_properties.font_size)
-				or initial.font_size
-
-			if not self:get_cache(value..font_size) then
-				if value == "default" then
-					self:set_cache(value..font_size, love.graphics.newFont(font_size))
-				else
-					self:set_cache(value..font_size, love.graphics.newFont(value, font_size))
-				end
-			end
-
-			ep.font = self:get_cache(value..font_size)
-		elseif property == "font_size" then
-			local font_path = (element.custom_properties.font_path ~= "inherit" and element.custom_properties.font_path)
-				or (ep.font_path ~= "inherit" and ep.font_path)
-				or (element.default_properties.font_path ~= "inherit" and element.default_properties.font_path)
-				or "default"
-
-			if not self:get_cache(font_path..value) then
-				if font_path == "default" then
-					self:set_cache(font_path..value, love.graphics.newFont(value))
-				else
-					self:set_cache(font_path..value, love.graphics.newFont(font_path, value))
-				end
-			end
-
-			ep.font = self:get_cache(font_path..value)
-		elseif property == "cursor" then
-			ep.cursor = love.mouse.getSystemCursor(value)
-		elseif property == "nav_up"
-			or property == "nav_right"
-			or property == "nav_down"
-			or property == "nav_left" then
-				ep[property] = self:get_element_by_id(value)
-		elseif property == "overflow" then
-			ep.overflow_x = value
-			ep.overflow_y = value
-
-			if value == "scroll" then
-				element.on_mouse_scrolled = element.default_on_mouse_scrolled
-			end
-		end
-	end
-
 	local function loop_elements(element)
-		local function check_value(element, property, value)
-			if value == "initial" then
-				value = initial[property] or value
-			end
-
-			if value == "inherit" then
-				if element.parent then
-					value = element.parent.properties[property] or nil
-				end
-			end
-
-			return value
-		end
-
-		for k in pairs(element.properties) do
-			element.properties[k] = nil
-		end
-
-		-- Apply default properties
-		for property, value in pairs(element.default_properties) do
-			value = check_value(element, property, value)
-			set_property(element, property, value)
-		end
-
-		-- Apply query properties
-		for _, style in ipairs(element.styles) do
-			for property, value in pairs(style) do
-				value = check_value(element, property, value)
-				set_property(element, property, value)
-			end
-		end
-
-		-- Apply custom properties
-		for property, value in pairs(element.custom_properties) do
-			value = check_value(element, property, value)
-			set_property(element, property, value)
-		end
+		element:apply_styles()
 
 		-- Apply styles to children
 		if #element.children > 0 then
