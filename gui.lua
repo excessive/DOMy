@@ -285,8 +285,13 @@ function GUI:add_widget_directory(path)
 		if love.filesystem.isDirectory(path..widget) then
 			widgets[widget] = love.filesystem.load(path..widget.."/markup.lua")
 
-			self:import_styles(path..widget.."/styles.lua")
-			--self:import_scripts(path..widget.."/scripts.lua")
+			if love.filesystem.isFile(path..widget.."/styles.lua") then
+				self:import_styles(path..widget.."/styles.lua")
+			end
+
+			if love.filesystem.isFile(path..widget.."/scripts.lua") then
+				self:import_scripts(path..widget.."/scripts.lua")
+			end
 		end
 	end
 end
@@ -318,7 +323,7 @@ function GUI:process_widget(data, widget)
 			if type(child) == "table" then
 				-- apply data as needed
 				for i, property in pairs(data) do
-					if child.class == element.class.."_"..i then
+					if element.class and child.class == element.class.."_"..i then
 						-- If a collection of elements
 						if type(property) == "table" and type(property[1]) ~= "string" then
 							for _, p in ipairs(property) do
