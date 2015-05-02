@@ -85,7 +85,7 @@ return {
 	--text_transform    = ,
 	--white_space       = ,
 
-	--font_path = ,
+	font_path = "default",
 	font_size = 16,
 
 	--list_style          = ,

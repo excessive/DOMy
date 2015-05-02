@@ -344,37 +344,70 @@ function GUI:get_widgets()
 end
 
 function GUI:process_widget(data, widget)
-	local function loop(element)
-		-- loop through children
+	local function loop(element, parent)
+		-- Convert class to table
+		if not element.class then
+			error("Widget elements must contain a valid class.")
+		elseif type(element.class) == "string" then
+			element.class = { element.class }
+		end
+
+		-- Loop through children
 		for k, child in ipairs(element) do
 			if type(child) == "table" then
-				-- apply data as needed
+				-- Convert class to table
+				if not child.class then
+					error("Widget elements must contain a valid class.")
+				elseif type(child.class) == "string" then
+					child.class = { child.class }
+				end
+
+				-- Insert elements
+				local class
+
 				for i, property in pairs(data) do
-					if element.class and child.class == element.class.."_"..i then
-						-- If a collection of elements
-						if type(property) == "table" and type(property[1]) ~= "string" then
-							for _, p in ipairs(property) do
-								table.insert(child, p)
+					temp = string.format("%s_%s", parent, i)
+					for _, c in ipairs(child.class) do
+						if c == temp then
+							class = temp
+							if i ~= "class" and type(property) == "table" then
+								if type(property[1]) == "string" then
+									-- An element
+									table.insert(child, property)
+								else
+									-- A collection of elements
+									for _, p in ipairs(property) do
+										table.insert(child, p)
+									end
+								end
 							end
-						else
-							table.insert(child, property)
 						end
 					end
 				end
 
 				-- recursive loop
-				loop(child)
+				if class then
+					loop(child, class)
+				end
 			end
 		end
 	end
 
 	local container = self:new_widget(widget)
 
+	if type(container.class) == "string" then
+		container.class = { container.class }
+	end
+
+	if #container.class > 1 then
+		error("Container may only contain one class.")
+	end
+
 	if data.id then
 		container.id = data.id
 	end
 
-	loop(container)
+	loop(container, container.class[1])
 
 	return container
 end

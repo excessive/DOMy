@@ -46,17 +46,33 @@ function Import.markup(self, file)
 						break
 					end
 				end
+			end
+		end
+	end
 
-				-- If not element, check for valid widget
-				if not is_element then
-					for _, w in ipairs(self:get_widgets()) do
-						if v[1] == w then
-							t[k] = self:process_widget(v, w)
-							local object = self:new_element(t[k], parent)
-							create_object(t[k], object)
-							break
-						end
-					end
+	local function expand_widgets(markup)
+		local found = false
+		-- Process all elements on layer
+		for e, element in ipairs(markup) do
+			for _, w in ipairs(self:get_widgets()) do
+				if element[1] == w then
+					found = true
+					markup[e] = self:process_widget(element, w)
+					break
+				end
+			end
+		end
+
+		-- Redo layer until everything is processed
+		if found then
+			expand_widgets(markup)
+		end
+
+		-- Process next layer
+		for _, element in ipairs(markup) do
+			for _, child in ipairs(element) do
+				if type(child) == "table" then
+					expand_widgets({ child })
 				end
 			end
 		end
@@ -76,6 +92,7 @@ function Import.markup(self, file)
 
 	if ok then
 		assert(check_syntax(err, true), string.format("File (%s) contains invalid markup.", file))
+		expand_widgets(err)
 		create_object(err, false)
 	else
 		error(err)

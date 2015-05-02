@@ -1,7 +1,9 @@
-local path    = (...):gsub('%.[^%.]+$', '')
-local Class   = require(path..".thirdparty.hump.class")
-local cpml    = require(path..".thirdparty.cpml")
-local lume    = require(path..".thirdparty.lume")
+local path    = (...):gsub('%.[^%.]+$', '') .. "."
+local Class   = require(path.."thirdparty.hump.class")
+local cpml    = require(path.."thirdparty.cpml")
+local lume    = require(path.."thirdparty.lume")
+local patchy  = require(path.."thirdparty.patchy")
+local Initial = require(path.."properties.initial")
 local Element = Class {}
 
 local function get_opacity(element, opacity)
@@ -600,10 +602,15 @@ function Element:detach()
 	return self
 end
 
+-- We cannot use ipairs here because destroying
+-- an element in order will mess up the ipairs
+-- and not give the best results. Instead we
+-- use Lume's r[everse]ipairs function to solve
+-- this problem.
 function Element:destroy()
 	-- Loop recursively through all children
-	for i=1, #self.children do
-		self.children[1]:destroy()
+	for _, child in lume.ripairs(self.children) do
+		child:destroy()
 	end
 
 	if self.parent then
@@ -625,6 +632,12 @@ function Element:destroy()
 	-- Goodbye...
 	-- Goodbye...
 	-- Goodbye.
+end
+
+function Element:destroy_children()
+	for _, child in lume.ripairs(self.children) do
+		child:destroy()
+	end
 end
 
 function Element:clone(deep, parent)
@@ -1145,7 +1158,7 @@ function Element:apply_styles()
 				if value:sub(-5) == "9.png" then
 					self.gui:set_cache(value, patchy.load(value))
 				else
-					self.gui:set_cache(value, love.graphics.newImage(value))
+					self.gui:set_cache(value, love.graphics.newImage(value, {srgb=self.gui.srgb}))
 				end
 			end
 
@@ -1154,8 +1167,7 @@ function Element:apply_styles()
 			local font_size = (self.custom_properties.font_size ~= "inherit" and self.custom_properties.font_size)
 				or (ep.font_size ~= "inherit" and ep.font_size)
 				or (self.default_properties.font_size ~= "inherit" and self.default_properties.font_size)
-				or initial.font_size
-
+				or Initial.font_size
 			if not self.gui:get_cache(value..font_size) then
 				if value == "default" then
 					self.gui:set_cache(value..font_size, love.graphics.newFont(font_size))
@@ -1199,12 +1211,14 @@ function Element:apply_styles()
 
 	local function check_value(property, value)
 		if value == "initial" then
-			value = initial[property] or value
+			return Initial[property]
 		end
 
 		if value == "inherit" then
 			if self.parent then
-				value = self.parent.properties[property] or nil
+				return check_value(property, self.parent.properties[property])
+			else
+				return Initial[property]
 			end
 		end
 

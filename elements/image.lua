@@ -12,7 +12,7 @@ function Image:init(element, parent, gui)
 
 	if self.path then
 		if not self.gui.cache[self.path] then
-			self.gui.cache[self.path] = love.graphics.newImage(self.path, gui.srgb and "srgb" or nil)
+			self.gui.cache[self.path] = love.graphics.newImage(self.path, {srgb=gui.srgb})
 		end
 
 		self.default_properties.image  = self.gui.cache[self.path]

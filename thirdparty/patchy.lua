@@ -378,7 +378,7 @@ function nine.load(img)
 	asset:paste(data, 0, 0, 1, 1, w, h)
 
 	local srgb = select(3, love.window.getMode()).srgb
-	local image = love.graphics.newImage(asset, srgb and "srgb" or nil)
+	local image = love.graphics.newImage(asset, {srgb=srgb})
 
 	-- Dear Positive,
 	-- ??????????????????????????
