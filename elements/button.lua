@@ -1,8 +1,8 @@
 local path     = (...):gsub('%.[^%.]+$', '')
-local new_path = path:gsub("%.", "/")
-local Class    = require(path..".thirdparty.hump.class")
-local cpml     = require(path..".thirdparty.cpml")
-local Element  = assert(love.filesystem.load(new_path.."elements/element.lua"))(path)
+      path     = path:sub(1,path:match("^.*()%."))
+local Class    = require(path.."thirdparty.hump.class")
+local cpml     = require(path.."thirdparty.cpml")
+local Element  = require(path.."elements.element")
 local Button   = Class {}
 
 Button:include(Element)

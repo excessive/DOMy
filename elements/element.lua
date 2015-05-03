@@ -1,4 +1,6 @@
-local path    = (...):gsub('%.[^%.]+$', '') .. "."
+local path    = (...):gsub('%.[^%.]+$', '')
+      -- back it up, back it up, back it up...
+      path    = path:sub(1,path:match("^.*()%."))
 local Class   = require(path.."thirdparty.hump.class")
 local cpml    = require(path.."thirdparty.cpml")
 local lume    = require(path.."thirdparty.lume")
@@ -212,6 +214,7 @@ function Element:default_draw()
 		local lr, lg, lb = cc(ep.background_color)
 		love.graphics.setColor(lr, lg, lb, (ep.background_color[4] or 255)*opacity)
 		love.graphics.rectangle("fill", bx, by, bw, bh)
+		love.graphics.setColor(cc(255, 255, 255, 255*opacity))
 	end
 
 	-- Draw Background Image
@@ -297,7 +300,7 @@ function Element:default_draw()
 		-- Set clip space to border bounds
 		love.graphics.setScissor(self:_get_scissor("border"))
 
-		love.graphics.setColor(255, 255, 255, 255*opacity)
+		love.graphics.setColor(cc(255, 255, 255, 255*opacity))
 		love.graphics.draw(ep.image, x, y)
 	end
 
@@ -723,6 +726,18 @@ function Element:next_sibling()
 	end
 
 	return false
+end
+
+function Element:is_descendant(element)
+	if self.parent then
+		if self.parent == element then
+			return true
+		else
+			return Element.is_descendant(self.parent, element)
+		end
+	else
+		return false
+	end
 end
 
 function Element:bring_to_front()
@@ -1220,6 +1235,10 @@ function Element:apply_styles()
 			else
 				return Initial[property]
 			end
+		end
+
+		if value == "none" then
+			return
 		end
 
 		return value

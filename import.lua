@@ -1,6 +1,6 @@
 local Import = {}
-local path    = (...):gsub('%.[^%.]+$', '')
-local cpml    = require(path..".thirdparty.cpml")
+local path    = (...):gsub('%.[^%.]+$', '') .. "."
+local cpml    = require(path.."thirdparty.cpml")
 
 function Import.markup(self, file)
 	-- This function will return true if every key is a properly formatted table
@@ -95,7 +95,7 @@ function Import.markup(self, file)
 		expand_widgets(err)
 		create_object(err, false)
 	else
-		error(err)
+		console.e(err)
 	end
 end
 
@@ -189,7 +189,7 @@ function Import.styles(self, file)
 		if ok then
 			env.append(import, styles)
 		else
-			error(err)
+			console.e(err)
 		end
 	end
 
@@ -281,7 +281,7 @@ function Import.styles(self, file)
 
 		self:set_styles()
 	else
-		error(err)
+		console.e(err)
 	end
 end
 
@@ -305,12 +305,7 @@ function Import.scripts(self, file)
 	end
 
 	setfenv(scripts, env)
-
-	local ok, err = pcall(scripts)
-
-	if not ok then
-		error(err)
-	end
+	xpcall(scripts, console.e)
 end
 
 return Import

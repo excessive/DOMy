@@ -219,11 +219,14 @@ function Callback.mousemoved(self, x, y, dx, dy)
 
 	if self.pseudo.hover ~= hover then
 		if self.pseudo.hover then
-			self:bubble_event(self.pseudo.hover, "on_mouse_leave")
-			love.mouse.setCursor()
-		end
+			local old_hover = self.pseudo.hover
+			self.pseudo.hover = hover
 
-		self.pseudo.hover = hover
+			self:bubble_event(old_hover, "on_mouse_leave")
+			love.mouse.setCursor()
+		else
+			self.pseudo.hover = hover
+		end
 
 		if self.pseudo.hover then
 			self:bubble_event(self.pseudo.hover, "on_mouse_enter")

@@ -1,6 +1,5 @@
 local path     = (...):gsub('%.[^%.]+$', '') .. "."
 local Display  = require(path.."properties.display")
-local patchy   = require(path.."thirdparty.patchy")
 local lume     = require(path.."thirdparty.lume")
 local elements = {}
 local widgets  = {}
@@ -8,14 +7,17 @@ local GUI      = {}
 
 function GUI:init(width, height)
 	-- Load default elements
-	local element_path  = path:gsub("%.", "/") .. "elements/"
-	local element_files = love.filesystem.getDirectoryItems(element_path)
-
-	for _, file in ipairs(element_files) do
-		local name = file:sub(1, -5)
-		if file ~= "element.lua" and file:sub(-4) == ".lua" then
-			elements[name] = love.filesystem.load(element_path..file)(path)
-		end
+	local element_list = {
+		"block",
+		"button",
+		"image",
+		"inline",
+		"text",
+		"textfield",
+		"textinput"
+	}
+	for _, file in ipairs(element_list) do
+		elements[file] = require(path.."elements." .. file)
 	end
 
 	self._debug        = false
@@ -141,7 +143,9 @@ function GUI:new_element(element, parent, position)
 	end
 
 	-- If no element type is found, don't create that element
-	if not elements[element[1]] then return false end
+	if not elements[element[1]] then
+		return false
+	end
 
 	-- Create the element and insert it into the global elements list
 	local object = setmetatable({}, { __index = elements[element[1]] })
@@ -186,6 +190,11 @@ function GUI:new_element(element, parent, position)
 	return object
 end
 
+function GUI:clear_styles()
+	self.styles = {}
+	self:resize()
+end
+
 function GUI:new_widget(widget)
 	return widgets[widget]()
 end
@@ -193,7 +202,15 @@ end
 function GUI:bubble_event(element, event, ...)
 	local bubble = true
 
-	-- We only want to execute this once. If a child is entered, do not execute again
+	-- We only want to execute these once. If a child is entered, do not execute again
+	if event == "on_focus" then
+		if element.focus then
+			bubble = false
+		else
+			element.focus = true
+		end
+	end
+
 	if event == "on_mouse_enter" then
 		if element.entered then
 			bubble = false
@@ -203,14 +220,23 @@ function GUI:bubble_event(element, event, ...)
 	end
 
 	-- If a child is left, we may not have left the parent!
+	if event == "on_focus_leave" then
+		if element.focus and (not self.pseudo.focus or (self.pseudo.focus and not self.pseudo.focus:is_descendant(element))) then
+			element.focus = false
+		else
+			bubble = false
+		end
+	end
+
 	if event == "on_mouse_leave" then
-		if element.entered and not element:is_binding(love.mouse.getPosition()) then
+		if element.entered and (not self.pseudo.hover or (self.pseudo.hover and not self.pseudo.hover:is_descendant(element))) then
 			element.entered = false
 		else
 			bubble = false
 		end
 	end
 
+	-- Bubble events
 	if bubble and element[event] then
 		if ... then
 			bubble = element[event](element, unpack({ ... }))
@@ -219,7 +245,7 @@ function GUI:bubble_event(element, event, ...)
 		end
 	end
 
-	if bubble and element.parent then
+	if bubble ~= false and element.parent then
 		self:bubble_event(element.parent, event, ...)
 	end
 end
@@ -231,12 +257,14 @@ end
 function GUI:set_focus(element)
 	love.keyboard.setKeyRepeat(true)
 
-	if self.pseudo.focus then
-		self:bubble_event(self.pseudo.focus, "on_focus_leave")
-	end
-
+	local old_focus   = self.pseudo.focus
 	self.last_focus   = element
 	self.pseudo.focus = element
+
+	if old_focus then
+		self:bubble_event(old_focus, "on_focus_leave")
+	end
+
 	self:bubble_event(self.pseudo.focus, "on_focus")
 
 	return self.pseudo.focus
@@ -370,6 +398,8 @@ function GUI:process_widget(data, widget)
 					for _, c in ipairs(child.class) do
 						if c == temp then
 							class = temp
+
+							--if i ~= "class"
 							if i ~= "class" and type(property) == "table" then
 								if type(property[1]) == "string" then
 									-- An element
@@ -380,6 +410,8 @@ function GUI:process_widget(data, widget)
 										table.insert(child, p)
 									end
 								end
+							else
+								child[i] = property
 							end
 						end
 					end

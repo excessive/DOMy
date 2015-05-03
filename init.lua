@@ -32,7 +32,7 @@ local DOM = {
 	_DESCRIPTION = "DOMy is a DOM-like GUI library designed for the *awesome* LÖVE framework."
 }
 
-local path = ... .. "." -- lol
+local path = (...):gsub('%.init$', '') .. "."
 
 function DOM.new(width, height, quirks_mode)
 	local gui = setmetatable({}, { __index = require(path .. "gui") })

@@ -1,7 +1,7 @@
 local path     = (...):gsub('%.[^%.]+$', '')
-local new_path = path:gsub("%.", "/")
-local Class    = require(path..".thirdparty.hump.class")
-local Text     = assert(love.filesystem.load(new_path.."elements/text.lua"))(path)
+      path     = path:sub(1,path:match("^.*()%."))
+local Class    = require(path.."thirdparty.hump.class")
+local Text     = require(path.."elements.text")
 local Input    = Class {}
 
 Input:include(Text)

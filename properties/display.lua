@@ -401,7 +401,7 @@ function Display.get_relative(element)
 	if element.properties.position == "relative" then
 		return element
 	else
-		Display.get_relative(element.parent)
+		return Display.get_relative(element.parent)
 	end
 end
 
